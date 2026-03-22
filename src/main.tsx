@@ -5,6 +5,7 @@ import App from "./App.tsx";
 import { HeroUIProvider, ToastProvider } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
+import "./lib/firebase";
 
 const queryClient = new QueryClient();
 

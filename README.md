@@ -1,5 +1,35 @@
 # React + TypeScript + Vite
 
+## Deploy en Firebase Hosting
+
+1. Logueate en Firebase:
+
+```bash
+npm run firebase:login
+```
+
+2. Asociá el proyecto (solo la primera vez):
+
+```bash
+npm run firebase:use
+```
+
+3. Verificá que `.firebaserc` tenga tu Project ID real en `projects.default`.
+
+4. Deploy a producción:
+
+```bash
+npm run deploy:firebase
+```
+
+5. (Opcional) Deploy a un canal preview:
+
+```bash
+npm run preview:firebase
+```
+
+La configuración usa `dist/` como carpeta pública y rewrite de SPA (`** -> /index.html`).
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
