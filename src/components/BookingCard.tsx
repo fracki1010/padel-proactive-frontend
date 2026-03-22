@@ -1,6 +1,6 @@
-import { Card, CardBody, Chip, Button } from "@heroui/react";
+import { Card, CardBody, Chip } from "@heroui/react";
 import type { Booking } from "../types";
-import { MoreVertical } from "lucide-react";
+import { Clock3, MapPin, UserRound } from "lucide-react";
 
 interface BookingCardProps {
   booking: Booking;
@@ -27,11 +27,11 @@ export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
       <Card
         isPressable
         onPress={() => onClick?.(booking)}
-        className="bg-primary border-none shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
+        className="w-full border-none rounded-[1.6rem] bg-gradient-to-br from-primary via-primary to-amber-300 shadow-2xl shadow-primary/20 hover:scale-[1.01] transition-all duration-300"
       >
-        <CardBody className="p-4 flex flex-row items-center gap-6">
-          <div className="flex flex-col items-center">
-            <span className="text-xl font-bold text-black leading-none">
+        <CardBody className="p-5 flex flex-row items-center gap-4 sm:gap-6 min-w-0">
+          <div className="flex flex-col items-center bg-black/10 rounded-2xl px-3 py-2 min-w-[76px]">
+            <span className="text-xl font-black text-black leading-none">
               {booking.timeSlot?.startTime || "00:00"}
             </span>
             <span className="text-[10px] font-bold text-black/60 uppercase">
@@ -39,23 +39,16 @@ export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
             </span>
           </div>
 
-          <div className="w-[1px] h-10 bg-black/10"></div>
+          <div className="w-[1px] h-12 bg-black/15"></div>
 
-          <div className="flex-grow flex flex-col">
-            <span className="font-bold text-black text-lg">DISPONIBLE</span>
-            <span className="text-xs text-black/70 font-medium italic">
+          <div className="flex-grow flex flex-col min-w-0">
+            <span className="font-black text-black text-lg tracking-tight">
+              DISPONIBLE
+            </span>
+            <span className="text-xs text-black/70 font-semibold">
               ¡Presiona para reservar!
             </span>
           </div>
-
-          <Button
-            isIconOnly
-            variant="flat"
-            className="bg-black/10 text-black min-w-10 w-10 h-10"
-            radius="full"
-          >
-            <MoreVertical size={20} />
-          </Button>
         </CardBody>
       </Card>
     );
@@ -65,11 +58,11 @@ export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
     <Card
       isPressable
       onPress={() => onClick?.(booking)}
-      className="bg-dark-200 border border-white/5 hover:border-primary/30 transition-all shadow-xl"
+      className="w-full rounded-[1.6rem] bg-dark-200/90 border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-2xl shadow-black/20"
     >
-      <CardBody className="p-4 flex flex-row items-center gap-6">
-        <div className="flex flex-col items-center min-w-[60px]">
-          <span className="text-xl font-bold text-white leading-none">
+      <CardBody className="p-5 flex flex-wrap sm:flex-nowrap items-center gap-4 sm:gap-6 min-w-0">
+        <div className="flex flex-col items-center min-w-[72px] rounded-2xl bg-white/[0.04] border border-white/10 px-2.5 py-2">
+          <span className="text-xl font-black text-white leading-none">
             {booking.timeSlot?.startTime}
           </span>
           <span className="text-[10px] font-bold text-white/40 uppercase">
@@ -78,13 +71,13 @@ export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
         </div>
 
         <div className="flex flex-col flex-grow min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="font-bold text-white text-lg truncate">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap min-w-0">
+            <span className="font-black text-white text-lg truncate min-w-0 flex-1 tracking-tight">
               {booking.clientName}
             </span>
             <Chip
               size="sm"
-              className={`${statusColorMap[booking.status] || "bg-gray-600"} h-5 px-1.5 text-[10px] font-black tracking-tighter`}
+              className={`${statusColorMap[booking.status] || "bg-gray-600"} h-5 px-2 text-[10px] font-black tracking-wide shrink-0 rounded-lg`}
               radius="sm"
             >
               {statusLabelMap[booking.status] || booking.status.toUpperCase()}
@@ -92,26 +85,31 @@ export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
             {booking.isFixed && (
               <Chip
                 size="sm"
-                className="bg-success/20 text-success border border-success/30 h-5 px-1.5 text-[10px] font-black"
+                className="bg-success/20 text-success border border-success/30 h-5 px-2 text-[10px] font-black shrink-0 rounded-lg"
                 radius="sm"
               >
                 FIJO
               </Chip>
             )}
           </div>
-          <span className="text-sm text-white/50 font-medium truncate">
-            {booking.court?.name} • Nivel: Intermedio (4.0)
-          </span>
-        </div>
 
-        <Button
-          isIconOnly
-          variant="flat"
-          className="bg-primary/10 text-primary min-w-10 w-10 h-10"
-          radius="full"
-        >
-          <MoreVertical size={20} />
-        </Button>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs">
+            <span className="inline-flex items-center gap-1.5 text-white/60 font-semibold min-w-0">
+              <UserRound size={13} className="text-white/35 shrink-0" />
+              <span className="truncate">{booking.clientPhone}</span>
+            </span>
+            <span className="hidden sm:block h-3 w-px bg-white/10" />
+            <span className="inline-flex items-center gap-1.5 text-white/60 font-semibold min-w-0">
+              <MapPin size={13} className="text-white/35 shrink-0" />
+              <span className="truncate">{booking.court?.name}</span>
+            </span>
+            <span className="hidden sm:block h-3 w-px bg-white/10" />
+            <span className="inline-flex items-center gap-1.5 text-white/50 font-semibold">
+              <Clock3 size={13} className="text-white/35 shrink-0" />
+              90 min
+            </span>
+          </div>
+        </div>
       </CardBody>
     </Card>
   );

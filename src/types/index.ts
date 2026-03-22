@@ -20,7 +20,6 @@ export interface User {
   _id: string;
   name: string;
   phoneNumber: string;
-  level?: "principiante" | "intermedio" | "avanzado" | "pro";
   fixedTurns?: FixedTurn[];
   whatsappId?: string;
   penalties?: number;

@@ -89,7 +89,7 @@ export const Bookings = ({
   const visibleGroups = groupedBookings.slice(0, visibleCount);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 w-full overflow-x-hidden">
       <div className="flex flex-col">
         <h1 className="text-2xl font-bold text-white mb-2">
           Turnos Históricos
@@ -105,7 +105,7 @@ export const Bookings = ({
         onCourtChange={onCourtChange}
       />
 
-      <div className="space-y-12">
+      <div className="space-y-12 w-full">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center min-h-[300px]">
             <Spinner size="lg" color="primary" />
@@ -119,14 +119,14 @@ export const Bookings = ({
         ) : (
           <>
             {visibleGroups.map(([dateKey, group]) => (
-              <div key={dateKey} className="space-y-6">
+              <div key={dateKey} className="space-y-6 w-full">
                 <div className="flex items-center gap-4">
                   <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
                     {formatDate(dateKey)}
                   </h2>
                   <div className="h-[1px] flex-grow bg-white/5"></div>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-4 w-full">
                   {group.map((booking) => (
                     <BookingCard
                       key={booking._id}

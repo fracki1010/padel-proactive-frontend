@@ -154,7 +154,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
       {/* Grid de Métricas Principales */}
       <div className="grid grid-cols-1 gap-4">
         {/* Recaudación Mensual */}
-        <Card className="bg-primary shadow-[0_0_30px_rgba(163,255,51,0.15)] border-none overflow-hidden relative group">
+        <Card className="bg-primary shadow-[0_0_30px_rgba(255,122,0,0.18)] border-none overflow-hidden relative group">
           <div className="absolute -right-8 -top-8 w-32 h-32 bg-black/10 rounded-full blur-3xl group-hover:bg-black/20 transition-all duration-700"></div>
           <CardBody className="p-8">
             <div className="flex justify-between items-start mb-4">

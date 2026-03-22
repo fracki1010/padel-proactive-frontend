@@ -7,6 +7,7 @@ import {
   Divider,
   Switch,
   Input,
+  addToast,
 } from "@heroui/react";
 import {
   MapPin,
@@ -20,6 +21,7 @@ import {
   Clock,
   Phone,
   Save,
+  QrCode,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
@@ -28,6 +30,8 @@ import {
   useSlots,
   useUpdateSlot,
   useUpdateProfile,
+  useWhatsappStatus,
+  useUpdateBasePrice,
 } from "../hooks/useData";
 import { useAuth } from "../context/AuthContext";
 
@@ -37,22 +41,48 @@ interface ProfileProps {
 
 export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const { logout, user, updateUser } = useAuth();
-  const [view, setView] = useState<"menu" | "courts" | "schedule">("menu");
+  const [view, setView] = useState<"menu" | "courts" | "schedule" | "whatsapp">("menu");
   const { data: courtsData } = useCourts(true);
   const courts = courtsData?.data || initialCourts;
   const updateCourt = useUpdateCourt();
   const updateSlot = useUpdateSlot();
+  const updateBasePrice = useUpdateBasePrice();
   const updateProfile = useUpdateProfile();
   const { data: slotsData } = useSlots(true);
+  const { data: whatsappData, isLoading: isLoadingWhatsapp } = useWhatsappStatus();
   const slots = slotsData?.data || [];
+  const whatsappState = whatsappData?.data;
+  const whatsappStatus = whatsappState?.status || "initializing";
+  const whatsappQr = whatsappState?.qr || "";
 
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [basePriceInput, setBasePriceInput] = useState("");
 
   useEffect(() => {
     if (user?.phone) {
       setPhoneNumber(user.phone);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!slots.length) return;
+
+    const firstPrice = slots[0]?.price;
+    if (typeof firstPrice !== "number") return;
+
+    const allSame = slots.every((slot: any) => Number(slot.price) === Number(firstPrice));
+    if (allSame) {
+      setBasePriceInput(String(firstPrice));
+      return;
+    }
+
+    setBasePriceInput("");
+  }, [slots]);
+
+  useEffect(() => {
+    const profileScrollContainer = document.getElementById("profile-drawer-body");
+    profileScrollContainer?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [view]);
 
   const handleUpdatePhone = () => {
     updateProfile.mutate(
@@ -64,6 +94,115 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       },
     );
   };
+
+  const handleSaveBasePrice = () => {
+    const parsed = Number(basePriceInput);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      addToast({
+        title: "Ingresá un precio válido (mayor o igual a 0).",
+        color: "danger",
+      });
+      return;
+    }
+
+    updateBasePrice.mutate(parsed, {
+      onSuccess: () => {
+        addToast({ title: "Precio base actualizado en todos los turnos", color: "success" });
+      },
+      onError: (err: any) => {
+        addToast({
+          title: err?.response?.data?.error || "No se pudo actualizar el precio base",
+          color: "danger",
+        });
+      },
+    });
+  };
+
+  const whatsappStatusLabelByKey: Record<string, string> = {
+    ready: "Conectado",
+    authenticated: "Autenticado",
+    qr_pending: "Esperando escaneo",
+    loading: "Iniciando",
+    auth_failure: "Error de autenticación",
+    initializing: "Inicializando",
+  };
+
+  const whatsappChipColor =
+    whatsappStatus === "ready"
+      ? "success"
+      : whatsappStatus === "auth_failure"
+        ? "danger"
+        : "warning";
+
+  if (view === "whatsapp") {
+    return (
+      <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+        <div className="flex items-center gap-4">
+          <Button
+            isIconOnly
+            variant="flat"
+            onClick={() => setView("menu")}
+            className="bg-white/5 text-white rounded-2xl"
+          >
+            <ChevronLeft size={20} />
+          </Button>
+          <h3 className="text-xl font-black text-white uppercase italic">
+            WhatsApp Web
+          </h3>
+        </div>
+
+        <Card className="bg-dark-100 border border-white/5 rounded-[2rem]">
+          <CardBody className="p-6 space-y-5">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                  Estado del bot
+                </p>
+                <p className="text-white font-bold text-sm">
+                  QR sincronizado con el backend
+                </p>
+              </div>
+              <Chip
+                color={whatsappChipColor}
+                variant="flat"
+                className="font-bold uppercase"
+                size="sm"
+              >
+                {isLoadingWhatsapp
+                  ? "Cargando"
+                  : (whatsappStatusLabelByKey[whatsappStatus] || whatsappStatus)}
+              </Chip>
+            </div>
+
+            {whatsappStatus === "qr_pending" && whatsappQr ? (
+              <div className="bg-white rounded-3xl p-6 flex justify-center">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(whatsappQr)}`}
+                  alt="Código QR de WhatsApp"
+                  className="w-[220px] h-[220px] rounded-2xl"
+                />
+              </div>
+            ) : (
+              <div className="bg-white/5 rounded-3xl p-5 border border-white/10">
+                <p className="text-xs text-gray-300 font-bold uppercase tracking-wide">
+                  {whatsappStatus === "ready"
+                    ? "WhatsApp ya está conectado. Si querés regenerar el QR, cerrá sesión del dispositivo actual."
+                    : "El QR aparecerá acá automáticamente cuando WhatsApp lo requiera."}
+                </p>
+              </div>
+            )}
+
+            {!!whatsappState?.updatedAt && (
+              <p className="text-[10px] text-gray-500 font-bold italic">
+                Última actualización:{" "}
+                {new Date(whatsappState.updatedAt).toLocaleString()}
+              </p>
+            )}
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
 
   if (view === "courts") {
     return (
@@ -146,6 +285,38 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         </div>
 
         <div className="space-y-4">
+          <section className="bg-primary/10 p-6 rounded-[2.5rem] border border-primary/20">
+            <div className="flex items-center gap-3 mb-4">
+              <CreditCard className="text-primary" size={20} />
+              <p className="font-bold text-primary uppercase text-xs tracking-widest">
+                Precio Base Global
+              </p>
+            </div>
+            <p className="text-[10px] text-gray-400 font-bold uppercase mb-4 leading-relaxed">
+              Este valor se aplica a todos los turnos y reemplaza cualquier precio por horario.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                value={basePriceInput}
+                onValueChange={setBasePriceInput}
+                placeholder="Ej: 12000"
+                type="number"
+                className="flex-grow"
+                classNames={{
+                  inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
+                  input: "text-white font-bold",
+                }}
+              />
+              <Button
+                className="h-12 bg-primary text-black font-black rounded-2xl uppercase text-[10px]"
+                onPress={handleSaveBasePrice}
+                isLoading={updateBasePrice.isPending}
+              >
+                Guardar Base
+              </Button>
+            </div>
+          </section>
+
           <section className="bg-blue-500/10 p-6 rounded-[2.5rem] border border-blue-500/20">
             <div className="flex items-center gap-3 mb-4">
               <Shield className="text-blue-500" size={20} />
@@ -318,6 +489,31 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
                   </p>
                   <p className="text-[10px] text-gray-500 font-bold uppercase">
                     {courts.length} canchas activas
+                  </p>
+                </div>
+              </div>
+              <ChevronRight size={20} className="text-gray-600" />
+            </div>
+
+            <div
+              onClick={() => setView("whatsapp")}
+              className="bg-dark-100 p-4 rounded-3xl border border-white/5 flex items-center justify-between group cursor-pointer hover:border-primary/30 transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all">
+                  <QrCode size={20} />
+                </div>
+                <div>
+                  <p className="font-bold text-white uppercase text-sm">
+                    WhatsApp Web
+                  </p>
+                  <p className="text-[10px] text-gray-500 font-bold uppercase">
+                    {whatsappStatus === "ready"
+                      ? "Conectado"
+                      : whatsappStatus === "qr_pending"
+                        ? "QR pendiente"
+                        : "Estado: " +
+                          (whatsappStatusLabelByKey[whatsappStatus] || whatsappStatus)}
                   </p>
                 </div>
               </div>

@@ -72,6 +72,16 @@ export const configService = {
     const response = await api.put(`/config/slots/${id}`, data);
     return response.data;
   },
+
+  updateBasePrice: async (price: number): Promise<any> => {
+    const response = await api.put("/config/slots/base-price", { price });
+    return response.data;
+  },
+
+  getWhatsappStatus: async (): Promise<any> => {
+    const response = await api.get("/config/whatsapp");
+    return response.data;
+  },
 };
 
 export const notificationService = {

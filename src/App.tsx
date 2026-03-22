@@ -90,11 +90,12 @@ export default function App() {
     if (booking.status === "suspendido" && !booking._id) {
       createBooking.mutate(
         {
-          ...booking,
-          court: booking.court._id,
-          timeSlot: booking.timeSlot._id,
+          courtId: booking.court?._id,
+          slotId: booking.timeSlot?._id,
+          date: booking.date,
           paymentStatus: "pagado",
           finalPrice: 0,
+          status: "suspendido",
           clientName: "SISTEMA",
           clientPhone: "MANTENIMIENTO",
         },
@@ -102,8 +103,11 @@ export default function App() {
           onSuccess: () => {
             addToast({ title: "Turno suspendido bloqueado", color: "success" });
           },
-          onError: () => {
-            addToast({ title: "Error al suspender turno", color: "danger" });
+          onError: (err: any) => {
+            addToast({
+              title: err?.response?.data?.error || "Error al suspender turno",
+              color: "danger",
+            });
           },
         },
       );
@@ -175,6 +179,10 @@ export default function App() {
       return 0;
     return notificationsData.data.filter((n: any) => n.isRead === false).length;
   }, [notificationsData]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [activeTab, isCreating]);
 
   useEffect(() => {
     console.log("🔔 Notificaciones actualizadas:", {
@@ -410,7 +418,7 @@ export default function App() {
                   <X size={20} />
                 </HeroButton>
               </DrawerHeader>
-              <DrawerBody className="p-8 pt-0 overflow-y-auto">
+              <DrawerBody id="profile-drawer-body" className="p-8 pt-0 overflow-y-auto">
                 <Profile courts={courts} />
                 <HeroButton
                   variant="flat"
@@ -483,7 +491,7 @@ export default function App() {
                       className={`p-6 rounded-[2rem] border transition-all ${
                         n.isRead
                           ? "bg-white/5 border-white/5 opacity-60"
-                          : "bg-primary/10 border-primary/20 shadow-[0_0_20px_rgba(163,255,51,0.1)]"
+                          : "bg-primary/10 border-primary/20 shadow-[0_0_20px_rgba(255,122,0,0.12)]"
                       }`}
                     >
                       <div className="flex justify-between items-start mb-2">

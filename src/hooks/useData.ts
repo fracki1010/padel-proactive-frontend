@@ -49,6 +49,14 @@ export const useSlots = (all = false) => {
   });
 };
 
+export const useWhatsappStatus = () => {
+  return useQuery({
+    queryKey: ["whatsapp-status"],
+    queryFn: configService.getWhatsappStatus,
+    refetchInterval: 5000,
+  });
+};
+
 export const useUpdateSlot = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -56,6 +64,17 @@ export const useUpdateSlot = () => {
       configService.updateSlot(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["slots"] });
+    },
+  });
+};
+
+export const useUpdateBasePrice = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (price: number) => configService.updateBasePrice(price),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["slots"] });
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
     },
   });
 };

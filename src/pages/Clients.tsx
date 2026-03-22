@@ -237,12 +237,6 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                     </div>
 
                     <div className="flex flex-wrap gap-2 mt-2.5">
-                      <Chip
-                        size="sm"
-                        className="bg-primary/10 text-primary font-black text-[10px] uppercase h-5"
-                      >
-                        {client.level || "INTERMEDIO"}
-                      </Chip>
                       {(client.penalties || 0) > 0 && !client.isSuspended && (
                         <Chip
                           size="sm"
@@ -395,9 +389,6 @@ const UserModal = ({
 }) => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [level, setLevel] = useState<
-    "principiante" | "intermedio" | "avanzado" | "pro"
-  >("intermedio");
   const [fixedTurns, setFixedTurns] = useState<any[]>([]);
 
   const createUser = useCreateUser();
@@ -412,12 +403,10 @@ const UserModal = ({
     if (user && mode === "edit") {
       setName(user.name);
       setPhone(user.phoneNumber);
-      setLevel(user.level || "intermedio");
       setFixedTurns(user.fixedTurns || []);
     } else {
       setName("");
       setPhone("");
-      setLevel("intermedio");
       setFixedTurns([]);
     }
   }, [user, mode, isOpen]);
@@ -435,7 +424,6 @@ const UserModal = ({
       const data = {
         name,
         phoneNumber: phone,
-        level,
         fixedTurns: fixedTurns.filter((ft) => ft.court && ft.timeSlot),
       };
 
@@ -488,26 +476,6 @@ const UserModal = ({
               variant="bordered"
             />
           </div>
-
-          <Select
-            label="Nivel de Juego"
-            variant="bordered"
-            className="dark"
-            classNames={{
-              trigger: "bg-dark-100/50 border-white/10 h-14 rounded-xl",
-              label: "text-gray-400 font-bold mb-2",
-              value: "text-white font-bold",
-              popoverContent: "bg-dark-200 border border-white/10 text-white",
-              listbox: "text-white",
-            }}
-            selectedKeys={[level]}
-            onSelectionChange={(keys) => setLevel(Array.from(keys)[0] as any)}
-          >
-            <SelectItem key="principiante">Principiante</SelectItem>
-            <SelectItem key="intermedio">Intermedio</SelectItem>
-            <SelectItem key="avanzado">Avanzado</SelectItem>
-            <SelectItem key="pro">Profesional / Pro</SelectItem>
-          </Select>
 
           <div className="space-y-4">
             <div className="flex justify-between items-center">

@@ -40,7 +40,7 @@ export const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,rgba(163,255,51,0.05),transparent),radial-gradient(circle_at_bottom_left,rgba(163,255,51,0.05),transparent)]">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,rgba(255,122,0,0.08),transparent),radial-gradient(circle_at_bottom_left,rgba(255,122,0,0.08),transparent)]">
       <div className="w-full max-w-md space-y-8 animate-in fade-in zoom-in duration-500">
         <div className="text-center space-y-2">
           <div className="mx-auto w-16 h-16 bg-primary/20 rounded-[2rem] flex items-center justify-center border border-primary/20 mb-6 group">

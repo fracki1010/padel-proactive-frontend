@@ -94,7 +94,7 @@ export const Dashboard = ({ courts, onBookingClick }: DashboardProps) => {
               Padel Central
             </h2>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_8px_#a3ff33]"></div>
+              <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_8px_#ff7a00]"></div>
               <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
                 WhatsApp Sincronizado
               </span>
@@ -128,7 +128,7 @@ export const Dashboard = ({ courts, onBookingClick }: DashboardProps) => {
                 onClick={() => setSelectedDate(day.full)}
                 className={`flex flex-col items-center justify-center min-w-[70px] h-[100px] rounded-[24px] border transition-all duration-300 relative ${
                   isSelected
-                    ? "bg-primary border-primary shadow-[0_0_20px_rgba(163,255,51,0.3)] scale-105 z-10"
+                    ? "bg-primary border-primary shadow-[0_0_20px_rgba(255,122,0,0.35)] scale-105 z-10"
                     : "bg-dark-100 border-white/5 opacity-80"
                 }`}
               >
@@ -250,7 +250,7 @@ export const Dashboard = ({ courts, onBookingClick }: DashboardProps) => {
                           >
                             {isSuspended
                               ? "⚠️ TURNO SUSPENDIDO"
-                              : "90 mins • Nivel: Todos"}
+                              : "90 mins"}
                           </p>
                           {isTaken && (
                             <div className="flex items-center gap-1 mt-1">
