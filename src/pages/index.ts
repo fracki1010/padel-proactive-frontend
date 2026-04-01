@@ -4,3 +4,4 @@ export * from "./Bookings";
 export * from "./Finance";
 export * from "./Profile";
 export * from "./Login";
+export * from "./SuperAdminSetup";

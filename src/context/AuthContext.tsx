@@ -14,6 +14,8 @@ interface User {
   username: string;
   role: string;
   phone?: string;
+  companyId?: string | { _id?: string; name?: string; slug?: string; isActive?: boolean } | null;
+  isActive?: boolean;
 }
 
 interface AuthContextType {

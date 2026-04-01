@@ -22,6 +22,8 @@ import {
   useUpdateBooking,
   useNotifications,
   useMarkAllRead,
+  useCompanies,
+  useAdmins,
 } from "./hooks/useData";
 import { formatDate } from "./utils/formatters";
 import {
@@ -37,7 +39,15 @@ import {
 } from "lucide-react";
 import { getInitials, getAvatarColor } from "./utils/avatarUtils";
 
-import { Dashboard, Clients, Bookings, Finance, Profile, Login } from "./pages";
+import {
+  Dashboard,
+  Clients,
+  Bookings,
+  Finance,
+  Profile,
+  Login,
+  SuperAdminSetup,
+} from "./pages";
 import { useAuth } from "./context/AuthContext";
 
 export default function App() {
@@ -47,11 +57,18 @@ export default function App() {
   const [isCreating, setIsCreating] = useState(false);
   const [selectedCourt, setSelectedCourt] = useState("all");
   const isAuthenticated = Boolean(token);
+  const isSuperAdmin = user?.role === "super_admin";
 
   const createBooking = useCreateBooking();
   const deleteBooking = useDeleteBooking();
   const updateBooking = useUpdateBooking();
   const { data: notificationsData } = useNotifications(isAuthenticated);
+  const { data: companiesData, isLoading: isLoadingCompanies } = useCompanies(
+    isAuthenticated && isSuperAdmin,
+  );
+  const { data: adminsData, isLoading: isLoadingAdmins } = useAdmins(
+    isAuthenticated && isSuperAdmin,
+  );
   const markAllRead = useMarkAllRead();
 
   // Drawer para detalles de reserva
@@ -81,6 +98,15 @@ export default function App() {
   const { data: courtsData } = useCourts(false, isAuthenticated);
   const bookings = data?.data || [];
   const courts = courtsData?.data || [];
+  const companies = companiesData?.data || [];
+  const admins = adminsData?.data || [];
+  const tenantAdmins = admins.filter((a: any) => a.role !== "super_admin");
+  const needsSuperAdminSetup =
+    isAuthenticated &&
+    isSuperAdmin &&
+    !isLoadingCompanies &&
+    !isLoadingAdmins &&
+    (companies.length === 0 || tenantAdmins.length === 0);
 
   const handleBookingClick = (booking: any) => {
     setSelectedBooking(booking);
@@ -202,6 +228,15 @@ export default function App() {
         <Login />
       </>
     );
+
+  if (needsSuperAdminSetup) {
+    return (
+      <>
+        <PwaManager />
+        <SuperAdminSetup superAdminUsername={user?.username || "superadmin"} />
+      </>
+    );
+  }
 
   return (
     <div className="dark min-h-[100dvh] bg-background text-foreground flex flex-col font-sans pb-safe">

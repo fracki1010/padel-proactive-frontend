@@ -96,6 +96,11 @@ export const configService = {
     return response.data;
   },
 
+  createCourt: async (data: Partial<Court>): Promise<any> => {
+    const response = await api.post("/config/courts", data);
+    return response.data;
+  },
+
   updateCourt: async (id: string, data: Partial<Court>): Promise<any> => {
     const response = await api.put(`/config/courts/${id}`, data);
     return response.data;
@@ -103,6 +108,11 @@ export const configService = {
 
   getSlots: async (all = false): Promise<ConfigResponse<TimeSlot>> => {
     const response = await api.get(`/config/slots${all ? "?all=true" : ""}`);
+    return response.data;
+  },
+
+  createSlot: async (data: Partial<TimeSlot> & { startTime: string; endTime: string; price: number }): Promise<any> => {
+    const response = await api.post("/config/slots", data);
     return response.data;
   },
 
@@ -167,6 +177,52 @@ export const userService = {
   },
   clearPenalties: async (id: string): Promise<any> => {
     const response = await api.post(`/users/${id}/clear-penalties`);
+    return response.data;
+  },
+};
+
+export const superAdminService = {
+  listCompanies: async (): Promise<any> => {
+    const response = await api.get("/super-admin/companies");
+    return response.data;
+  },
+  createCompany: async (data: { name: string; slug?: string }): Promise<any> => {
+    const response = await api.post("/super-admin/companies", data);
+    return response.data;
+  },
+  updateCompanyStatus: async (id: string, isActive: boolean): Promise<any> => {
+    const response = await api.put(`/super-admin/companies/${id}/status`, {
+      isActive,
+    });
+    return response.data;
+  },
+  listAdmins: async (): Promise<any> => {
+    const response = await api.get("/super-admin/admins");
+    return response.data;
+  },
+  createAdmin: async (data: {
+    username: string;
+    password: string;
+    phone?: string;
+    companyId: string;
+    role?: "admin" | "manager";
+  }): Promise<any> => {
+    const response = await api.post("/super-admin/admins", data);
+    return response.data;
+  },
+  updateAdminStatus: async (id: string, isActive: boolean): Promise<any> => {
+    const response = await api.put(`/super-admin/admins/${id}/status`, {
+      isActive,
+    });
+    return response.data;
+  },
+  bootstrapDefaultTenant: async (data: {
+    name: string;
+    slug?: string;
+    assignAllUnassignedData?: boolean;
+    assignAllUnassignedAdmins?: boolean;
+  }): Promise<any> => {
+    const response = await api.post("/super-admin/bootstrap/default-tenant", data);
     return response.data;
   },
 };

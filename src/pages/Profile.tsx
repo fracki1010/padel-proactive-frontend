@@ -22,17 +22,27 @@ import {
   Phone,
   Save,
   QrCode,
+  Building2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
   useCourts,
+  useCreateCourt,
   useUpdateCourt,
   useSlots,
+  useCreateSlot,
   useUpdateSlot,
   useUpdateProfile,
   useWhatsappStatus,
   useUpdateBasePrice,
   useUpdateWhatsappStatus,
+  useCompanies,
+  useCreateCompany,
+  useUpdateCompanyStatus,
+  useAdmins,
+  useCreateAdmin,
+  useUpdateAdminStatus,
+  useBootstrapDefaultTenant,
 } from "../hooks/useData";
 import { useAuth } from "../context/AuthContext";
 
@@ -42,14 +52,26 @@ interface ProfileProps {
 
 export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const { logout, user, updateUser } = useAuth();
-  const [view, setView] = useState<"menu" | "courts" | "schedule" | "whatsapp">("menu");
+  const [view, setView] = useState<
+    "menu" | "courts" | "schedule" | "whatsapp" | "tenants"
+  >("menu");
+  const isSuperAdmin = user?.role === "super_admin";
   const { data: courtsData } = useCourts(true);
   const courts = courtsData?.data || initialCourts;
   const updateCourt = useUpdateCourt();
+  const createCourt = useCreateCourt();
   const updateSlot = useUpdateSlot();
+  const createSlot = useCreateSlot();
   const updateBasePrice = useUpdateBasePrice();
   const updateProfile = useUpdateProfile();
   const updateWhatsappStatus = useUpdateWhatsappStatus();
+  const { data: companiesData } = useCompanies(isSuperAdmin);
+  const { data: adminsData } = useAdmins(isSuperAdmin);
+  const createCompany = useCreateCompany();
+  const updateCompanyStatus = useUpdateCompanyStatus();
+  const createAdmin = useCreateAdmin();
+  const updateAdminStatus = useUpdateAdminStatus();
+  const bootstrapTenant = useBootstrapDefaultTenant();
   const { data: slotsData } = useSlots(true);
   const { data: whatsappData, isLoading: isLoadingWhatsapp } = useWhatsappStatus();
   const slots = slotsData?.data || [];
@@ -60,6 +82,17 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
 
   const [phoneNumber, setPhoneNumber] = useState("");
   const [basePriceInput, setBasePriceInput] = useState("");
+  const [companyNameInput, setCompanyNameInput] = useState("");
+  const [newAdminUsername, setNewAdminUsername] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [newAdminPhone, setNewAdminPhone] = useState("");
+  const [newAdminCompanyId, setNewAdminCompanyId] = useState("");
+  const [newCourtName, setNewCourtName] = useState("");
+  const [newSlotStartTime, setNewSlotStartTime] = useState("");
+  const [newSlotEndTime, setNewSlotEndTime] = useState("");
+  const [newSlotPrice, setNewSlotPrice] = useState("");
+  const companies = companiesData?.data || [];
+  const admins = adminsData?.data || [];
 
   useEffect(() => {
     if (user?.phone) {
@@ -157,6 +190,169 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     });
   };
 
+  useEffect(() => {
+    if (!newAdminCompanyId && companies.length > 0) {
+      setNewAdminCompanyId(companies[0]._id);
+    }
+  }, [companies, newAdminCompanyId]);
+
+  const handleCreateCompany = () => {
+    const name = companyNameInput.trim();
+    if (!name) {
+      addToast({ title: "Ingresá nombre de empresa", color: "danger" });
+      return;
+    }
+
+    createCompany.mutate(
+      { name },
+      {
+        onSuccess: () => {
+          addToast({ title: "Empresa creada", color: "success" });
+          setCompanyNameInput("");
+        },
+        onError: (err: any) => {
+          addToast({
+            title: err?.response?.data?.error || "No se pudo crear la empresa",
+            color: "danger",
+          });
+        },
+      },
+    );
+  };
+
+  const handleCreateAdmin = () => {
+    if (!newAdminCompanyId) {
+      addToast({ title: "Seleccioná una empresa", color: "danger" });
+      return;
+    }
+    if (!newAdminUsername.trim() || !newAdminPassword.trim()) {
+      addToast({
+        title: "Usuario y contraseña son obligatorios",
+        color: "danger",
+      });
+      return;
+    }
+
+    createAdmin.mutate(
+      {
+        username: newAdminUsername.trim(),
+        password: newAdminPassword,
+        phone: newAdminPhone.trim(),
+        companyId: newAdminCompanyId,
+        role: "admin",
+      },
+      {
+        onSuccess: () => {
+          addToast({ title: "Admin creado", color: "success" });
+          setNewAdminUsername("");
+          setNewAdminPassword("");
+          setNewAdminPhone("");
+        },
+        onError: (err: any) => {
+          addToast({
+            title: err?.response?.data?.error || "No se pudo crear admin",
+            color: "danger",
+          });
+        },
+      },
+    );
+  };
+
+  const handleBootstrapTenant = () => {
+    const name = companyNameInput.trim() || "Club Principal";
+    bootstrapTenant.mutate(
+      {
+        name,
+        assignAllUnassignedData: true,
+        assignAllUnassignedAdmins: true,
+      },
+      {
+        onSuccess: (response: any) => {
+          const migrated =
+            response?.data?.summary?.data?.bookings ??
+            response?.data?.summary?.admins?.assigned ??
+            0;
+          addToast({
+            title: `Bootstrap listo (${migrated} registros movidos)`,
+            color: "success",
+          });
+          setCompanyNameInput("");
+        },
+        onError: (err: any) => {
+          addToast({
+            title: err?.response?.data?.error || "No se pudo hacer bootstrap",
+            color: "danger",
+          });
+        },
+      },
+    );
+  };
+
+  const handleCreateCourt = () => {
+    const name = newCourtName.trim();
+    if (!name) {
+      addToast({ title: "Ingresá un nombre de cancha", color: "danger" });
+      return;
+    }
+
+    createCourt.mutate(
+      { name },
+      {
+        onSuccess: () => {
+          addToast({ title: "Cancha creada", color: "success" });
+          setNewCourtName("");
+        },
+        onError: (err: any) => {
+          addToast({
+            title: err?.response?.data?.error || "No se pudo crear la cancha",
+            color: "danger",
+          });
+        },
+      },
+    );
+  };
+
+  const handleCreateSlot = () => {
+    if (!newSlotStartTime || !newSlotEndTime) {
+      addToast({
+        title: "Completá hora inicio y fin",
+        color: "danger",
+      });
+      return;
+    }
+
+    const parsedPrice = Number(newSlotPrice);
+    if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+      addToast({
+        title: "Ingresá un precio válido",
+        color: "danger",
+      });
+      return;
+    }
+
+    createSlot.mutate(
+      {
+        startTime: newSlotStartTime,
+        endTime: newSlotEndTime,
+        price: parsedPrice,
+      },
+      {
+        onSuccess: () => {
+          addToast({ title: "Turno creado", color: "success" });
+          setNewSlotStartTime("");
+          setNewSlotEndTime("");
+          setNewSlotPrice("");
+        },
+        onError: (err: any) => {
+          addToast({
+            title: err?.response?.data?.error || "No se pudo crear el turno",
+            color: "danger",
+          });
+        },
+      },
+    );
+  };
+
   if (view === "whatsapp") {
     return (
       <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
@@ -251,6 +447,175 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     );
   }
 
+  if (view === "tenants" && isSuperAdmin) {
+    return (
+      <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+        <div className="flex items-center gap-4">
+          <Button
+            isIconOnly
+            variant="flat"
+            onClick={() => setView("menu")}
+            className="bg-white/5 text-white rounded-2xl"
+          >
+            <ChevronLeft size={20} />
+          </Button>
+          <h3 className="text-xl font-black text-white uppercase italic">
+            Multiempresa
+          </h3>
+        </div>
+
+        <Card className="bg-dark-100 border border-white/5 rounded-[2rem]">
+          <CardBody className="p-6 space-y-3">
+            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              Crear Empresa / Bootstrap
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Input
+                value={companyNameInput}
+                onValueChange={setCompanyNameInput}
+                placeholder="Nombre de empresa"
+                className="flex-grow"
+                classNames={{
+                  inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
+                  input: "text-white font-bold",
+                }}
+              />
+              <Button
+                className="h-12 bg-primary text-black font-black rounded-2xl uppercase text-[10px]"
+                onPress={handleCreateCompany}
+                isLoading={createCompany.isPending}
+              >
+                Crear
+              </Button>
+              <Button
+                className="h-12 bg-blue-500 text-white font-black rounded-2xl uppercase text-[10px]"
+                onPress={handleBootstrapTenant}
+                isLoading={bootstrapTenant.isPending}
+              >
+                Bootstrap
+              </Button>
+            </div>
+          </CardBody>
+        </Card>
+
+        <Card className="bg-dark-100 border border-white/5 rounded-[2rem]">
+          <CardBody className="p-6 space-y-3">
+            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              Crear Admin de Empresa
+            </p>
+            <Input
+              value={newAdminUsername}
+              onValueChange={setNewAdminUsername}
+              placeholder="Usuario admin"
+              classNames={{
+                inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
+                input: "text-white font-bold",
+              }}
+            />
+            <Input
+              value={newAdminPassword}
+              onValueChange={setNewAdminPassword}
+              placeholder="Contraseña"
+              type="password"
+              classNames={{
+                inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
+                input: "text-white font-bold",
+              }}
+            />
+            <Input
+              value={newAdminPhone}
+              onValueChange={setNewAdminPhone}
+              placeholder="Teléfono (opcional)"
+              classNames={{
+                inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
+                input: "text-white font-bold",
+              }}
+            />
+            <select
+              value={newAdminCompanyId}
+              onChange={(e) => setNewAdminCompanyId(e.target.value)}
+              className="h-12 rounded-2xl bg-white/5 border-none px-4 text-white font-bold"
+            >
+              <option value="" disabled>
+                Seleccionar empresa
+              </option>
+              {companies.map((company: any) => (
+                <option key={company._id} value={company._id} className="text-black">
+                  {company.name}
+                </option>
+              ))}
+            </select>
+            <Button
+              className="h-12 bg-primary text-black font-black rounded-2xl uppercase text-[10px]"
+              onPress={handleCreateAdmin}
+              isLoading={createAdmin.isPending}
+            >
+              Crear Admin
+            </Button>
+          </CardBody>
+        </Card>
+
+        <div className="space-y-3">
+          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">
+            Empresas
+          </p>
+          {companies.map((company: any) => (
+            <Card
+              key={company._id}
+              className="bg-dark-100 border border-white/5 rounded-[1.5rem]"
+            >
+              <CardBody className="p-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-bold text-white">{company.name}</p>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold">
+                    {company.slug}
+                  </p>
+                </div>
+                <Switch
+                  isSelected={Boolean(company.isActive)}
+                  onValueChange={(val) =>
+                    updateCompanyStatus.mutate({ id: company._id, isActive: val })
+                  }
+                  color="primary"
+                  size="sm"
+                />
+              </CardBody>
+            </Card>
+          ))}
+        </div>
+
+        <div className="space-y-3">
+          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">
+            Admins
+          </p>
+          {admins.map((admin: any) => (
+            <Card
+              key={admin._id}
+              className="bg-dark-100 border border-white/5 rounded-[1.5rem]"
+            >
+              <CardBody className="p-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-bold text-white">{admin.username}</p>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold">
+                    {admin.companyId?.name || "Sin empresa"} • {admin.role}
+                  </p>
+                </div>
+                <Switch
+                  isSelected={Boolean(admin.isActive)}
+                  onValueChange={(val) =>
+                    updateAdminStatus.mutate({ id: admin._id, isActive: val })
+                  }
+                  color="primary"
+                  size="sm"
+                />
+              </CardBody>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (view === "courts") {
     return (
       <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
@@ -306,9 +671,24 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
               </CardBody>
             </Card>
           ))}
-          <Button className="h-14 bg-primary text-black font-black rounded-2xl uppercase mt-4">
-            Añadir Cancha
-          </Button>
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
+            <Input
+              value={newCourtName}
+              onValueChange={setNewCourtName}
+              placeholder="Nombre de la nueva cancha"
+              classNames={{
+                inputWrapper: "bg-white/5 border-none h-14 rounded-2xl px-4",
+                input: "text-white font-bold",
+              }}
+            />
+            <Button
+              className="h-14 bg-primary text-black font-black rounded-2xl uppercase"
+              onPress={handleCreateCourt}
+              isLoading={createCourt.isPending}
+            >
+              Añadir Cancha
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -332,6 +712,54 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         </div>
 
         <div className="space-y-4">
+          <section className="bg-dark-100 p-6 rounded-[2.5rem] border border-white/5 space-y-4">
+            <div className="flex items-center gap-3">
+              <Clock className="text-primary" size={20} />
+              <p className="font-bold text-primary uppercase text-xs tracking-widest">
+                Crear Turno
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <Input
+                type="time"
+                value={newSlotStartTime}
+                onValueChange={setNewSlotStartTime}
+                placeholder="Inicio"
+                classNames={{
+                  inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
+                  input: "text-white font-bold",
+                }}
+              />
+              <Input
+                type="time"
+                value={newSlotEndTime}
+                onValueChange={setNewSlotEndTime}
+                placeholder="Fin"
+                classNames={{
+                  inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
+                  input: "text-white font-bold",
+                }}
+              />
+              <Input
+                type="number"
+                value={newSlotPrice}
+                onValueChange={setNewSlotPrice}
+                placeholder="Precio"
+                classNames={{
+                  inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
+                  input: "text-white font-bold",
+                }}
+              />
+            </div>
+            <Button
+              className="h-12 bg-primary text-black font-black rounded-2xl uppercase text-[10px] w-full sm:w-auto"
+              onPress={handleCreateSlot}
+              isLoading={createSlot.isPending}
+            >
+              Añadir Turno
+            </Button>
+          </section>
+
           <section className="bg-primary/10 p-6 rounded-[2.5rem] border border-primary/20">
             <div className="flex items-center gap-3 mb-4">
               <CreditCard className="text-primary" size={20} />
@@ -441,10 +869,10 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         </div>
         <div>
           <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">
-            Admin Padel
+            {user?.username || "Admin Padel"}
           </h2>
           <p className="text-primary font-bold text-sm tracking-widest uppercase mt-1">
-            Administrador Master
+            {isSuperAdmin ? "Super Admin" : "Administrador"}
           </p>
         </div>
       </div>
@@ -588,6 +1016,28 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
               </div>
               <ChevronRight size={20} className="text-gray-600" />
             </div>
+
+            {isSuperAdmin && (
+              <div
+                onClick={() => setView("tenants")}
+                className="bg-dark-100 p-4 rounded-3xl border border-white/5 flex items-center justify-between group cursor-pointer hover:border-primary/30 transition-all font-bold"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all">
+                    <Building2 size={20} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-white uppercase text-sm">
+                      Multiempresa
+                    </p>
+                    <p className="text-[10px] text-gray-500 font-bold uppercase">
+                      Empresas y admins
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight size={20} className="text-gray-600" />
+              </div>
+            )}
           </div>
         </section>
 

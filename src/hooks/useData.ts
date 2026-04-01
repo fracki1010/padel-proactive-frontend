@@ -5,6 +5,7 @@ import {
   userService,
   notificationService,
   authService,
+  superAdminService,
 } from "../services/api";
 
 export const useUpdateProfile = () => {
@@ -46,6 +47,16 @@ export const useUpdateCourt = () => {
   });
 };
 
+export const useCreateCourt = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string }) => configService.createCourt(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courts"] });
+    },
+  });
+};
+
 export const useSlots = (all = false) => {
   return useQuery({
     queryKey: ["slots", all],
@@ -78,6 +89,18 @@ export const useUpdateSlot = () => {
       configService.updateSlot(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["slots"] });
+    },
+  });
+};
+
+export const useCreateSlot = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { startTime: string; endTime: string; price: number }) =>
+      configService.createSlot(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["slots"] });
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
     },
   });
 };
@@ -207,6 +230,78 @@ export const useMarkAsRead = () => {
     mutationFn: (id: string) => notificationService.markAsRead(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+};
+
+export const useCompanies = (enabled = true) => {
+  return useQuery({
+    queryKey: ["companies"],
+    queryFn: superAdminService.listCompanies,
+    enabled,
+    retry: 1,
+  });
+};
+
+export const useCreateCompany = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: superAdminService.createCompany,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companies"] });
+    },
+  });
+};
+
+export const useUpdateCompanyStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+      superAdminService.updateCompanyStatus(id, isActive),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      queryClient.invalidateQueries({ queryKey: ["admins"] });
+    },
+  });
+};
+
+export const useAdmins = (enabled = true) => {
+  return useQuery({
+    queryKey: ["admins"],
+    queryFn: superAdminService.listAdmins,
+    enabled,
+    retry: 1,
+  });
+};
+
+export const useCreateAdmin = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: superAdminService.createAdmin,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admins"] });
+    },
+  });
+};
+
+export const useUpdateAdminStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+      superAdminService.updateAdminStatus(id, isActive),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admins"] });
+    },
+  });
+};
+
+export const useBootstrapDefaultTenant = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: superAdminService.bootstrapDefaultTenant,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      queryClient.invalidateQueries({ queryKey: ["admins"] });
     },
   });
 };
