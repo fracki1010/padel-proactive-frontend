@@ -13,6 +13,7 @@ import {
 import { Navbar } from "./components/Navbar";
 import { BottomNav } from "./components/BottomNav";
 import { BookingForm } from "./components/BookingForm";
+import { PwaManager } from "./components/PwaManager";
 import {
   useBookings,
   useCourts,
@@ -40,16 +41,17 @@ import { Dashboard, Clients, Bookings, Finance, Profile, Login } from "./pages";
 import { useAuth } from "./context/AuthContext";
 
 export default function App() {
-  const { token, isLoading: isAuthLoading } = useAuth();
+  const { token, user, isLoading: isAuthLoading } = useAuth();
   const [filterValue, setFilterValue] = useState("");
   const [activeTab, setActiveTab] = useState("panel");
   const [isCreating, setIsCreating] = useState(false);
   const [selectedCourt, setSelectedCourt] = useState("all");
+  const isAuthenticated = Boolean(token);
 
   const createBooking = useCreateBooking();
   const deleteBooking = useDeleteBooking();
   const updateBooking = useUpdateBooking();
-  const { data: notificationsData } = useNotifications();
+  const { data: notificationsData } = useNotifications(isAuthenticated);
   const markAllRead = useMarkAllRead();
 
   // Drawer para detalles de reserva
@@ -75,8 +77,8 @@ export default function App() {
 
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
 
-  const { data, isLoading } = useBookings();
-  const { data: courtsData } = useCourts();
+  const { data, isLoading } = useBookings(undefined, isAuthenticated);
+  const { data: courtsData } = useCourts(false, isAuthenticated);
   const bookings = data?.data || [];
   const courts = courtsData?.data || [];
 
@@ -193,17 +195,25 @@ export default function App() {
   }, [notificationsData, unreadCount]);
 
   if (isAuthLoading) return null;
-  if (!token) return <Login />;
+  if (!token)
+    return (
+      <>
+        <PwaManager />
+        <Login />
+      </>
+    );
 
   return (
-    <div className="dark min-h-screen bg-background text-foreground flex flex-col font-sans pb-32">
+    <div className="dark min-h-[100dvh] bg-background text-foreground flex flex-col font-sans pb-safe">
+      <PwaManager />
       <Navbar
         title={getTitle()}
         onAvatarClick={onProfileOpen}
         onBellClick={onNotifOpen}
         notificationCount={unreadCount}
+        avatarName={user?.username || "Admin Padel"}
       />
-      <main className="flex-grow p-6 max-w-lg mx-auto w-full relative">
+      <main className="flex-grow px-4 pt-4 pb-28 sm:px-6 sm:pt-6 sm:pb-32 w-full max-w-3xl mx-auto relative">
         {renderContent()}
       </main>
       <BottomNav
@@ -232,13 +242,13 @@ export default function App() {
         <DrawerContent>
           {(onClose) => (
             <>
-              <DrawerHeader className="flex flex-col gap-1 p-8 text-center">
+              <DrawerHeader className="flex flex-col gap-1 p-5 sm:p-8 text-center">
                 <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6"></div>
                 <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">
                   Detalles del Turno
                 </h2>
               </DrawerHeader>
-              <DrawerBody className="p-8 pb-12 space-y-8">
+              <DrawerBody className="p-4 sm:p-8 pb-10 sm:pb-12 space-y-6 sm:space-y-8">
                 <div className="flex gap-4 p-4 bg-dark-100 rounded-3xl border border-white/5 items-center">
                   <Avatar
                     name={getInitials(selectedBooking?.clientName)}
@@ -259,7 +269,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="p-4 bg-dark-100 rounded-3xl border border-white/5 flex flex-col gap-1">
                     <Calendar size={18} className="text-gray-500 mb-1" />
                     <span className="text-[10px] text-gray-500 font-black uppercase">
@@ -279,7 +289,7 @@ export default function App() {
                       {selectedBooking?.timeSlot?.endTime}
                     </span>
                   </div>
-                  <div className="p-4 bg-dark-100 rounded-3xl border border-white/5 flex flex-col gap-1 col-span-2">
+                  <div className="p-4 bg-dark-100 rounded-3xl border border-white/5 flex flex-col gap-1 sm:col-span-2">
                     <MapPin size={18} className="text-gray-500 mb-1" />
                     <span className="text-[10px] text-gray-500 font-black uppercase">
                       CANCHA
@@ -289,7 +299,7 @@ export default function App() {
                     </span>
                   </div>
 
-                  <div className="p-4 bg-dark-100 rounded-3xl border border-white/5 flex items-center justify-between col-span-2">
+                  <div className="p-4 bg-dark-100 rounded-3xl border border-white/5 flex items-center justify-between sm:col-span-2">
                     <div className="flex gap-4 items-center">
                       <div
                         className={`w-12 h-12 ${selectedBooking?.paymentStatus === "pagado" ? "bg-primary/10 text-primary" : "bg-white/5 text-gray-500"} rounded-2xl flex items-center justify-center`}
@@ -406,7 +416,7 @@ export default function App() {
         <DrawerContent>
           {(onClose) => (
             <>
-              <DrawerHeader className="flex flex-row items-center justify-between p-8 text-center pb-0">
+              <DrawerHeader className="flex flex-row items-center justify-between p-4 sm:p-8 text-center pb-0 pt-safe">
                 <div className="w-10 h-10"></div>{" "}
                 {/* Spacer to center the pill */}
                 <HeroButton
@@ -418,7 +428,7 @@ export default function App() {
                   <X size={20} />
                 </HeroButton>
               </DrawerHeader>
-              <DrawerBody id="profile-drawer-body" className="p-8 pt-0 overflow-y-auto">
+              <DrawerBody id="profile-drawer-body" className="p-4 sm:p-8 pt-0 overflow-y-auto">
                 <Profile courts={courts} />
                 <HeroButton
                   variant="flat"
@@ -447,7 +457,7 @@ export default function App() {
         <DrawerContent>
           {(onClose) => (
             <>
-              <DrawerHeader className="flex flex-row items-center justify-between p-8 text-center pb-0">
+              <DrawerHeader className="flex flex-row items-center justify-between p-4 sm:p-8 text-center pb-0 pt-safe">
                 <div className="flex flex-col items-start">
                   <h2 className="text-2xl font-black text-white tracking-tight">
                     Notificaciones
@@ -475,7 +485,7 @@ export default function App() {
                   </HeroButton>
                 </div>
               </DrawerHeader>
-              <DrawerBody className="p-8 pb-32 overflow-y-auto">
+              <DrawerBody className="p-4 sm:p-8 pb-28 sm:pb-32 overflow-y-auto">
                 <div className="flex flex-col gap-4">
                   {!notificationsData?.data?.length && (
                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-30">

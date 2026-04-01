@@ -156,7 +156,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
         {/* Recaudación Mensual */}
         <Card className="bg-primary shadow-[0_0_30px_rgba(255,122,0,0.18)] border-none overflow-hidden relative group">
           <div className="absolute -right-8 -top-8 w-32 h-32 bg-black/10 rounded-full blur-3xl group-hover:bg-black/20 transition-all duration-700"></div>
-          <CardBody className="p-8">
+          <CardBody className="p-6 sm:p-8">
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 bg-black/10 rounded-2xl">
                 <TrendingUp size={24} className="text-black" />
@@ -168,7 +168,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
             <p className="text-[10px] font-black text-black/60 uppercase tracking-[0.2em] mb-1">
               Efectivo en Caja (Mes)
             </p>
-            <h3 className="text-5xl font-black text-black tracking-tighter">
+            <h3 className="text-4xl sm:text-5xl font-black text-black tracking-tighter break-words">
               {formatCurrency(metrics.totalPaidMonth)}
             </h3>
             <div className="flex items-center gap-2 mt-1">
@@ -204,7 +204,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
         </Card>
 
         {/* Recaudación Diaria */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card className="bg-dark-200 border border-white/5 rounded-[2rem]">
             <CardBody className="p-6">
               <div className="flex flex-col gap-1">
@@ -261,7 +261,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
             metrics.movements.map((b) => (
               <div
                 key={b._id}
-                className="bg-dark-200 p-4 rounded-3xl border border-white/5 flex justify-between items-center hover:border-white/10 transition-colors group"
+                className="bg-dark-200 p-4 rounded-3xl border border-white/5 flex flex-col sm:flex-row justify-between sm:items-center gap-3 hover:border-white/10 transition-colors group"
               >
                 <div className="flex items-center gap-4">
                   <div

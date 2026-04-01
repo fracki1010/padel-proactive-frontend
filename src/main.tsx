@@ -6,8 +6,10 @@ import { HeroUIProvider, ToastProvider } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
 import "./lib/firebase";
+import { registerSW } from "virtual:pwa-register";
 
 const queryClient = new QueryClient();
+registerSW({ immediate: true });
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

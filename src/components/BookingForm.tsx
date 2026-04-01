@@ -101,7 +101,7 @@ export const BookingForm = ({
   return (
     <div className="flex flex-col gap-6 animate-in slide-in-from-right-10 duration-500">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <Button
           isIconOnly
           variant="light"
@@ -110,25 +110,27 @@ export const BookingForm = ({
         >
           <ArrowLeft size={24} />
         </Button>
-        <h1 className="text-2xl font-bold text-white">Editar Turno</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-white">
+          {initialData?._id ? "Editar Turno" : "Nueva Reserva"}
+        </h1>
       </div>
 
       {/* Hero Card */}
       <Card className="bg-dark-200 border border-white/5 overflow-hidden rounded-[2rem]">
         <div className="relative h-40 bg-[url('https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
-          <CardBody className="relative z-10 p-6 flex flex-col justify-end h-full">
+          <CardBody className="relative z-10 p-5 sm:p-6 flex flex-col justify-end h-full">
             <span className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">
               ID RESERVA: #PDL-882
             </span>
-            <h2 className="text-3xl font-black text-white">
+            <h2 className="text-2xl sm:text-3xl font-black text-white">
               Reserva de Cancha
             </h2>
           </CardBody>
         </div>
       </Card>
 
-      <form onSubmit={handleSubmit} className="space-y-8 px-2">
+      <form onSubmit={handleSubmit} className="space-y-8 px-0 sm:px-2">
         {error && (
           <div className="bg-red-500/10 text-red-500 p-4 rounded-xl flex items-center gap-3 text-sm font-bold">
             <AlertCircle size={18} /> {error}
@@ -149,7 +151,7 @@ export const BookingForm = ({
             </h3>
           </div>
 
-          <div className="space-y-6 bg-dark-100/30 p-6 rounded-3xl border border-white/5">
+          <div className="space-y-6 bg-dark-100/30 p-4 sm:p-6 rounded-3xl border border-white/5">
             <Autocomplete
               label="Nombre del Socio"
               placeholder="Escribe o selecciona un socio"
@@ -227,8 +229,8 @@ export const BookingForm = ({
             </h3>
           </div>
 
-          <div className="space-y-6 bg-dark-100/30 p-6 rounded-3xl border border-white/5">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-6 bg-dark-100/30 p-4 sm:p-6 rounded-3xl border border-white/5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Select
                 label="Cancha de Padel"
                 placeholder="Seleccionar cancha"
@@ -306,7 +308,7 @@ export const BookingForm = ({
               Estado del Pago
             </h3>
           </div>
-          <div className="grid grid-cols-2 gap-4 bg-dark-100/30 p-4 rounded-[2rem] border border-white/5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-dark-100/30 p-4 rounded-[2rem] border border-white/5">
             <Button
               type="button"
               className={`h-14 rounded-2xl font-bold transition-all ${

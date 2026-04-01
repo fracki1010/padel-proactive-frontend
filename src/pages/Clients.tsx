@@ -155,16 +155,18 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
 
   return (
     <div className="space-y-6 animate-in slide-in-from-right-10 duration-500">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-black text-white">Gestión de Socios</h1>
-          <p className="text-gray-500">
+          <h1 className="text-2xl sm:text-3xl font-black text-white">
+            Gestión de Socios
+          </h1>
+          <p className="text-gray-500 text-sm sm:text-base">
             Administra tus clientes, historial y turnos fijos
           </p>
         </div>
         <Button
           color="primary"
-          className="rounded-2xl font-bold px-6 shadow-lg shadow-primary/20"
+          className="rounded-2xl font-bold px-6 shadow-lg shadow-primary/20 w-full sm:w-auto"
           startContent={<Plus size={20} />}
           onClick={handleCreate}
         >
@@ -444,7 +446,7 @@ const UserModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      size="2xl"
+      size="full"
       className="bg-dark-300 text-white dark"
       backdrop="blur"
       scrollBehavior="inside"
@@ -503,9 +505,9 @@ const UserModal = ({
                 {fixedTurns.map((ft, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-12 gap-2 items-end bg-dark-200 p-3 rounded-2xl border border-white/5 relative group"
+                    className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end bg-dark-200 p-3 rounded-2xl border border-white/5 relative group"
                   >
-                    <div className="col-span-4">
+                    <div className="sm:col-span-4">
                       <Select
                         label="Día"
                         size="sm"
@@ -538,7 +540,7 @@ const UserModal = ({
                         <SelectItem key="0">Domingo</SelectItem>
                       </Select>
                     </div>
-                    <div className="col-span-4">
+                    <div className="sm:col-span-4">
                       <Select
                         label="Cancha"
                         size="sm"
@@ -565,7 +567,7 @@ const UserModal = ({
                         ))}
                       </Select>
                     </div>
-                    <div className="col-span-3">
+                    <div className="sm:col-span-3">
                       <Select
                         label="Hora"
                         size="sm"
@@ -594,7 +596,7 @@ const UserModal = ({
                         ))}
                       </Select>
                     </div>
-                    <div className="col-span-1 pb-1 text-center">
+                    <div className="sm:col-span-1 pb-1 text-right sm:text-center">
                       <Button
                         isIconOnly
                         size="sm"

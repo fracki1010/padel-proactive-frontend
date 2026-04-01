@@ -4,9 +4,10 @@ import {
   useContext,
   useState,
   useEffect,
+  useCallback,
   type ReactNode,
 } from "react";
-import axios from "axios";
+import { setUnauthorizedHandler } from "../services/api";
 
 interface User {
   id: string;
@@ -33,6 +34,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
   const [isLoading, setIsLoading] = useState(true);
 
+  const logout = useCallback(() => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+  }, []);
+
+  const login = useCallback((newToken: string, newUser: User) => {
+    setToken(newToken);
+    setUser(newUser);
+    localStorage.setItem("token", newToken);
+    localStorage.setItem("user", JSON.stringify(newUser));
+  }, []);
+
+  const updateUser = useCallback((newUser: User) => {
+    setUser(newUser);
+    localStorage.setItem("user", JSON.stringify(newUser));
+  }, []);
+
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
@@ -40,47 +60,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (savedToken && savedUser) {
       setToken(savedToken);
       setUser(JSON.parse(savedUser));
-      // Configurar el token inicial en axios
-      axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
     }
     setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    // Interceptor para manejar errores 401
-    const interceptor = axios.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response?.status === 401) {
-          logout();
-        }
-        return Promise.reject(error);
-      },
-    );
+    setUnauthorizedHandler(() => {
+      logout();
+    });
 
-    return () => axios.interceptors.response.eject(interceptor);
-  }, []);
-
-  const login = (newToken: string, newUser: User) => {
-    setToken(newToken);
-    setUser(newUser);
-    localStorage.setItem("token", newToken);
-    localStorage.setItem("user", JSON.stringify(newUser));
-    axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
-  };
-
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    delete axios.defaults.headers.common["Authorization"];
-  };
-
-  const updateUser = (newUser: User) => {
-    setUser(newUser);
-    localStorage.setItem("user", JSON.stringify(newUser));
-  };
+    return () => setUnauthorizedHandler(null);
+  }, [logout]);
 
   return (
     <AuthContext.Provider

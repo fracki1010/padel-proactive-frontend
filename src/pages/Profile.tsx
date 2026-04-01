@@ -32,6 +32,7 @@ import {
   useUpdateProfile,
   useWhatsappStatus,
   useUpdateBasePrice,
+  useUpdateWhatsappStatus,
 } from "../hooks/useData";
 import { useAuth } from "../context/AuthContext";
 
@@ -48,10 +49,12 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const updateSlot = useUpdateSlot();
   const updateBasePrice = useUpdateBasePrice();
   const updateProfile = useUpdateProfile();
+  const updateWhatsappStatus = useUpdateWhatsappStatus();
   const { data: slotsData } = useSlots(true);
   const { data: whatsappData, isLoading: isLoadingWhatsapp } = useWhatsappStatus();
   const slots = slotsData?.data || [];
   const whatsappState = whatsappData?.data;
+  const whatsappEnabled = Boolean(whatsappState?.enabled);
   const whatsappStatus = whatsappState?.status || "initializing";
   const whatsappQr = whatsappState?.qr || "";
 
@@ -119,6 +122,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   };
 
   const whatsappStatusLabelByKey: Record<string, string> = {
+    disabled: "Desactivado",
     ready: "Conectado",
     authenticated: "Autenticado",
     qr_pending: "Esperando escaneo",
@@ -128,11 +132,30 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   };
 
   const whatsappChipColor =
-    whatsappStatus === "ready"
+    !whatsappEnabled
+      ? "default"
+      : whatsappStatus === "ready"
       ? "success"
       : whatsappStatus === "auth_failure"
         ? "danger"
         : "warning";
+
+  const handleToggleWhatsapp = (enabled: boolean) => {
+    updateWhatsappStatus.mutate(enabled, {
+      onSuccess: () => {
+        addToast({
+          title: enabled ? "WhatsApp activado" : "WhatsApp desactivado",
+          color: "success",
+        });
+      },
+      onError: (err: any) => {
+        addToast({
+          title: err?.response?.data?.error || "No se pudo actualizar WhatsApp",
+          color: "danger",
+        });
+      },
+    });
+  };
 
   if (view === "whatsapp") {
     return (
@@ -153,6 +176,24 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
 
         <Card className="bg-dark-100 border border-white/5 rounded-[2rem]">
           <CardBody className="p-6 space-y-5">
+            <div className="flex items-center justify-between gap-4 bg-white/5 border border-white/10 rounded-2xl p-4">
+              <div>
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                  Activación Manual
+                </p>
+                <p className="text-white font-bold text-sm">
+                  Si está desactivado, WhatsApp queda en reposo.
+                </p>
+              </div>
+              <Switch
+                isSelected={whatsappEnabled}
+                onValueChange={handleToggleWhatsapp}
+                isDisabled={updateWhatsappStatus.isPending}
+                color="primary"
+                size="sm"
+              />
+            </div>
+
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
@@ -174,7 +215,13 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
               </Chip>
             </div>
 
-            {whatsappStatus === "qr_pending" && whatsappQr ? (
+            {!whatsappEnabled ? (
+              <div className="bg-white/5 rounded-3xl p-5 border border-white/10">
+                <p className="text-xs text-gray-300 font-bold uppercase tracking-wide">
+                  WhatsApp está desactivado. Activá el switch para iniciar y generar QR.
+                </p>
+              </div>
+            ) : whatsappStatus === "qr_pending" && whatsappQr ? (
               <div className="bg-white rounded-3xl p-6 flex justify-center">
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(whatsappQr)}`}
@@ -295,7 +342,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
             <p className="text-[10px] text-gray-400 font-bold uppercase mb-4 leading-relaxed">
               Este valor se aplica a todos los turnos y reemplaza cualquier precio por horario.
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Input
                 value={basePriceInput}
                 onValueChange={setBasePriceInput}
@@ -308,7 +355,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
                 }}
               />
               <Button
-                className="h-12 bg-primary text-black font-black rounded-2xl uppercase text-[10px]"
+                className="h-12 bg-primary text-black font-black rounded-2xl uppercase text-[10px] w-full sm:w-auto"
                 onPress={handleSaveBasePrice}
                 isLoading={updateBasePrice.isPending}
               >
@@ -343,7 +390,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
                 key={slot._id}
                 className="bg-dark-100 border border-white/5 rounded-[2rem]"
               >
-                <CardBody className="p-5 flex flex-row items-center justify-between">
+                <CardBody className="p-5 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-4">
                     <div
                       className={`w-12 h-12 ${slot.isActive ? "bg-primary/10 text-primary" : "bg-white/5 text-gray-500"} rounded-2xl flex items-center justify-center`}
@@ -385,7 +432,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       <div className="flex flex-col items-center text-center space-y-4">
         <div className="relative">
           <Avatar
-            src="https://i.pravatar.cc/150?u=admin"
+            src="https://api.dicebear.com/9.x/adventurer/svg?seed=AdminPadel"
             className="w-32 h-32 rounded-[2.5rem] border-4 border-primary shadow-2xl shadow-primary/20"
           />
           <div className="absolute -bottom-2 -right-2 bg-primary text-black p-2 rounded-2xl border-4 border-dark-200">
@@ -508,7 +555,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
                     WhatsApp Web
                   </p>
                   <p className="text-[10px] text-gray-500 font-bold uppercase">
-                    {whatsappStatus === "ready"
+                    {!whatsappEnabled
+                      ? "Desactivado"
+                      : whatsappStatus === "ready"
                       ? "Conectado"
                       : whatsappStatus === "qr_pending"
                         ? "QR pendiente"

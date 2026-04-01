@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#08080A" />
+    <title>Sin conexión | Padel Proactive</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        background: radial-gradient(circle at 20% 20%, rgba(255,122,0,0.2), transparent 45%), #08080a;
+        color: #fff;
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+      .card {
+        width: min(420px, 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(18, 18, 22, 0.92);
+        border-radius: 28px;
+        padding: 28px;
+        text-align: center;
+        backdrop-filter: blur(6px);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 58px;
+        height: 58px;
+        border-radius: 20px;
+        background: rgba(255, 122, 0, 0.18);
+        color: #ff7a00;
+        font-weight: 800;
+        margin-bottom: 14px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 1.4rem;
+      }
+      p {
+        margin: 10px 0 0;
+        color: #b0b7c5;
+        line-height: 1.5;
+      }
+      button {
+        margin-top: 20px;
+        width: 100%;
+        height: 48px;
+        border: 0;
+        border-radius: 16px;
+        background: #ff7a00;
+        color: #08080a;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <div class="badge">PP</div>
+      <h1>Sin conexión a internet</h1>
+      <p>
+        No pudimos cargar la app porque no hay red disponible.
+        Revisá tu conexión y volvé a intentarlo.
+      </p>
+      <button onclick="location.reload()">Reintentar</button>
+    </main>
+  </body>
+</html>

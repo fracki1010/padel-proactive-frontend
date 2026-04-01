@@ -17,17 +17,21 @@ export const useUpdateProfile = () => {
   });
 };
 
-export const useBookings = (date?: string) => {
+export const useBookings = (date?: string, enabled = true) => {
   return useQuery({
     queryKey: ["bookings", date],
     queryFn: () => bookingService.getBookings(date),
+    enabled,
+    retry: 1,
   });
 };
 
-export const useCourts = (all = false) => {
+export const useCourts = (all = false, enabled = true) => {
   return useQuery({
     queryKey: ["courts", all],
     queryFn: () => configService.getCourts(all),
+    enabled,
+    retry: 1,
   });
 };
 
@@ -54,6 +58,16 @@ export const useWhatsappStatus = () => {
     queryKey: ["whatsapp-status"],
     queryFn: configService.getWhatsappStatus,
     refetchInterval: 5000,
+  });
+};
+
+export const useUpdateWhatsappStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (enabled: boolean) => configService.updateWhatsappStatus(enabled),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+    },
   });
 };
 
@@ -167,11 +181,13 @@ export const useUpdateBooking = () => {
   });
 };
 
-export const useNotifications = () => {
+export const useNotifications = (enabled = true) => {
   return useQuery({
     queryKey: ["notifications"],
     queryFn: notificationService.getNotifications,
-    refetchInterval: 10000,
+    enabled,
+    retry: 1,
+    refetchInterval: enabled ? 10000 : false,
   });
 };
 
