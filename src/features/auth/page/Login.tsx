@@ -1,8 +1,7 @@
-// frontend/src/pages/Login.tsx
 import { useState } from "react";
 import { Card, CardBody, Input, Button } from "@heroui/react";
 import { Lock, User, Eye, EyeOff, Activity } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 import axios from "axios";
 
 const API_BASE_URL =

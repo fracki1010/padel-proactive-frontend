@@ -1,10 +1,10 @@
 import { Spinner } from "@heroui/react";
-import { DashboardControls } from "../components/FilterSidebar";
-import { BookingCard } from "../components/BookingCard";
-import { formatDate } from "../utils/formatters";
+import { DashboardControls } from "../../../components/FilterSidebar";
+import { BookingCard } from "../../../components/BookingCard";
+import { formatDate } from "../../../utils/formatters";
 import { HelpCircle } from "lucide-react";
 import { useMemo } from "react";
-import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
+import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
 
 interface BookingsProps {
   bookings: any[];
