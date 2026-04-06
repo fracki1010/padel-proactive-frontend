@@ -8,10 +8,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["pwa-icon.svg", "offline.html"],
+      includeAssets: ["logo.svg", "logo-2.svg", "offline.html"],
       manifest: {
-        name: "Padel Proactive",
-        short_name: "Padel Pro",
+        name: "Padexa",
+        short_name: "Padexa",
         description:
           "Gestiona turnos, clientes y caja de tu club desde una app instalable.",
         theme_color: "#08080A",
@@ -24,16 +24,22 @@ export default defineConfig({
         categories: ["sports", "business", "productivity"],
         icons: [
           {
-            src: "/pwa-icon.svg",
+            src: "/logo-2.svg",
             sizes: "any",
             type: "image/svg+xml",
             purpose: "any",
           },
           {
-            src: "/pwa-icon.svg",
+            src: "/logo-2.svg",
             sizes: "any",
             type: "image/svg+xml",
             purpose: "any maskable",
+          },
+          {
+            src: "/logo.svg",
+            sizes: "any",
+            type: "image/svg+xml",
+            purpose: "monochrome",
           },
         ],
       },

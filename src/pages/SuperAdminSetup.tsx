@@ -267,7 +267,7 @@ export const SuperAdminSetup = ({
               <Input
                 label="Nombre de empresa"
                 labelPlacement="outside"
-                placeholder="Ej: Padel Proactive Centro"
+                placeholder="Ej: Padexa Centro"
                 value={companyName}
                 onValueChange={setCompanyName}
                 isInvalid={Boolean(companyNameError)}
@@ -282,7 +282,7 @@ export const SuperAdminSetup = ({
               <Input
                 label="Slug"
                 labelPlacement="outside"
-                placeholder="padel-proactive-centro"
+                placeholder="padexa-centro"
                 value={companySlug}
                 onValueChange={setCompanySlug}
                 isInvalid={Boolean(slugError)}

@@ -860,7 +860,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       <div className="flex flex-col items-center text-center space-y-4">
         <div className="relative">
           <Avatar
-            src="https://api.dicebear.com/9.x/adventurer/svg?seed=AdminPadel"
+            src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=AdminPadel"
             className="w-32 h-32 rounded-[2.5rem] border-4 border-primary shadow-2xl shadow-primary/20"
           />
           <div className="absolute -bottom-2 -right-2 bg-primary text-black p-2 rounded-2xl border-4 border-dark-200">
