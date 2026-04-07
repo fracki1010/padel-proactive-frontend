@@ -44,7 +44,33 @@ export const configService = {
   },
 
   updateWhatsappStatus: async (enabled: boolean): Promise<any> => {
-    const response = await api.put("/config/whatsapp", { enabled });
-    return response.data;
+    const attempts: Array<{
+      method: "put" | "patch";
+      payload: Record<string, boolean>;
+    }> = [
+      { method: "put", payload: { enabled } },
+      { method: "put", payload: { isEnabled: enabled } },
+      { method: "put", payload: { isActive: enabled } },
+      { method: "patch", payload: { enabled } },
+      { method: "patch", payload: { isEnabled: enabled } },
+      { method: "patch", payload: { isActive: enabled } },
+    ];
+
+    let lastError: unknown;
+
+    for (const attempt of attempts) {
+      try {
+        const response = await api.request({
+          method: attempt.method,
+          url: "/config/whatsapp",
+          data: attempt.payload,
+        });
+        return response.data;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError;
   },
 };
