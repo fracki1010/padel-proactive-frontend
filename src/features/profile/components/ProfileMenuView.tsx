@@ -48,12 +48,16 @@ export const ProfileMenuView = ({
   onGoToTenants,
   onLogout,
 }: ProfileMenuViewProps) => {
+  const adminName = (user?.name || user?.username || "Admin Padel").trim();
+  const avatarSeed = encodeURIComponent(adminName || user?.id || "AdminPadel");
+  const avatarSrc = `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${avatarSeed}`;
+
   return (
     <div className="space-y-8 pb-10">
       <div className="flex flex-col items-center text-center space-y-4">
         <div className="relative">
           <Avatar
-            src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=AdminPadel"
+            src={avatarSrc}
             className="w-32 h-32 rounded-[2.5rem] border-4 border-primary shadow-2xl shadow-primary/20"
           />
           <div className="absolute -bottom-2 -right-2 bg-primary text-black p-2 rounded-2xl border-4 border-dark-200">
@@ -62,7 +66,7 @@ export const ProfileMenuView = ({
         </div>
         <div>
           <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">
-            {user?.username || "Admin Padel"}
+            {adminName}
           </h2>
           <p className="text-primary font-bold text-sm tracking-widest uppercase mt-1">
             {isSuperAdmin ? "Super Admin" : "Administrador"}

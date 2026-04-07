@@ -12,6 +12,7 @@ import { setUnauthorizedHandler } from "../services/api";
 interface User {
   id: string;
   username: string;
+  name?: string;
   role: string;
   phone?: string;
   companyId?: string | { _id?: string; name?: string; slug?: string; isActive?: boolean } | null;

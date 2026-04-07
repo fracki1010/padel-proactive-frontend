@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["logo.svg", "logo-2.svg", "offline.html"],
+      includeAssets: ["logo.svg", "offline.html"],
       manifest: {
         name: "Padexa",
         short_name: "Padexa",
@@ -24,13 +24,13 @@ export default defineConfig({
         categories: ["sports", "business", "productivity"],
         icons: [
           {
-            src: "/logo-2.svg",
+            src: "/logo.svg",
             sizes: "any",
             type: "image/svg+xml",
             purpose: "any",
           },
           {
-            src: "/logo-2.svg",
+            src: "/logo.svg",
             sizes: "any",
             type: "image/svg+xml",
             purpose: "any maskable",

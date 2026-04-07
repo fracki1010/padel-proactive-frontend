@@ -14,6 +14,16 @@ export const NotificationsDrawer = ({
   notificationsData,
   markAllRead,
 }: NotificationsDrawerProps) => {
+  const getNotificationBadge = (type: string) => {
+    if (type === "new_booking") {
+      return { label: "Nueva Reserva", className: "bg-primary text-black" };
+    }
+    if (type === "fixed_turn_request") {
+      return { label: "Turno Fijo", className: "bg-amber-500 text-black" };
+    }
+    return { label: "Sistema", className: "bg-blue-500 text-white" };
+  };
+
   return (
     <Drawer
       isOpen={isOpen}
@@ -67,7 +77,9 @@ export const NotificationsDrawer = ({
                     </p>
                   </div>
                 )}
-                {notificationsData?.data?.map((notification: any) => (
+                {notificationsData?.data?.map((notification: any) => {
+                  const badge = getNotificationBadge(notification.type);
+                  return (
                   <div
                     key={notification._id}
                     className={`p-6 rounded-[2rem] border transition-all ${
@@ -78,13 +90,9 @@ export const NotificationsDrawer = ({
                   >
                     <div className="flex justify-between items-start mb-2">
                       <span
-                        className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${
-                          notification.type === "new_booking"
-                            ? "bg-primary text-black"
-                            : "bg-blue-500 text-white"
-                        }`}
+                        className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${badge.className}`}
                       >
-                        {notification.type === "new_booking" ? "Nueva Reserva" : "Sistema"}
+                        {badge.label}
                       </span>
                       <span className="text-[10px] font-bold text-white/30">
                         {new Date(notification.createdAt).toLocaleTimeString([], {
@@ -100,7 +108,8 @@ export const NotificationsDrawer = ({
                       {notification.message}
                     </p>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </DrawerBody>
           </>

@@ -50,6 +50,10 @@ export default function App() {
 
   const isAuthenticated = Boolean(token);
   const isSuperAdmin = user?.role === "super_admin";
+  const adminName = (user?.name || user?.username || "Admin Padel").trim();
+  const navAvatarSrc = `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(
+    adminName || user?.id || "AdminPadel",
+  )}`;
 
   const createBooking = useCreateBooking();
   const deleteBooking = useDeleteBooking();
@@ -182,7 +186,8 @@ export default function App() {
         onAvatarClick={onProfileOpen}
         onBellClick={onNotifOpen}
         notificationCount={unreadCount}
-        avatarName={user?.username || "Admin Padel"}
+        avatarName={adminName}
+        avatarSrc={navAvatarSrc}
       />
 
       <main className="flex-grow px-4 pt-4 pb-28 sm:px-6 sm:pt-6 sm:pb-32 w-full max-w-3xl mx-auto relative">
