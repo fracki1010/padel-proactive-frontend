@@ -49,6 +49,22 @@ export const useWhatsappStatus = () => {
         return await configService.getWhatsappStatus();
       } catch (error: any) {
         const status = error?.response?.status;
+        const backendError =
+          error?.response?.data?.error || error?.response?.data?.message || "";
+        const normalizedError = String(backendError).toLowerCase();
+
+        if (normalizedError.includes("ya está abierta en otro proceso")) {
+          return {
+            data: {
+              enabled: true,
+              status: "locked_elsewhere",
+              qr: "",
+              error: backendError,
+              updatedAt: new Date().toISOString(),
+            },
+          };
+        }
+
         if (status === 401 || status === 404) {
           return {
             data: {
@@ -62,7 +78,11 @@ export const useWhatsappStatus = () => {
         throw error;
       }
     },
-    refetchInterval: 5000,
+    refetchInterval: (query) => {
+      const status = query.state.data?.data?.status;
+      if (status === "locked_elsewhere") return 30000;
+      return 5000;
+    },
     retry: 1,
   });
 };
@@ -79,6 +99,17 @@ export const useUpdateWhatsappStatus = () => {
 
   return useMutation({
     mutationFn: (enabled: boolean) => configService.updateWhatsappStatus(enabled),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+    },
+  });
+};
+
+export const useCloseWhatsappSession = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: configService.closeWhatsappSession,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
     },

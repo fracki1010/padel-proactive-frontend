@@ -14,6 +14,7 @@ import {
   usePenaltySettings,
   useUpdatePenaltySettings,
   useUpdateWhatsappStatus,
+  useCloseWhatsappSession,
   useCompanies,
   useCreateCompany,
   useUpdateCompanyStatus,
@@ -55,6 +56,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const updatePenaltySettings = useUpdatePenaltySettings();
   const updateProfile = useUpdateProfile();
   const updateWhatsappStatus = useUpdateWhatsappStatus();
+  const closeWhatsappSession = useCloseWhatsappSession();
   const createCompany = useCreateCompany();
   const updateCompanyStatus = useUpdateCompanyStatus();
   const createAdmin = useCreateAdmin();
@@ -79,6 +81,8 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   ]);
   const whatsappStatus = !whatsappEnabled
     ? "disabled"
+    : whatsappStatusRaw === "locked_elsewhere"
+      ? "locked_elsewhere"
     : disconnectedWhatsappStatuses.has(whatsappStatusRaw)
       ? "logged_out"
       : whatsappStatusRaw || "initializing";
@@ -149,19 +153,22 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     auth_failure: "Error de autenticación",
     initializing: "Inicializando",
     logged_out: "Sesión cerrada",
+    locked_elsewhere: "Bloqueado por otra instancia",
     disconnected: "Desconectado",
     connection_closed: "Conexión cerrada",
     unpaired: "Desvinculado",
   };
 
   const whatsappChipColor =
-    whatsappStatus === "logged_out" || whatsappStatus === "auth_failure"
-      ? "warning"
+    whatsappStatus === "locked_elsewhere"
+      ? "danger"
+      : whatsappStatus === "logged_out" || whatsappStatus === "auth_failure"
+        ? "warning"
       : !whatsappEnabled
-      ? "default"
-      : whatsappStatus === "ready"
-        ? "success"
-        : "warning";
+        ? "default"
+        : whatsappStatus === "ready"
+          ? "success"
+          : "warning";
 
   const handleUpdatePhone = () => {
     updateProfile.mutate(
@@ -216,14 +223,14 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
 
   const handleCloseWhatsappSession = async () => {
     const shouldClose = window.confirm(
-      "¿Seguro que querés cerrar la sesión actual de WhatsApp? Vas a necesitar escanear el QR nuevamente.",
+      "¿Seguro que querés cerrar la sesión de WhatsApp y dar de baja todas las sesiones/dispositivos activos?",
     );
     if (!shouldClose) return;
 
     try {
-      await updateWhatsappStatus.mutateAsync(false);
+      await closeWhatsappSession.mutateAsync();
       addToast({
-        title: "Sesión de WhatsApp cerrada",
+        title: "Sesión de WhatsApp cerrada y dada de baja",
         color: "success",
       });
     } catch (err: any) {
@@ -241,7 +248,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     if (!shouldSwitch) return;
 
     try {
-      await updateWhatsappStatus.mutateAsync(false);
+      await closeWhatsappSession.mutateAsync();
       await updateWhatsappStatus.mutateAsync(true);
       addToast({
         title: "Listo: escaneá el nuevo QR para vincular otro dispositivo",
@@ -447,7 +454,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         whatsappQr={whatsappQr}
         whatsappState={whatsappState}
         isLoadingWhatsapp={isLoadingWhatsapp}
-        updateWhatsappPending={updateWhatsappStatus.isPending}
+        updateWhatsappPending={
+          updateWhatsappStatus.isPending || closeWhatsappSession.isPending
+        }
         whatsappChipColor={whatsappChipColor}
         whatsappStatusLabelByKey={whatsappStatusLabelByKey}
         onBack={() => setView("menu")}

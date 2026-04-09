@@ -83,4 +83,68 @@ export const configService = {
 
     throw lastError;
   },
+
+  closeWhatsappSession: async (): Promise<any> => {
+    const attempts: Array<{
+      method: "put" | "patch" | "post";
+      url: string;
+      payload: Record<string, boolean>;
+    }> = [
+      {
+        method: "post",
+        url: "/config/whatsapp/session/close",
+        payload: { closeAll: true },
+      },
+      {
+        method: "post",
+        url: "/config/whatsapp/logout",
+        payload: { closeAll: true },
+      },
+      {
+        method: "put",
+        url: "/config/whatsapp",
+        payload: { enabled: false, closeAll: true },
+      },
+      {
+        method: "patch",
+        url: "/config/whatsapp",
+        payload: { enabled: false, closeAll: true },
+      },
+      {
+        method: "put",
+        url: "/config/whatsapp",
+        payload: { enabled: false, forceShutdown: true },
+      },
+      {
+        method: "patch",
+        url: "/config/whatsapp",
+        payload: { enabled: false, forceShutdown: true },
+      },
+    ];
+
+    let lastError: unknown;
+
+    for (const attempt of attempts) {
+      try {
+        const response = await api.request({
+          method: attempt.method,
+          url: attempt.url,
+          data: attempt.payload,
+        });
+        return response.data;
+      } catch (error: any) {
+        lastError = error;
+        const status = error?.response?.status;
+        if (status !== 404 && status !== 405) {
+          break;
+        }
+      }
+    }
+
+    try {
+      return await configService.updateWhatsappStatus(false);
+    } catch {
+      throw lastError;
+    }
+  },
 };

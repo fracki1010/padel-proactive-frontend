@@ -30,7 +30,9 @@ export const WhatsappSettingsView = ({
   onCloseWhatsappSession,
   onSwitchWhatsappDevice,
 }: WhatsappSettingsViewProps) => {
-  const canManageSession = whatsappEnabled || whatsappStatus === "logged_out";
+  const isLockedElsewhere = whatsappStatus === "locked_elsewhere";
+  const canManageSession =
+    (whatsappEnabled || whatsappStatus === "logged_out") && !isLockedElsewhere;
 
   return (
     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
@@ -116,6 +118,13 @@ export const WhatsappSettingsView = ({
                 {whatsappStatus === "logged_out"
                   ? "La sesión se cerró desde el dispositivo. Activá el switch para volver a generar el QR."
                   : "WhatsApp está desactivado. Activá el switch para iniciar y generar QR."}
+              </p>
+            </div>
+          ) : isLockedElsewhere ? (
+            <div className="bg-danger-500/10 rounded-3xl p-5 border border-danger-500/30">
+              <p className="text-xs text-danger-300 font-bold uppercase tracking-wide">
+                Esta empresa ya tiene WhatsApp activo en otro proceso del backend.
+                Cerrá la otra instancia y volvé a intentar desde acá.
               </p>
             </div>
           ) : whatsappStatus === "qr_pending" && whatsappQr ? (
