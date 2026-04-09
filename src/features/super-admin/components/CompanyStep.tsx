@@ -63,7 +63,7 @@ export const CompanyStep = ({
         <Input
           label="Nombre de empresa"
           labelPlacement="outside"
-          placeholder="Ej: Padexa Centro"
+          placeholder="Ej: PADEXA Centro"
           value={companyName}
           onValueChange={onCompanyNameChange}
           isInvalid={Boolean(companyNameError)}

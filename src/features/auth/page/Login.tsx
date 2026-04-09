@@ -49,7 +49,7 @@ export const Login = () => {
             />
           </div>
           <h1 className="text-3xl sm:text-4xl font-black text-white italic tracking-tighter uppercase">
-            Padel <span className="text-primary italic">Pro</span>
+            PADEXA
           </h1>
           <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">
             Portal de Administración
@@ -132,7 +132,7 @@ export const Login = () => {
         </Card>
 
         <p className="text-center text-gray-600 text-[10px] font-bold uppercase tracking-widest">
-          &copy; 2026 Padel Pro Control • v1.0.0
+          &copy; 2026 PADEXA • v1.0.0
         </p>
       </div>
     </div>

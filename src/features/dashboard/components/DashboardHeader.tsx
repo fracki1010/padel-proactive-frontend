@@ -9,7 +9,7 @@ export const DashboardHeader = () => {
         </div>
         <div>
           <h2 className="text-xl font-black text-white italic uppercase tracking-tighter">
-            Padel Central
+            PADEXA Central
           </h2>
           <div className="flex items-center gap-1.5 mt-0.5">
             <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_8px_#ff7a00]" />

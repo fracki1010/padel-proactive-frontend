@@ -36,7 +36,7 @@ const getScreenTitle = (activeTab: string, isCreating: boolean) => {
     case "caja":
       return "Caja";
     default:
-      return "Padel Pro";
+      return "PADEXA";
   }
 };
 
@@ -50,9 +50,9 @@ export default function App() {
 
   const isAuthenticated = Boolean(token);
   const isSuperAdmin = user?.role === "super_admin";
-  const adminName = (user?.name || user?.username || "Admin Padel").trim();
+  const adminName = (user?.name || user?.username || "Admin PADEXA").trim();
   const navAvatarSrc = `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(
-    adminName || user?.id || "AdminPadel",
+    adminName || user?.id || "AdminPADEXA",
   )}`;
 
   const createBooking = useCreateBooking();

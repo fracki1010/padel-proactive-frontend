@@ -48,8 +48,8 @@ export const ProfileMenuView = ({
   onGoToTenants,
   onLogout,
 }: ProfileMenuViewProps) => {
-  const adminName = (user?.name || user?.username || "Admin Padel").trim();
-  const avatarSeed = encodeURIComponent(adminName || user?.id || "AdminPadel");
+  const adminName = (user?.name || user?.username || "Admin PADEXA").trim();
+  const avatarSeed = encodeURIComponent(adminName || user?.id || "AdminPADEXA");
   const avatarSrc = `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${avatarSeed}`;
 
   return (

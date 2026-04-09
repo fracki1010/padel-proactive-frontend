@@ -22,7 +22,7 @@ export const Navbar = ({
   onAvatarClick,
   onBellClick,
   notificationCount = 0,
-  avatarName = "Admin Padel",
+  avatarName = "Admin PADEXA",
   avatarSrc,
 }: NavbarProps) => {
   const initials = getInitials(avatarName);
