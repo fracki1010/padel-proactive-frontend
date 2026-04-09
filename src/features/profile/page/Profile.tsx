@@ -13,6 +13,8 @@ import {
   useUpdateBasePrice,
   usePenaltySettings,
   useUpdatePenaltySettings,
+  useOneHourReminderSetting,
+  useUpdateOneHourReminderSetting,
   useUpdateWhatsappStatus,
   useCloseWhatsappSession,
   useCompanies,
@@ -45,6 +47,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const { data: slotsData } = useSlots(true);
   const { data: whatsappData, isLoading: isLoadingWhatsapp } = useWhatsappStatus();
   const { data: penaltySettingsData } = usePenaltySettings();
+  const { data: oneHourReminderData } = useOneHourReminderSetting();
   const { data: companiesData } = useCompanies(isSuperAdmin);
   const { data: adminsData } = useAdmins(isSuperAdmin);
 
@@ -54,6 +57,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const createSlot = useCreateSlot();
   const updateBasePrice = useUpdateBasePrice();
   const updatePenaltySettings = useUpdatePenaltySettings();
+  const updateOneHourReminderSetting = useUpdateOneHourReminderSetting();
   const updateProfile = useUpdateProfile();
   const updateWhatsappStatus = useUpdateWhatsappStatus();
   const closeWhatsappSession = useCloseWhatsappSession();
@@ -92,6 +96,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       : "";
   const companies = companiesData?.data || [];
   const admins = adminsData?.data || [];
+  const oneHourReminderEnabled = Boolean(
+    oneHourReminderData?.data?.oneHourReminderEnabled,
+  );
 
   const [phoneNumber, setPhoneNumber] = useState("");
   const [basePriceInput, setBasePriceInput] = useState("");
@@ -283,6 +290,30 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           title:
             err?.response?.data?.error ||
             "No se pudo actualizar el límite de penalizaciones",
+          color: "danger",
+        });
+      },
+    });
+  };
+
+  const handleToggleOneHourReminder = (enabled: boolean) => {
+    updateOneHourReminderSetting.mutate(enabled, {
+      onSuccess: (response: any) => {
+        addToast({
+          title: enabled
+            ? "Recordatorio de 1 hora activado"
+            : "Recordatorio de 1 hora desactivado",
+          description: response?.data?.persistedLocally
+            ? "Guardado localmente (pendiente de soporte en backend)."
+            : undefined,
+          color: "success",
+        });
+      },
+      onError: (err: any) => {
+        addToast({
+          title:
+            err?.response?.data?.error ||
+            "No se pudo actualizar el recordatorio de 1 hora",
           color: "danger",
         });
       },
@@ -553,8 +584,11 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       whatsappStatus={whatsappStatus}
       whatsappStatusLabelByKey={whatsappStatusLabelByKey}
       updateProfilePending={updateProfile.isPending}
+      oneHourReminderEnabled={oneHourReminderEnabled}
+      updateOneHourReminderPending={updateOneHourReminderSetting.isPending}
       onPhoneChange={setPhoneNumber}
       onSavePhone={handleUpdatePhone}
+      onToggleOneHourReminder={handleToggleOneHourReminder}
       onGoToCourts={() => setView("courts")}
       onGoToWhatsapp={() => setView("whatsapp")}
       onGoToSchedule={() => setView("schedule")}

@@ -2,6 +2,25 @@ import type { ConfigResponse, Court, TimeSlot } from "../types";
 
 import { api } from "./httpClient";
 
+const ONE_HOUR_REMINDER_KEY = "booking-reminder-one-hour-enabled";
+
+const parseOneHourReminderEnabled = (responseData: any): boolean | null => {
+  const data = responseData?.data ?? responseData;
+  const candidates = [
+    data?.oneHourBeforeEnabled,
+    data?.oneHourReminderEnabled,
+    data?.bookingReminderOneHourEnabled,
+    data?.notifyOneHourBeforeMatch,
+    data?.notifyOneHourBeforeBooking,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "boolean") return candidate;
+  }
+
+  return null;
+};
+
 export const configService = {
   getCourts: async (all = false): Promise<ConfigResponse<Court>> => {
     const response = await api.get(`/config/courts${all ? "?all=true" : ""}`);
@@ -86,39 +105,32 @@ export const configService = {
 
   closeWhatsappSession: async (): Promise<any> => {
     const attempts: Array<{
-      method: "put" | "patch" | "post";
-      url: string;
+      method: "put" | "patch";
       payload: Record<string, boolean>;
     }> = [
       {
-        method: "post",
-        url: "/config/whatsapp/session/close",
-        payload: { closeAll: true },
-      },
-      {
-        method: "post",
-        url: "/config/whatsapp/logout",
-        payload: { closeAll: true },
-      },
-      {
         method: "put",
-        url: "/config/whatsapp",
         payload: { enabled: false, closeAll: true },
       },
       {
         method: "patch",
-        url: "/config/whatsapp",
         payload: { enabled: false, closeAll: true },
       },
       {
         method: "put",
-        url: "/config/whatsapp",
         payload: { enabled: false, forceShutdown: true },
       },
       {
         method: "patch",
-        url: "/config/whatsapp",
         payload: { enabled: false, forceShutdown: true },
+      },
+      {
+        method: "put",
+        payload: { enabled: false },
+      },
+      {
+        method: "patch",
+        payload: { enabled: false },
       },
     ];
 
@@ -128,16 +140,12 @@ export const configService = {
       try {
         const response = await api.request({
           method: attempt.method,
-          url: attempt.url,
+          url: "/config/whatsapp",
           data: attempt.payload,
         });
         return response.data;
       } catch (error: any) {
         lastError = error;
-        const status = error?.response?.status;
-        if (status !== 404 && status !== 405) {
-          break;
-        }
       }
     }
 
@@ -146,5 +154,83 @@ export const configService = {
     } catch {
       throw lastError;
     }
+  },
+
+  getOneHourReminderSetting: async (): Promise<any> => {
+    const attempts = [
+      "/config/notifications/reminders",
+      "/config/notifications",
+      "/config/reminders",
+      "/config/settings",
+    ];
+
+    for (const url of attempts) {
+      try {
+        const response = await api.get(url);
+        const parsed = parseOneHourReminderEnabled(response.data);
+        if (parsed !== null) {
+          localStorage.setItem(ONE_HOUR_REMINDER_KEY, String(parsed));
+          return { data: { oneHourReminderEnabled: parsed } };
+        }
+      } catch {
+        // continue trying known compatibility routes
+      }
+    }
+
+    const localValue = localStorage.getItem(ONE_HOUR_REMINDER_KEY) === "true";
+    return { data: { oneHourReminderEnabled: localValue, persistedLocally: true } };
+  },
+
+  updateOneHourReminderSetting: async (enabled: boolean): Promise<any> => {
+    const attempts: Array<{
+      method: "put" | "patch";
+      url: string;
+      payload: Record<string, boolean>;
+    }> = [
+      {
+        method: "put",
+        url: "/config/notifications/reminders",
+        payload: { oneHourReminderEnabled: enabled },
+      },
+      {
+        method: "patch",
+        url: "/config/notifications/reminders",
+        payload: { oneHourReminderEnabled: enabled },
+      },
+      {
+        method: "put",
+        url: "/config/notifications",
+        payload: { oneHourBeforeEnabled: enabled },
+      },
+      {
+        method: "patch",
+        url: "/config/notifications",
+        payload: { oneHourBeforeEnabled: enabled },
+      },
+    ];
+
+    let lastError: any = null;
+
+    for (const attempt of attempts) {
+      try {
+        const response = await api.request({
+          method: attempt.method,
+          url: attempt.url,
+          data: attempt.payload,
+        });
+        localStorage.setItem(ONE_HOUR_REMINDER_KEY, String(enabled));
+        return response.data;
+      } catch (error: any) {
+        lastError = error;
+      }
+    }
+
+    const status = lastError?.response?.status;
+    if (status === 404 || status === 405 || status === 400 || !status) {
+      localStorage.setItem(ONE_HOUR_REMINDER_KEY, String(enabled));
+      return { data: { oneHourReminderEnabled: enabled, persistedLocally: true } };
+    }
+
+    throw lastError;
   },
 };

@@ -94,6 +94,14 @@ export const usePenaltySettings = () => {
   });
 };
 
+export const useOneHourReminderSetting = () => {
+  return useQuery({
+    queryKey: ["one-hour-reminder-setting"],
+    queryFn: configService.getOneHourReminderSetting,
+    retry: 1,
+  });
+};
+
 export const useUpdateWhatsappStatus = () => {
   const queryClient = useQueryClient();
 
@@ -161,6 +169,18 @@ export const useUpdatePenaltySettings = () => {
       configService.updatePenaltySettings(penaltyLimit),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["penalty-settings"] });
+    },
+  });
+};
+
+export const useUpdateOneHourReminderSetting = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (enabled: boolean) =>
+      configService.updateOneHourReminderSetting(enabled),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["one-hour-reminder-setting"] });
     },
   });
 };

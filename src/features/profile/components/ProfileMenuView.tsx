@@ -22,8 +22,11 @@ type ProfileMenuViewProps = {
   whatsappStatus: string;
   whatsappStatusLabelByKey: Record<string, string>;
   updateProfilePending: boolean;
+  oneHourReminderEnabled: boolean;
+  updateOneHourReminderPending: boolean;
   onPhoneChange: (value: string) => void;
   onSavePhone: () => void;
+  onToggleOneHourReminder: (enabled: boolean) => void;
   onGoToCourts: () => void;
   onGoToWhatsapp: () => void;
   onGoToSchedule: () => void;
@@ -40,8 +43,11 @@ export const ProfileMenuView = ({
   whatsappStatus,
   whatsappStatusLabelByKey,
   updateProfilePending,
+  oneHourReminderEnabled,
+  updateOneHourReminderPending,
   onPhoneChange,
   onSavePhone,
+  onToggleOneHourReminder,
   onGoToCourts,
   onGoToWhatsapp,
   onGoToSchedule,
@@ -243,10 +249,16 @@ export const ProfileMenuView = ({
               <div className="flex items-center gap-4">
                 <Bell size={18} className="text-gray-400" />
                 <span className="font-bold text-white text-sm">
-                  Notificaciones Push
+                  Avisar 1 hora antes
                 </span>
               </div>
-              <Switch defaultSelected color="primary" size="sm" />
+              <Switch
+                isSelected={oneHourReminderEnabled}
+                isDisabled={updateOneHourReminderPending}
+                onValueChange={onToggleOneHourReminder}
+                color="primary"
+                size="sm"
+              />
             </div>
             <Divider className="bg-white/5 mx-4" />
             <div className="flex items-center justify-between p-4 hover:bg-white/5 rounded-2xl transition-colors">
