@@ -33,6 +33,7 @@ import {
   useUserHistory,
   useDeleteUser,
   useClearPenalties,
+  usePenaltySettings,
 } from "../../../hooks/useData";
 import { getInitials, getAvatarColor } from "../../../utils/avatarUtils";
 import type { User, Booking } from "../../../types";
@@ -56,7 +57,9 @@ const formatPhoneNumber = (phoneNumber: string) => {
 
 export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
   const { data: usersData, isLoading: isLoadingUsers } = useUsers();
+  const { data: penaltySettingsData } = usePenaltySettings();
   const users = usersData?.data || [];
+  const penaltyLimit = Number(penaltySettingsData?.data?.penaltyLimit) || 2;
 
   const {
     isOpen: isModalOpen,
@@ -222,19 +225,21 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                     </div>
 
                     <div className="flex flex-wrap gap-2 mt-2.5">
-                      {(client.penalties || 0) > 0 && !client.isSuspended && (
-                        <Chip
-                          size="sm"
-                          color="warning"
-                          variant="flat"
-                          className="h-5 px-1 text-[10px] font-black uppercase"
-                          startContent={
-                            <AlertTriangle size={9} className="ml-1" />
-                          }
-                        >
-                          {client.penalties}/2
-                        </Chip>
-                      )}
+                      <Chip
+                        size="sm"
+                        color={
+                          client.isSuspended
+                            ? "danger"
+                            : (client.penalties || 0) > 0
+                              ? "warning"
+                              : "default"
+                        }
+                        variant="flat"
+                        className="h-5 px-1 text-[10px] font-black uppercase"
+                        startContent={<AlertTriangle size={9} className="ml-1" />}
+                      >
+                        PENAL. {client.penalties || 0}/{penaltyLimit}
+                      </Chip>
                       {client.isSuspended && (
                         <Chip
                           size="sm"

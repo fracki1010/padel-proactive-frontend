@@ -11,6 +11,8 @@ import {
   useUpdateProfile,
   useWhatsappStatus,
   useUpdateBasePrice,
+  usePenaltySettings,
+  useUpdatePenaltySettings,
   useUpdateWhatsappStatus,
   useCompanies,
   useCreateCompany,
@@ -41,6 +43,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const { data: courtsData } = useCourts(true);
   const { data: slotsData } = useSlots(true);
   const { data: whatsappData, isLoading: isLoadingWhatsapp } = useWhatsappStatus();
+  const { data: penaltySettingsData } = usePenaltySettings();
   const { data: companiesData } = useCompanies(isSuperAdmin);
   const { data: adminsData } = useAdmins(isSuperAdmin);
 
@@ -49,6 +52,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const updateSlot = useUpdateSlot();
   const createSlot = useCreateSlot();
   const updateBasePrice = useUpdateBasePrice();
+  const updatePenaltySettings = useUpdatePenaltySettings();
   const updateProfile = useUpdateProfile();
   const updateWhatsappStatus = useUpdateWhatsappStatus();
   const createCompany = useCreateCompany();
@@ -68,6 +72,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
 
   const [phoneNumber, setPhoneNumber] = useState("");
   const [basePriceInput, setBasePriceInput] = useState("");
+  const [penaltyLimitInput, setPenaltyLimitInput] = useState("");
   const [companyNameInput, setCompanyNameInput] = useState("");
   const [newAdminUsername, setNewAdminUsername] = useState("");
   const [newAdminPassword, setNewAdminPassword] = useState("");
@@ -83,6 +88,12 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       setPhoneNumber(user.phone);
     }
   }, [user]);
+
+  useEffect(() => {
+    const backendLimit = penaltySettingsData?.data?.penaltyLimit;
+    if (!backendLimit) return;
+    setPenaltyLimitInput(String(backendLimit));
+  }, [penaltySettingsData]);
 
   useEffect(() => {
     if (!slots.length) return;
@@ -174,6 +185,31 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       onError: (err: any) => {
         addToast({
           title: err?.response?.data?.error || "No se pudo actualizar WhatsApp",
+          color: "danger",
+        });
+      },
+    });
+  };
+
+  const handleSavePenaltyLimit = () => {
+    const parsed = Number(penaltyLimitInput);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      addToast({
+        title: "Ingresá un límite válido (entero mayor o igual a 1).",
+        color: "danger",
+      });
+      return;
+    }
+
+    updatePenaltySettings.mutate(parsed, {
+      onSuccess: () => {
+        addToast({ title: "Límite de penalizaciones actualizado", color: "success" });
+      },
+      onError: (err: any) => {
+        addToast({
+          title:
+            err?.response?.data?.error ||
+            "No se pudo actualizar el límite de penalizaciones",
           color: "danger",
         });
       },
@@ -410,15 +446,19 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         newSlotEndTime={newSlotEndTime}
         newSlotPrice={newSlotPrice}
         basePriceInput={basePriceInput}
+        penaltyLimitInput={penaltyLimitInput}
         createSlotPending={createSlot.isPending}
         updateBasePricePending={updateBasePrice.isPending}
+        updatePenaltySettingsPending={updatePenaltySettings.isPending}
         onBack={() => setView("menu")}
         onSlotStartTimeChange={setNewSlotStartTime}
         onSlotEndTimeChange={setNewSlotEndTime}
         onSlotPriceChange={setNewSlotPrice}
         onBasePriceChange={setBasePriceInput}
+        onPenaltyLimitChange={setPenaltyLimitInput}
         onCreateSlot={handleCreateSlot}
         onSaveBasePrice={handleSaveBasePrice}
+        onSavePenaltyLimit={handleSavePenaltyLimit}
         onToggleSlot={(id, isActive) =>
           updateSlot.mutate({ id, data: { isActive } })
         }

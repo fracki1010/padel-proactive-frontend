@@ -7,15 +7,19 @@ type ScheduleSettingsViewProps = {
   newSlotEndTime: string;
   newSlotPrice: string;
   basePriceInput: string;
+  penaltyLimitInput: string;
   createSlotPending: boolean;
   updateBasePricePending: boolean;
+  updatePenaltySettingsPending: boolean;
   onBack: () => void;
   onSlotStartTimeChange: (value: string) => void;
   onSlotEndTimeChange: (value: string) => void;
   onSlotPriceChange: (value: string) => void;
   onBasePriceChange: (value: string) => void;
+  onPenaltyLimitChange: (value: string) => void;
   onCreateSlot: () => void;
   onSaveBasePrice: () => void;
+  onSavePenaltyLimit: () => void;
   onToggleSlot: (id: string, isActive: boolean) => void;
 };
 
@@ -25,15 +29,19 @@ export const ScheduleSettingsView = ({
   newSlotEndTime,
   newSlotPrice,
   basePriceInput,
+  penaltyLimitInput,
   createSlotPending,
   updateBasePricePending,
+  updatePenaltySettingsPending,
   onBack,
   onSlotStartTimeChange,
   onSlotEndTimeChange,
   onSlotPriceChange,
   onBasePriceChange,
+  onPenaltyLimitChange,
   onCreateSlot,
   onSaveBasePrice,
+  onSavePenaltyLimit,
   onToggleSlot,
 }: ScheduleSettingsViewProps) => {
   return (
@@ -129,6 +137,39 @@ export const ScheduleSettingsView = ({
               isLoading={updateBasePricePending}
             >
               Guardar Base
+            </Button>
+          </div>
+        </section>
+
+        <section className="bg-orange-500/10 p-6 rounded-[2.5rem] border border-orange-500/20">
+          <div className="flex items-center gap-3 mb-4">
+            <Shield className="text-orange-400" size={20} />
+            <p className="font-bold text-orange-400 uppercase text-xs tracking-widest">
+              Penalizaciones
+            </p>
+          </div>
+          <p className="text-[10px] text-gray-400 font-bold uppercase mb-4 leading-relaxed">
+            Define cuántas cancelaciones acumula un cliente antes de quedar bloqueado en WhatsApp.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Input
+              value={penaltyLimitInput}
+              onValueChange={onPenaltyLimitChange}
+              placeholder="Ej: 2"
+              type="number"
+              min={1}
+              className="flex-grow"
+              classNames={{
+                inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
+                input: "text-white font-bold",
+              }}
+            />
+            <Button
+              className="h-12 bg-orange-400 text-black font-black rounded-2xl uppercase text-[10px] w-full sm:w-auto"
+              onPress={onSavePenaltyLimit}
+              isLoading={updatePenaltySettingsPending}
+            >
+              Guardar Límite
             </Button>
           </div>
         </section>

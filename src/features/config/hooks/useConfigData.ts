@@ -49,6 +49,13 @@ export const useWhatsappStatus = () => {
   });
 };
 
+export const usePenaltySettings = () => {
+  return useQuery({
+    queryKey: ["penalty-settings"],
+    queryFn: configService.getPenaltySettings,
+  });
+};
+
 export const useUpdateWhatsappStatus = () => {
   const queryClient = useQueryClient();
 
@@ -93,6 +100,18 @@ export const useUpdateBasePrice = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["slots"] });
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
+    },
+  });
+};
+
+export const useUpdatePenaltySettings = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (penaltyLimit: number) =>
+      configService.updatePenaltySettings(penaltyLimit),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["penalty-settings"] });
     },
   });
 };
