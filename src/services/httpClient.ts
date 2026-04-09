@@ -32,8 +32,16 @@ api.interceptors.response.use(
     const status = error?.response?.status;
     const url = String(error?.config?.url || "");
     const isLoginRequest = url.includes("/auth/login");
+    const isWhatsappConfigRequest = url.includes("/config/whatsapp");
 
-    if (status === 401 && !isLoginRequest && !isHandlingUnauthorized) {
+    // Some backends can use 401 on WhatsApp status when the device session ends.
+    // That should not invalidate the panel auth token.
+    if (
+      status === 401 &&
+      !isLoginRequest &&
+      !isWhatsappConfigRequest &&
+      !isHandlingUnauthorized
+    ) {
       isHandlingUnauthorized = true;
 
       if (unauthorizedHandler) {

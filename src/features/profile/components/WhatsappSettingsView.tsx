@@ -12,6 +12,8 @@ type WhatsappSettingsViewProps = {
   whatsappStatusLabelByKey: Record<string, string>;
   onBack: () => void;
   onToggleWhatsapp: (enabled: boolean) => void;
+  onCloseWhatsappSession: () => void;
+  onSwitchWhatsappDevice: () => void;
 };
 
 export const WhatsappSettingsView = ({
@@ -25,7 +27,11 @@ export const WhatsappSettingsView = ({
   whatsappStatusLabelByKey,
   onBack,
   onToggleWhatsapp,
+  onCloseWhatsappSession,
+  onSwitchWhatsappDevice,
 }: WhatsappSettingsViewProps) => {
+  const canManageSession = whatsappEnabled || whatsappStatus === "logged_out";
+
   return (
     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
       <div className="flex items-center gap-4">
@@ -83,10 +89,33 @@ export const WhatsappSettingsView = ({
             </Chip>
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Button
+              variant="flat"
+              color="danger"
+              className="font-black uppercase"
+              isDisabled={updateWhatsappPending || !canManageSession}
+              onPress={onCloseWhatsappSession}
+            >
+              Cerrar sesión
+            </Button>
+            <Button
+              variant="flat"
+              color="warning"
+              className="font-black uppercase text-black"
+              isDisabled={updateWhatsappPending || !canManageSession}
+              onPress={onSwitchWhatsappDevice}
+            >
+              Cambiar dispositivo
+            </Button>
+          </div>
+
           {!whatsappEnabled ? (
             <div className="bg-white/5 rounded-3xl p-5 border border-white/10">
               <p className="text-xs text-gray-300 font-bold uppercase tracking-wide">
-                WhatsApp está desactivado. Activá el switch para iniciar y generar QR.
+                {whatsappStatus === "logged_out"
+                  ? "La sesión se cerró desde el dispositivo. Activá el switch para volver a generar el QR."
+                  : "WhatsApp está desactivado. Activá el switch para iniciar y generar QR."}
               </p>
             </div>
           ) : whatsappStatus === "qr_pending" && whatsappQr ? (

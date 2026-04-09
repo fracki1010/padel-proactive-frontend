@@ -63,10 +63,29 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
 
   const courts = courtsData?.data || initialCourts;
   const slots = slotsData?.data || [];
-  const whatsappState = whatsappData?.data;
+  const whatsappRawState = whatsappData?.data ?? {};
+  const whatsappState =
+    whatsappRawState && typeof whatsappRawState === "object"
+      ? whatsappRawState
+      : {};
   const whatsappEnabled = Boolean(whatsappState?.enabled);
-  const whatsappStatus = whatsappState?.status || "initializing";
-  const whatsappQr = whatsappState?.qr || "";
+  const whatsappStatusRaw = String(whatsappState?.status || "").toLowerCase();
+  const disconnectedWhatsappStatuses = new Set([
+    "auth_failure",
+    "logged_out",
+    "disconnected",
+    "connection_closed",
+    "unpaired",
+  ]);
+  const whatsappStatus = !whatsappEnabled
+    ? "disabled"
+    : disconnectedWhatsappStatuses.has(whatsappStatusRaw)
+      ? "logged_out"
+      : whatsappStatusRaw || "initializing";
+  const whatsappQr =
+    typeof whatsappState?.qr === "string" && whatsappState.qr.trim().length > 0
+      ? whatsappState.qr
+      : "";
   const companies = companiesData?.data || [];
   const admins = adminsData?.data || [];
 
@@ -129,16 +148,20 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     loading: "Iniciando",
     auth_failure: "Error de autenticación",
     initializing: "Inicializando",
+    logged_out: "Sesión cerrada",
+    disconnected: "Desconectado",
+    connection_closed: "Conexión cerrada",
+    unpaired: "Desvinculado",
   };
 
   const whatsappChipColor =
-    !whatsappEnabled
+    whatsappStatus === "logged_out" || whatsappStatus === "auth_failure"
+      ? "warning"
+      : !whatsappEnabled
       ? "default"
       : whatsappStatus === "ready"
         ? "success"
-        : whatsappStatus === "auth_failure"
-          ? "danger"
-          : "warning";
+        : "warning";
 
   const handleUpdatePhone = () => {
     updateProfile.mutate(
@@ -189,6 +212,49 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         });
       },
     });
+  };
+
+  const handleCloseWhatsappSession = async () => {
+    const shouldClose = window.confirm(
+      "¿Seguro que querés cerrar la sesión actual de WhatsApp? Vas a necesitar escanear el QR nuevamente.",
+    );
+    if (!shouldClose) return;
+
+    try {
+      await updateWhatsappStatus.mutateAsync(false);
+      addToast({
+        title: "Sesión de WhatsApp cerrada",
+        color: "success",
+      });
+    } catch (err: any) {
+      addToast({
+        title: err?.response?.data?.error || "No se pudo cerrar la sesión de WhatsApp",
+        color: "danger",
+      });
+    }
+  };
+
+  const handleSwitchWhatsappDevice = async () => {
+    const shouldSwitch = window.confirm(
+      "¿Querés cambiar de dispositivo? Se va a cerrar la sesión actual y se regenerará un QR nuevo.",
+    );
+    if (!shouldSwitch) return;
+
+    try {
+      await updateWhatsappStatus.mutateAsync(false);
+      await updateWhatsappStatus.mutateAsync(true);
+      addToast({
+        title: "Listo: escaneá el nuevo QR para vincular otro dispositivo",
+        color: "success",
+      });
+    } catch (err: any) {
+      addToast({
+        title:
+          err?.response?.data?.error ||
+          "No se pudo cambiar el dispositivo de WhatsApp",
+        color: "danger",
+      });
+    }
   };
 
   const handleSavePenaltyLimit = () => {
@@ -386,6 +452,8 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         whatsappStatusLabelByKey={whatsappStatusLabelByKey}
         onBack={() => setView("menu")}
         onToggleWhatsapp={handleToggleWhatsapp}
+        onCloseWhatsappSession={handleCloseWhatsappSession}
+        onSwitchWhatsappDevice={handleSwitchWhatsappDevice}
       />
     );
   }

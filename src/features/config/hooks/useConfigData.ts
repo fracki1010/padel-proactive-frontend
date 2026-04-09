@@ -44,8 +44,26 @@ export const useSlots = (all = false) => {
 export const useWhatsappStatus = () => {
   return useQuery({
     queryKey: ["whatsapp-status"],
-    queryFn: configService.getWhatsappStatus,
+    queryFn: async () => {
+      try {
+        return await configService.getWhatsappStatus();
+      } catch (error: any) {
+        const status = error?.response?.status;
+        if (status === 401 || status === 404) {
+          return {
+            data: {
+              enabled: false,
+              status: "logged_out",
+              qr: "",
+              updatedAt: new Date().toISOString(),
+            },
+          };
+        }
+        throw error;
+      }
+    },
     refetchInterval: 5000,
+    retry: 1,
   });
 };
 
