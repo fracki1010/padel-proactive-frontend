@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App.tsx";
 import { HeroUIProvider, ToastProvider } from "@heroui/react";
@@ -15,13 +16,15 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <HeroUIProvider className="dark text-foreground bg-background">
-          <ToastProvider
-            placement="top-center"
-            toastProps={{ variant: "solid" }}
-          />
-          <App />
-        </HeroUIProvider>
+        <BrowserRouter>
+          <HeroUIProvider className="dark text-foreground bg-background">
+            <ToastProvider
+              placement="top-center"
+              toastProps={{ variant: "solid" }}
+            />
+            <App />
+          </HeroUIProvider>
+        </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>,

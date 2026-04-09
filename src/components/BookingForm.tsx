@@ -30,6 +30,25 @@ import {
 } from "lucide-react";
 import { getInitials, getAvatarColor } from "../utils/avatarUtils";
 
+const normalizePhone = (phone: string) => phone.replace(/\D/g, "");
+
+const hasFullName = (value: string) => {
+  const parts = value
+    .trim()
+    .split(/\s+/)
+    .filter((part) => part.length >= 2);
+
+  return parts.length >= 2;
+};
+
+const normalizeName = (name: string) =>
+  name
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ");
+
 export const BookingForm = ({
   initialData,
   onCancel,
@@ -81,8 +100,42 @@ export const BookingForm = ({
     setError("");
     setSuccess("");
 
+    const trimmedClientPhone = clientPhone.trim();
+    const trimmedClientName = clientName.trim();
+    const normalizedClientPhone = normalizePhone(trimmedClientPhone);
+    const normalizedClientName = normalizeName(trimmedClientName);
+    const existingUserByName = users.find(
+      (u: any) => normalizeName(u.name || "") === normalizedClientName,
+    );
+    const existingUserByPhone = users.find(
+      (u: any) => normalizePhone(u.phoneNumber || "") === normalizedClientPhone,
+    );
+    const existingUser = existingUserByName || existingUserByPhone;
+
+    if (!courtId || !date || !time || !trimmedClientPhone) {
+      const msg = "Completá cancha, fecha, turno y teléfono para continuar.";
+      setError(msg);
+      addToast({ title: msg, color: "warning" });
+      return;
+    }
+
+    if (!existingUserByName && !hasFullName(trimmedClientName)) {
+      const msg =
+        "Ese nombre no está en clientes. Ingresá nombre completo (nombre y apellido) para reservar.";
+      setError(msg);
+      addToast({ title: msg, color: "warning" });
+      return;
+    }
+
     createMutation.mutate(
-      { courtId, date, time, clientName, clientPhone, paymentStatus },
+      {
+        courtId,
+        date,
+        time,
+        clientName: existingUser?.name || trimmedClientName,
+        clientPhone: trimmedClientPhone,
+        paymentStatus,
+      },
       {
         onSuccess: () => {
           setSuccess("¡Reserva guardada!");
@@ -157,7 +210,10 @@ export const BookingForm = ({
               placeholder="Escribe o selecciona un socio"
               labelPlacement="outside"
               inputValue={clientName}
-              onInputChange={setClientName}
+              onInputChange={(value) => {
+                setClientName(value);
+                if (error) setError("");
+              }}
               onSelectionChange={(key) => handleUserSelect(key as string)}
               allowsCustomValue={true}
               classNames={{
@@ -204,7 +260,10 @@ export const BookingForm = ({
                 placeholder="+54..."
                 labelPlacement="outside"
                 value={clientPhone}
-                onValueChange={setClientPhone}
+                onValueChange={(value) => {
+                  setClientPhone(value);
+                  if (error) setError("");
+                }}
                 className="flex-grow"
                 classNames={{
                   inputWrapper:
@@ -217,6 +276,16 @@ export const BookingForm = ({
                 }
               />
             </div>
+            {!!clientName.trim() &&
+              !users.some(
+                (u: any) => normalizeName(u.name || "") === normalizeName(clientName),
+              ) &&
+              !hasFullName(clientName) && (
+                <p className="text-xs text-orange-400 font-semibold px-1">
+                  Cliente no registrado por nombre. Para continuar, ingresá nombre completo
+                  (nombre y apellido).
+                </p>
+              )}
           </div>
         </section>
 

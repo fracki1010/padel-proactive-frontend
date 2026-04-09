@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { addToast, useDisclosure } from "@heroui/react";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import { BottomNav } from "./components/BottomNav";
 import { Navbar } from "./components/Navbar";
@@ -159,91 +160,92 @@ export default function App() {
 
   if (isAuthLoading) return null;
 
-  if (!token) {
-    return (
-      <>
-        <PwaManager />
-        <Login />
-      </>
-    );
-  }
-
-  if (needsSuperAdminSetup) {
-    return (
-      <>
-        <PwaManager />
-        <SuperAdminSetup superAdminUsername={user?.username || "superadmin"} />
-      </>
-    );
-  }
-
   return (
-    <div className="dark min-h-[100dvh] bg-background text-foreground flex flex-col font-sans pb-safe">
+    <>
       <PwaManager />
-
-      <Navbar
-        title={getScreenTitle(activeTab, isCreating)}
-        onAvatarClick={onProfileOpen}
-        onBellClick={onNotifOpen}
-        notificationCount={unreadCount}
-        avatarName={adminName}
-        avatarSrc={navAvatarSrc}
-      />
-
-      <main className="flex-grow px-4 pt-4 pb-28 sm:px-6 sm:pt-6 sm:pb-32 w-full max-w-3xl mx-auto relative">
-        <AppMainContent
-          activeTab={activeTab}
-          isCreating={isCreating}
-          selectedBooking={selectedBooking}
-          bookings={bookings}
-          courts={courts}
-          isBookingsLoading={isBookingsLoading}
-          filterValue={filterValue}
-          selectedCourt={selectedCourt}
-          onCancelCreate={() => {
-            setIsCreating(false);
-            setSelectedBooking(null);
-          }}
-          onFilterChange={setFilterValue}
-          onCourtChange={setSelectedCourt}
-          onBookingClick={handleBookingClick}
+      <Routes>
+        <Route
+          path="/login"
+          element={token ? <Navigate to="/" replace /> : <Login />}
         />
-      </main>
+        <Route
+          path="/*"
+          element={
+            !token ? (
+              <Navigate to="/login" replace />
+            ) : needsSuperAdminSetup ? (
+              <SuperAdminSetup superAdminUsername={user?.username || "superadmin"} />
+            ) : (
+              <div className="dark min-h-[100dvh] bg-background text-foreground flex flex-col font-sans pb-safe">
+                <Navbar
+                  title={getScreenTitle(activeTab, isCreating)}
+                  onAvatarClick={onProfileOpen}
+                  onBellClick={onNotifOpen}
+                  notificationCount={unreadCount}
+                  avatarName={adminName}
+                  avatarSrc={navAvatarSrc}
+                />
 
-      <BottomNav
-        activeTab={activeTab}
-        onTabChange={(tab: string) => {
-          if (tab === "fab") {
-            setIsCreating(true);
-            return;
+                <main className="flex-grow px-4 pt-4 pb-28 sm:px-6 sm:pt-6 sm:pb-32 w-full max-w-3xl mx-auto relative">
+                  <AppMainContent
+                    activeTab={activeTab}
+                    isCreating={isCreating}
+                    selectedBooking={selectedBooking}
+                    bookings={bookings}
+                    courts={courts}
+                    isBookingsLoading={isBookingsLoading}
+                    filterValue={filterValue}
+                    selectedCourt={selectedCourt}
+                    onCancelCreate={() => {
+                      setIsCreating(false);
+                      setSelectedBooking(null);
+                    }}
+                    onFilterChange={setFilterValue}
+                    onCourtChange={setSelectedCourt}
+                    onBookingClick={handleBookingClick}
+                  />
+                </main>
+
+                <BottomNav
+                  activeTab={activeTab}
+                  onTabChange={(tab: string) => {
+                    if (tab === "fab") {
+                      setIsCreating(true);
+                      return;
+                    }
+
+                    setActiveTab(tab);
+                    setIsCreating(false);
+                  }}
+                />
+
+                <BookingDetailDrawer
+                  isOpen={isBookingDetailOpen}
+                  onOpenChange={onBookingDetailOpenChange}
+                  selectedBooking={selectedBooking}
+                  setSelectedBooking={setSelectedBooking}
+                  updateBooking={updateBooking}
+                  deleteBooking={deleteBooking}
+                />
+
+                <ProfileDrawer
+                  isOpen={isProfileOpen}
+                  onOpenChange={onProfileOpenChange}
+                  courts={courts}
+                />
+
+                <NotificationsDrawer
+                  isOpen={isNotifOpen}
+                  onOpenChange={onNotifOpenChange}
+                  notificationsData={notificationsData}
+                  markAllRead={markAllRead}
+                />
+              </div>
+            )
           }
-
-          setActiveTab(tab);
-          setIsCreating(false);
-        }}
-      />
-
-      <BookingDetailDrawer
-        isOpen={isBookingDetailOpen}
-        onOpenChange={onBookingDetailOpenChange}
-        selectedBooking={selectedBooking}
-        setSelectedBooking={setSelectedBooking}
-        updateBooking={updateBooking}
-        deleteBooking={deleteBooking}
-      />
-
-      <ProfileDrawer
-        isOpen={isProfileOpen}
-        onOpenChange={onProfileOpenChange}
-        courts={courts}
-      />
-
-      <NotificationsDrawer
-        isOpen={isNotifOpen}
-        onOpenChange={onNotifOpenChange}
-        notificationsData={notificationsData}
-        markAllRead={markAllRead}
-      />
-    </div>
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
