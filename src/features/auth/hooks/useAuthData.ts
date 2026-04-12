@@ -12,3 +12,15 @@ export const useUpdateProfile = () => {
     },
   });
 };
+
+export const useUpdateOwnCompany = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: authService.updateCompany,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-me"] });
+      queryClient.invalidateQueries({ queryKey: ["companies"] });
+    },
+  });
+};

@@ -15,7 +15,16 @@ interface User {
   name?: string;
   role: string;
   phone?: string;
-  companyId?: string | { _id?: string; name?: string; slug?: string; isActive?: boolean } | null;
+  companyId?:
+    | string
+    | {
+        _id?: string;
+        name?: string;
+        slug?: string;
+        address?: string;
+        isActive?: boolean;
+      }
+    | null;
   isActive?: boolean;
 }
 

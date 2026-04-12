@@ -48,6 +48,7 @@ export default function App() {
   const [isCreating, setIsCreating] = useState(false);
   const [selectedCourt, setSelectedCourt] = useState("all");
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   const isAuthenticated = Boolean(token);
   const isSuperAdmin = user?.role === "super_admin";
@@ -158,6 +159,35 @@ export default function App() {
     });
   }, [notificationsData, unreadCount]);
 
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return undefined;
+
+    const updateKeyboardState = () => {
+      const keyboardHeight = Math.max(
+        0,
+        window.innerHeight - viewport.height - viewport.offsetTop,
+      );
+      const nextIsKeyboardOpen = keyboardHeight > 120;
+      setIsKeyboardOpen(nextIsKeyboardOpen);
+      document.documentElement.style.setProperty("--keyboard-height", `${keyboardHeight}px`);
+      document.body.classList.toggle("keyboard-open", nextIsKeyboardOpen);
+    };
+
+    updateKeyboardState();
+    viewport.addEventListener("resize", updateKeyboardState);
+    viewport.addEventListener("scroll", updateKeyboardState);
+    window.addEventListener("orientationchange", updateKeyboardState);
+
+    return () => {
+      viewport.removeEventListener("resize", updateKeyboardState);
+      viewport.removeEventListener("scroll", updateKeyboardState);
+      window.removeEventListener("orientationchange", updateKeyboardState);
+      document.documentElement.style.setProperty("--keyboard-height", "0px");
+      document.body.classList.remove("keyboard-open");
+    };
+  }, []);
+
   if (isAuthLoading) return null;
 
   return (
@@ -176,7 +206,7 @@ export default function App() {
             ) : needsSuperAdminSetup ? (
               <SuperAdminSetup superAdminUsername={user?.username || "superadmin"} />
             ) : (
-              <div className="dark min-h-[100dvh] bg-background text-foreground flex flex-col font-sans pb-safe">
+              <div className="dark min-h-[100dvh] bg-background text-foreground flex flex-col font-sans pb-safe app-shell-root">
                 <Navbar
                   title={getScreenTitle(activeTab, isCreating)}
                   onAvatarClick={onProfileOpen}
@@ -186,7 +216,9 @@ export default function App() {
                   avatarSrc={navAvatarSrc}
                 />
 
-                <main className="flex-grow px-4 pt-4 pb-28 sm:px-6 sm:pt-6 sm:pb-32 w-full max-w-3xl mx-auto relative">
+                <main
+                  className={`flex-grow px-4 pt-4 sm:px-6 sm:pt-6 w-full max-w-3xl mx-auto relative app-shell-main ${isKeyboardOpen ? "pb-4 sm:pb-6" : "pb-28 sm:pb-32"}`}
+                >
                   <AppMainContent
                     activeTab={activeTab}
                     isCreating={isCreating}
@@ -208,6 +240,7 @@ export default function App() {
 
                 <BottomNav
                   activeTab={activeTab}
+                  isKeyboardOpen={isKeyboardOpen}
                   onTabChange={(tab: string) => {
                     if (tab === "fab") {
                       setIsCreating(true);

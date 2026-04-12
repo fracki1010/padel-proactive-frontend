@@ -49,6 +49,7 @@
     --color-green-500: 34 197 94;
     --color-blue-500: 255 122 0;
     --color-orange-500: 255 122 0;
+    --keyboard-height: 0px;
   }
 
   body {
@@ -71,6 +72,20 @@
     min-height: 100vh;
     min-height: 100dvh;
     isolation: isolate;
+  }
+
+  body.keyboard-open {
+    overscroll-behavior-y: none;
+  }
+
+  body.keyboard-open .app-shell-main {
+    padding-bottom: 1rem !important;
+  }
+
+  body.keyboard-open .app-bottom-nav {
+    transform: translateY(calc(100% + env(safe-area-inset-bottom)));
+    opacity: 0;
+    pointer-events: none;
   }
 }
 

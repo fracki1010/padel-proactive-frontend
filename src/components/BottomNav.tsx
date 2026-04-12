@@ -4,11 +4,13 @@ import { cn } from "@heroui/react";
 
 interface BottomNavProps {
   activeTab?: string;
+  isKeyboardOpen?: boolean;
   onTabChange?: (tab: string) => void;
 }
 
 export const BottomNav = ({
   activeTab = "panel",
+  isKeyboardOpen = false,
   onTabChange,
 }: BottomNavProps) => {
   const tabs = [
@@ -20,7 +22,9 @@ export const BottomNav = ({
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-dark-200/90 backdrop-blur-xl border-t border-white/5 px-3 sm:px-6 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] flex items-end justify-between z-50">
+    <div
+      className={`fixed bottom-0 left-0 right-0 bg-dark-200/90 backdrop-blur-xl border-t border-white/5 px-3 sm:px-6 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] flex items-end justify-between z-50 transition-all duration-200 app-bottom-nav ${isKeyboardOpen ? "translate-y-full opacity-0 pointer-events-none" : "translate-y-0 opacity-100"}`}
+    >
       {tabs.map((tab) => {
         if (tab.isFab) {
           return (

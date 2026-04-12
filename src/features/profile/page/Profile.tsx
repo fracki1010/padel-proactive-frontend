@@ -9,6 +9,7 @@ import {
   useCreateSlot,
   useUpdateSlot,
   useUpdateProfile,
+  useUpdateOwnCompany,
   useWhatsappStatus,
   useUpdateBasePrice,
   usePenaltySettings,
@@ -43,6 +44,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     "menu" | "courts" | "schedule" | "whatsapp" | "tenants"
   >("menu");
   const isSuperAdmin = user?.role === "super_admin";
+  const canManageClubData = isSuperAdmin || Boolean(user?.companyId);
 
   const { data: courtsData } = useCourts(true);
   const { data: slotsData } = useSlots(true);
@@ -60,6 +62,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const updatePenaltySettings = useUpdatePenaltySettings();
   const updateOneHourReminderSetting = useUpdateOneHourReminderSetting();
   const updateProfile = useUpdateProfile();
+  const updateOwnCompany = useUpdateOwnCompany();
   const updateWhatsappStatus = useUpdateWhatsappStatus();
   const closeWhatsappSession = useCloseWhatsappSession();
   const createCompany = useCreateCompany();
@@ -96,7 +99,24 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     typeof whatsappState?.qr === "string" && whatsappState.qr.trim().length > 0
       ? whatsappState.qr
       : "";
-  const companies = companiesData?.data || [];
+  const userCompany =
+    user?.companyId && typeof user.companyId === "object"
+      ? {
+          _id: user.companyId._id,
+          name: user.companyId.name || "",
+          slug: user.companyId.slug || "",
+          address: user.companyId.address || "",
+          isActive:
+            typeof user.companyId.isActive === "boolean"
+              ? user.companyId.isActive
+              : true,
+        }
+      : null;
+  const companies = isSuperAdmin
+    ? companiesData?.data || []
+    : userCompany?._id
+      ? [userCompany]
+      : [];
   const admins = adminsData?.data || [];
   const oneHourReminderEnabled = Boolean(
     oneHourReminderData?.data?.oneHourReminderEnabled,
@@ -500,9 +520,10 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     );
   }
 
-  if (view === "tenants" && isSuperAdmin) {
+  if (view === "tenants" && canManageClubData) {
     return (
       <TenantsView
+        isSuperAdmin={isSuperAdmin}
         companies={companies}
         admins={admins}
         companyNameInput={companyNameInput}
@@ -511,7 +532,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         newAdminPhone={newAdminPhone}
         newAdminCompanyId={newAdminCompanyId}
         createCompanyPending={createCompany.isPending}
-        updateCompanyPending={updateCompany.isPending}
+        updateCompanyPending={updateCompany.isPending || updateOwnCompany.isPending}
         bootstrapPending={bootstrapTenant.isPending}
         createAdminPending={createAdmin.isPending}
         onBack={() => setView("menu")}
@@ -524,24 +545,45 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         onBootstrapTenant={handleBootstrapTenant}
         onCreateAdmin={handleCreateAdmin}
         onUpdateCompanyStatus={(id, isActive) =>
-          updateCompanyStatus.mutate({ id, isActive })
+          isSuperAdmin
+            ? updateCompanyStatus.mutate({ id, isActive })
+            : addToast({
+                title: "Solo superadmin puede activar/desactivar empresas",
+                color: "warning",
+              })
         }
         onUpdateCompany={(id, data) =>
-          updateCompany.mutate(
-            { id, data },
-            {
-              onSuccess: () => {
-                addToast({ title: "Empresa actualizada", color: "success" });
-              },
-              onError: (err: any) => {
-                addToast({
-                  title:
-                    err?.response?.data?.error || "No se pudo actualizar la empresa",
-                  color: "danger",
-                });
-              },
-            },
-          )
+          isSuperAdmin
+            ? updateCompany.mutate(
+                { id, data },
+                {
+                  onSuccess: () => {
+                    addToast({ title: "Empresa actualizada", color: "success" });
+                  },
+                  onError: (err: any) => {
+                    addToast({
+                      title:
+                        err?.response?.data?.error || "No se pudo actualizar la empresa",
+                      color: "danger",
+                    });
+                  },
+                },
+              )
+            : updateOwnCompany.mutate(data, {
+                onSuccess: (response: any) => {
+                  if (response?.data?.user) {
+                    updateUser(response.data.user);
+                  }
+                  addToast({ title: "Datos del club actualizados", color: "success" });
+                },
+                onError: (err: any) => {
+                  addToast({
+                    title:
+                      err?.response?.data?.error || "No se pudo actualizar el club",
+                    color: "danger",
+                  });
+                },
+              })
         }
         onUpdateAdminStatus={(id, isActive) =>
           updateAdminStatus.mutate({ id, isActive })
@@ -598,6 +640,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     <ProfileMenuView
       user={user}
       isSuperAdmin={isSuperAdmin}
+      canManageClubData={canManageClubData}
       courtsCount={courts.length}
       phoneNumber={phoneNumber}
       whatsappEnabled={whatsappEnabled}

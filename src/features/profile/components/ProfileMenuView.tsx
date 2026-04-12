@@ -16,6 +16,7 @@ import {
 type ProfileMenuViewProps = {
   user: any;
   isSuperAdmin: boolean;
+  canManageClubData: boolean;
   courtsCount: number;
   phoneNumber: string;
   whatsappEnabled: boolean;
@@ -37,6 +38,7 @@ type ProfileMenuViewProps = {
 export const ProfileMenuView = ({
   user,
   isSuperAdmin,
+  canManageClubData,
   courtsCount,
   phoneNumber,
   whatsappEnabled,
@@ -216,7 +218,7 @@ export const ProfileMenuView = ({
               <ChevronRight size={20} className="text-gray-600" />
             </div>
 
-            {isSuperAdmin && (
+            {canManageClubData && (
               <div
                 onClick={onGoToTenants}
                 className="bg-dark-100 p-4 rounded-3xl border border-white/5 flex items-center justify-between group cursor-pointer hover:border-primary/30 transition-all font-bold"
@@ -227,10 +229,10 @@ export const ProfileMenuView = ({
                   </div>
                   <div>
                     <p className="font-bold text-white uppercase text-sm">
-                      Multiempresa
+                      {isSuperAdmin ? "Multiempresa" : "Datos del club"}
                     </p>
                     <p className="text-[10px] text-gray-500 font-bold uppercase">
-                      Empresas y admins
+                      {isSuperAdmin ? "Empresas y admins" : "Nombre, slug y dirección"}
                     </p>
                   </div>
                 </div>
