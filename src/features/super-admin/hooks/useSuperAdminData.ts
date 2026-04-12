@@ -35,6 +35,24 @@ export const useUpdateCompanyStatus = () => {
   });
 };
 
+export const useUpdateCompany = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { name?: string; slug?: string; address?: string };
+    }) => superAdminService.updateCompany(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      queryClient.invalidateQueries({ queryKey: ["admins"] });
+    },
+  });
+};
+
 export const useAdmins = (enabled = true) => {
   return useQuery({
     queryKey: ["admins"],

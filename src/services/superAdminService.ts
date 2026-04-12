@@ -15,6 +15,13 @@ export const superAdminService = {
     });
     return response.data;
   },
+  updateCompany: async (
+    id: string,
+    data: { name?: string; slug?: string; address?: string },
+  ): Promise<any> => {
+    const response = await api.put(`/super-admin/companies/${id}`, data);
+    return response.data;
+  },
   listAdmins: async (): Promise<any> => {
     const response = await api.get("/super-admin/admins");
     return response.data;

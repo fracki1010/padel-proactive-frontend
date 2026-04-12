@@ -20,6 +20,7 @@ import {
   useCompanies,
   useCreateCompany,
   useUpdateCompanyStatus,
+  useUpdateCompany,
   useAdmins,
   useCreateAdmin,
   useUpdateAdminStatus,
@@ -63,6 +64,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const closeWhatsappSession = useCloseWhatsappSession();
   const createCompany = useCreateCompany();
   const updateCompanyStatus = useUpdateCompanyStatus();
+  const updateCompany = useUpdateCompany();
   const createAdmin = useCreateAdmin();
   const updateAdminStatus = useUpdateAdminStatus();
   const bootstrapTenant = useBootstrapDefaultTenant();
@@ -509,6 +511,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         newAdminPhone={newAdminPhone}
         newAdminCompanyId={newAdminCompanyId}
         createCompanyPending={createCompany.isPending}
+        updateCompanyPending={updateCompany.isPending}
         bootstrapPending={bootstrapTenant.isPending}
         createAdminPending={createAdmin.isPending}
         onBack={() => setView("menu")}
@@ -522,6 +525,23 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         onCreateAdmin={handleCreateAdmin}
         onUpdateCompanyStatus={(id, isActive) =>
           updateCompanyStatus.mutate({ id, isActive })
+        }
+        onUpdateCompany={(id, data) =>
+          updateCompany.mutate(
+            { id, data },
+            {
+              onSuccess: () => {
+                addToast({ title: "Empresa actualizada", color: "success" });
+              },
+              onError: (err: any) => {
+                addToast({
+                  title:
+                    err?.response?.data?.error || "No se pudo actualizar la empresa",
+                  color: "danger",
+                });
+              },
+            },
+          )
         }
         onUpdateAdminStatus={(id, isActive) =>
           updateAdminStatus.mutate({ id, isActive })

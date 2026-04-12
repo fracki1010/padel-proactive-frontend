@@ -1,5 +1,6 @@
 import { Button, Card, CardBody, Input, Switch } from "@heroui/react";
 import { ChevronLeft } from "lucide-react";
+import { useEffect, useState } from "react";
 
 type TenantsViewProps = {
   companies: any[];
@@ -10,6 +11,7 @@ type TenantsViewProps = {
   newAdminPhone: string;
   newAdminCompanyId: string;
   createCompanyPending: boolean;
+  updateCompanyPending: boolean;
   bootstrapPending: boolean;
   createAdminPending: boolean;
   onBack: () => void;
@@ -22,6 +24,10 @@ type TenantsViewProps = {
   onBootstrapTenant: () => void;
   onCreateAdmin: () => void;
   onUpdateCompanyStatus: (id: string, isActive: boolean) => void;
+  onUpdateCompany: (
+    id: string,
+    data: { name?: string; slug?: string; address?: string },
+  ) => void;
   onUpdateAdminStatus: (id: string, isActive: boolean) => void;
 };
 
@@ -34,6 +40,7 @@ export const TenantsView = ({
   newAdminPhone,
   newAdminCompanyId,
   createCompanyPending,
+  updateCompanyPending,
   bootstrapPending,
   createAdminPending,
   onBack,
@@ -46,8 +53,34 @@ export const TenantsView = ({
   onBootstrapTenant,
   onCreateAdmin,
   onUpdateCompanyStatus,
+  onUpdateCompany,
   onUpdateAdminStatus,
 }: TenantsViewProps) => {
+  const [addressDraftByCompany, setAddressDraftByCompany] = useState<Record<string, string>>(
+    {},
+  );
+
+  useEffect(() => {
+    setAddressDraftByCompany((prev) =>
+      companies.reduce((acc: Record<string, string>, company: any) => {
+        const hasDraft = Object.prototype.hasOwnProperty.call(prev, company._id);
+        acc[company._id] = hasDraft ? prev[company._id] : String(company.address || "");
+        return acc;
+      }, {}),
+    );
+  }, [companies]);
+
+  const updateAddressDraft = (companyId: string, value: string) => {
+    setAddressDraftByCompany((prev) => ({ ...prev, [companyId]: value }));
+  };
+
+  const handleSaveAddress = (company: any) => {
+    const nextAddress = String(addressDraftByCompany[company._id] || "").trim();
+    const currentAddress = String(company.address || "").trim();
+    if (nextAddress === currentAddress) return;
+    onUpdateCompany(company._id, { address: nextAddress });
+  };
+
   return (
     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
       <div className="flex items-center gap-4">
@@ -165,11 +198,31 @@ export const TenantsView = ({
             className="bg-dark-100 border border-white/5 rounded-[1.5rem]"
           >
             <CardBody className="p-4 flex items-center justify-between gap-3">
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="font-bold text-white">{company.name}</p>
                 <p className="text-[10px] text-gray-500 uppercase font-bold">
                   {company.slug}
                 </p>
+                <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                  <Input
+                    value={addressDraftByCompany[company._id] ?? String(company.address || "")}
+                    onValueChange={(value) => updateAddressDraft(company._id, value)}
+                    placeholder="Dirección del club"
+                    className="flex-grow"
+                    classNames={{
+                      inputWrapper:
+                        "bg-white/5 border-white/10 data-[hover=true]:border-white/20 rounded-xl h-10",
+                      input: "text-sm text-white",
+                    }}
+                  />
+                  <Button
+                    className="h-10 bg-primary text-black font-black rounded-xl uppercase text-[10px]"
+                    isLoading={updateCompanyPending}
+                    onPress={() => handleSaveAddress(company)}
+                  >
+                    Guardar
+                  </Button>
+                </div>
               </div>
               <Switch
                 isSelected={Boolean(company.isActive)}
