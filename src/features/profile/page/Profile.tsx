@@ -138,6 +138,12 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     whatsappState?.groupCancellationAlertsName,
     whatsappState?.cancelledBookingGroupName,
   ];
+  const dailyAvailabilityDigestEnabledCandidates = [
+    whatsappCancellationGroupSettingsRaw?.dailyAvailabilityDigestEnabled,
+    whatsappState?.dailyAvailabilityDigestEnabled,
+    whatsappState?.dailyGroupAvailabilityEnabled,
+    whatsappState?.groupDailyAvailabilityDigestEnabled,
+  ];
   const whatsappCancellationGroupEnabled = Boolean(
     cancellationGroupEnabledCandidates.find((candidate) => typeof candidate === "boolean"),
   );
@@ -149,6 +155,11 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     (cancellationGroupNameCandidates.find((candidate) => typeof candidate === "string") as
       | string
       | undefined) || "";
+  const whatsappDailyAvailabilityDigestEnabled = Boolean(
+    dailyAvailabilityDigestEnabledCandidates.find(
+      (candidate) => typeof candidate === "boolean",
+    ),
+  );
   const whatsappGroups = Array.isArray(whatsappGroupsData?.data)
     ? whatsappGroupsData.data
         .map((group: any) => ({
@@ -194,6 +205,8 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const [newSlotPrice, setNewSlotPrice] = useState("");
   const [cancellationGroupIdInput, setCancellationGroupIdInput] = useState("");
   const [cancellationGroupNameInput, setCancellationGroupNameInput] = useState("");
+  const [dailyAvailabilityDigestEnabledInput, setDailyAvailabilityDigestEnabledInput] =
+    useState(false);
   const [isEditingCancellationGroupId, setIsEditingCancellationGroupId] =
     useState(false);
   const [isEditingCancellationGroupName, setIsEditingCancellationGroupName] =
@@ -246,6 +259,10 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     if (isEditingCancellationGroupName) return;
     setCancellationGroupNameInput(whatsappCancellationGroupName);
   }, [whatsappCancellationGroupName, isEditingCancellationGroupName]);
+
+  useEffect(() => {
+    setDailyAvailabilityDigestEnabledInput(whatsappDailyAvailabilityDigestEnabled);
+  }, [whatsappDailyAvailabilityDigestEnabled]);
 
   const whatsappStatusLabelByKey: Record<string, string> = {
     disabled: "Desactivado",
@@ -371,6 +388,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     nextEnabled: boolean,
     nextGroupIdRaw: string,
     nextGroupNameRaw: string,
+    nextDailyAvailabilityDigestEnabled: boolean,
   ) => {
     const nextGroupId = nextGroupIdRaw.trim();
     const nextGroupName = nextGroupNameRaw.trim();
@@ -387,9 +405,11 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         enabled: nextEnabled,
         groupId: nextGroupId,
         groupName: nextGroupName,
+        dailyAvailabilityDigestEnabled: nextDailyAvailabilityDigestEnabled,
       });
       setCancellationGroupIdInput(nextGroupId);
       setCancellationGroupNameInput(nextGroupName);
+      setDailyAvailabilityDigestEnabledInput(nextDailyAvailabilityDigestEnabled);
       setIsEditingCancellationGroupId(false);
       setIsEditingCancellationGroupName(false);
       addToast({
@@ -416,6 +436,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       enabled,
       cancellationGroupIdInput,
       cancellationGroupNameInput,
+      dailyAvailabilityDigestEnabledInput,
     );
   };
 
@@ -424,6 +445,24 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       whatsappCancellationGroupEnabled,
       cancellationGroupIdInput,
       cancellationGroupNameInput,
+      dailyAvailabilityDigestEnabledInput,
+    );
+  };
+
+  const handleToggleDailyAvailabilityDigest = (enabled: boolean) => {
+    if (enabled && !cancellationGroupIdInput.trim()) {
+      addToast({
+        title: "Primero seleccioná un grupo para enviar el resumen diario",
+        color: "warning",
+      });
+      return;
+    }
+
+    persistWhatsappCancellationGroupSettings(
+      whatsappCancellationGroupEnabled,
+      cancellationGroupIdInput,
+      cancellationGroupNameInput,
+      enabled,
     );
   };
 
@@ -659,6 +698,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         cancellationGroupEnabled={whatsappCancellationGroupEnabled}
         cancellationGroupIdInput={cancellationGroupIdInput}
         cancellationGroupNameInput={cancellationGroupNameInput}
+        dailyAvailabilityDigestEnabled={dailyAvailabilityDigestEnabledInput}
         whatsappGroups={whatsappGroups}
         isLoadingWhatsappGroups={isLoadingWhatsappGroups}
         updateCancellationGroupPending={
@@ -678,6 +718,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           setIsEditingCancellationGroupName(true);
         }}
         onSelectWhatsappGroup={handleSelectWhatsappGroup}
+        onToggleDailyAvailabilityDigest={handleToggleDailyAvailabilityDigest}
         onSaveCancellationGroup={handleSaveCancellationGroupId}
       />
     );

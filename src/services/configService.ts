@@ -25,7 +25,12 @@ const parseOneHourReminderEnabled = (responseData: any): boolean | null => {
 
 const parseWhatsappCancellationGroupSettings = (
   responseData: any,
-): { enabled: boolean; groupId: string; groupName: string } | null => {
+): {
+  enabled: boolean;
+  groupId: string;
+  groupName: string;
+  dailyAvailabilityDigestEnabled: boolean;
+} | null => {
   const data = responseData?.data ?? responseData;
 
   if (!data || typeof data !== "object") return null;
@@ -53,15 +58,26 @@ const parseWhatsappCancellationGroupSettings = (
     data?.groupNotifications?.cancellations?.groupName,
     data?.groupNotifications?.cancellations?.name,
   ];
+  const dailyAvailabilityDigestEnabledCandidates = [
+    data?.dailyAvailabilityDigestEnabled,
+    data?.dailyGroupAvailabilityEnabled,
+    data?.groupDailyAvailabilityDigestEnabled,
+    data?.groupNotifications?.dailyAvailability?.enabled,
+  ];
 
   const enabled = enabledCandidates.find((value) => typeof value === "boolean");
   const groupId = groupIdCandidates.find((value) => typeof value === "string");
   const groupName = groupNameCandidates.find((value) => typeof value === "string");
+  const dailyAvailabilityDigestEnabled =
+    dailyAvailabilityDigestEnabledCandidates.find(
+      (value) => typeof value === "boolean",
+    );
 
   if (
     typeof enabled !== "boolean" &&
     typeof groupId !== "string" &&
-    typeof groupName !== "string"
+    typeof groupName !== "string" &&
+    typeof dailyAvailabilityDigestEnabled !== "boolean"
   ) {
     return null;
   }
@@ -70,6 +86,7 @@ const parseWhatsappCancellationGroupSettings = (
     enabled: Boolean(enabled),
     groupId: typeof groupId === "string" ? groupId : "",
     groupName: typeof groupName === "string" ? groupName : "",
+    dailyAvailabilityDigestEnabled: Boolean(dailyAvailabilityDigestEnabled),
   };
 };
 
@@ -408,6 +425,9 @@ export const configService = {
               typeof localParsed?.groupName === "string"
                 ? localParsed.groupName
                 : "",
+            dailyAvailabilityDigestEnabled: Boolean(
+              localParsed?.dailyAvailabilityDigestEnabled,
+            ),
             persistedLocally: true,
           },
         };
@@ -417,7 +437,13 @@ export const configService = {
     }
 
     return {
-      data: { enabled: false, groupId: "", groupName: "", persistedLocally: true },
+      data: {
+        enabled: false,
+        groupId: "",
+        groupName: "",
+        dailyAvailabilityDigestEnabled: false,
+        persistedLocally: true,
+      },
     };
   },
 
@@ -425,10 +451,12 @@ export const configService = {
     enabled,
     groupId,
     groupName,
+    dailyAvailabilityDigestEnabled,
   }: {
     enabled: boolean;
     groupId: string;
     groupName: string;
+    dailyAvailabilityDigestEnabled: boolean;
   }): Promise<any> => {
     const normalizedGroupId = groupId.trim();
     const normalizedGroupName = groupName.trim();
@@ -444,6 +472,7 @@ export const configService = {
           cancellationGroupEnabled: enabled,
           cancellationGroupId: normalizedGroupId,
           cancellationGroupName: normalizedGroupName,
+          dailyAvailabilityDigestEnabled,
         },
       },
       {
@@ -453,6 +482,7 @@ export const configService = {
           cancellationGroupEnabled: enabled,
           cancellationGroupId: normalizedGroupId,
           cancellationGroupName: normalizedGroupName,
+          dailyAvailabilityDigestEnabled,
         },
       },
       {
@@ -462,6 +492,7 @@ export const configService = {
           groupCancellationAlertsEnabled: enabled,
           groupCancellationAlertsId: normalizedGroupId,
           groupCancellationAlertsName: normalizedGroupName,
+          dailyGroupAvailabilityEnabled: dailyAvailabilityDigestEnabled,
         },
       },
       {
@@ -471,6 +502,7 @@ export const configService = {
           groupCancellationAlertsEnabled: enabled,
           groupCancellationAlertsId: normalizedGroupId,
           groupCancellationAlertsName: normalizedGroupName,
+          dailyGroupAvailabilityEnabled: dailyAvailabilityDigestEnabled,
         },
       },
       {
@@ -480,6 +512,7 @@ export const configService = {
           cancelledBookingGroupEnabled: enabled,
           cancelledBookingGroupId: normalizedGroupId,
           cancelledBookingGroupName: normalizedGroupName,
+          groupDailyAvailabilityDigestEnabled: dailyAvailabilityDigestEnabled,
         },
       },
       {
@@ -489,6 +522,7 @@ export const configService = {
           cancelledBookingGroupEnabled: enabled,
           cancelledBookingGroupId: normalizedGroupId,
           cancelledBookingGroupName: normalizedGroupName,
+          groupDailyAvailabilityDigestEnabled: dailyAvailabilityDigestEnabled,
         },
       },
     ];
@@ -507,6 +541,7 @@ export const configService = {
           enabled,
           groupId: normalizedGroupId,
           groupName: normalizedGroupName,
+          dailyAvailabilityDigestEnabled,
         };
         localStorage.setItem(
           CANCELLATION_GROUP_SETTINGS_KEY,
@@ -531,6 +566,7 @@ export const configService = {
         enabled,
         groupId: normalizedGroupId,
         groupName: normalizedGroupName,
+        dailyAvailabilityDigestEnabled,
       };
       localStorage.setItem(
         CANCELLATION_GROUP_SETTINGS_KEY,

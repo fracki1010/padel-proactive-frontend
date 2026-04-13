@@ -13,6 +13,7 @@ type WhatsappSettingsViewProps = {
   cancellationGroupEnabled: boolean;
   cancellationGroupIdInput: string;
   cancellationGroupNameInput: string;
+  dailyAvailabilityDigestEnabled: boolean;
   whatsappGroups: Array<{ id: string; name: string }>;
   isLoadingWhatsappGroups: boolean;
   updateCancellationGroupPending: boolean;
@@ -24,6 +25,7 @@ type WhatsappSettingsViewProps = {
   onCancellationGroupIdChange: (value: string) => void;
   onCancellationGroupNameChange: (value: string) => void;
   onSelectWhatsappGroup: (groupId: string) => void;
+  onToggleDailyAvailabilityDigest: (enabled: boolean) => void;
   onSaveCancellationGroup: () => void;
 };
 
@@ -39,6 +41,7 @@ export const WhatsappSettingsView = ({
   cancellationGroupEnabled,
   cancellationGroupIdInput,
   cancellationGroupNameInput,
+  dailyAvailabilityDigestEnabled,
   whatsappGroups,
   isLoadingWhatsappGroups,
   updateCancellationGroupPending,
@@ -50,6 +53,7 @@ export const WhatsappSettingsView = ({
   onCancellationGroupIdChange,
   onCancellationGroupNameChange,
   onSelectWhatsappGroup,
+  onToggleDailyAvailabilityDigest,
   onSaveCancellationGroup,
 }: WhatsappSettingsViewProps) => {
   const isLockedElsewhere = whatsappStatus === "locked_elsewhere";
@@ -223,6 +227,24 @@ export const WhatsappSettingsView = ({
             <p className="text-[10px] text-gray-500 font-bold italic">
               * El nombre es para identificarlo fácil en el panel. El envío real usa el ID @g.us.
             </p>
+
+            <div className="flex items-center justify-between gap-4 bg-white/5 border border-white/10 rounded-2xl p-4">
+              <div>
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                  Resumen Diario
+                </p>
+                <p className="text-white font-bold text-sm">
+                  Enviar cada día la disponibilidad de hoy al grupo.
+                </p>
+              </div>
+              <Switch
+                isSelected={dailyAvailabilityDigestEnabled}
+                onValueChange={onToggleDailyAvailabilityDigest}
+                isDisabled={updateCancellationGroupPending}
+                color="primary"
+                size="sm"
+              />
+            </div>
           </div>
 
           {!whatsappEnabled ? (

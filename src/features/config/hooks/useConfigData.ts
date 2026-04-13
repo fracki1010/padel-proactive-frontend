@@ -197,7 +197,12 @@ export const useUpdateWhatsappCancellationGroupSettings = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: { enabled: boolean; groupId: string; groupName: string }) =>
+    mutationFn: (payload: {
+      enabled: boolean;
+      groupId: string;
+      groupName: string;
+      dailyAvailabilityDigestEnabled: boolean;
+    }) =>
       configService.updateWhatsappCancellationGroupSettings(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["whatsapp-cancellation-group-settings"] });
