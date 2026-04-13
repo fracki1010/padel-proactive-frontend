@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { getTodayIsoLocal, toIsoDateKey } from "../../../utils/formatters";
 
 import { useSlots, useBookings } from "../../../hooks/useData";
 import { CourtsAvailability } from "../components/CourtsAvailability";
@@ -12,7 +13,7 @@ interface DashboardProps {
 
 export const Dashboard = ({ courts, onBookingClick }: DashboardProps) => {
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0],
+    getTodayIsoLocal(),
   );
   const [activeFilter, setActiveFilter] = useState("afternoon");
   const { data: slotsData, isLoading: isLoadingSlots } = useSlots();
@@ -34,7 +35,7 @@ export const Dashboard = ({ courts, onBookingClick }: DashboardProps) => {
   const getSlotBookings = (slotId: string, courtId: string) => {
     return dashboardBookings.filter(
       (booking: any) =>
-        booking.date.startsWith(selectedDate) &&
+        toIsoDateKey(booking.date) === selectedDate &&
         booking.court?._id === courtId &&
         booking.timeSlot?._id === slotId,
     );

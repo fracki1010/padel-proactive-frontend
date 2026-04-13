@@ -1,5 +1,10 @@
 import { Card, CardBody, Button, ScrollShadow } from "@heroui/react";
-import { formatCurrency, formatDate } from "../../../utils/formatters";
+import {
+  formatCurrency,
+  formatDate,
+  getTodayIsoLocal,
+  toIsoDateKey,
+} from "../../../utils/formatters";
 import { useState, useMemo } from "react";
 import {
   Calendar,
@@ -33,14 +38,14 @@ export const Finance = ({ bookings }: FinanceProps) => {
     "Diciembre",
   ];
 
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const todayStr = getTodayIsoLocal();
 
   const metrics = useMemo(() => {
     const filteredMonth = bookings.filter((b) => {
-      const d = new Date(b.date);
+      const d = new Date(`${toIsoDateKey(b.date)}T12:00:00Z`);
       return (
-        d.getUTCMonth() === selectedMonth && d.getUTCFullYear() === selectedYear
+        d.getUTCMonth() === selectedMonth &&
+        d.getUTCFullYear() === selectedYear
       );
     });
 
@@ -61,7 +66,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
     );
 
     const dailyBookings = bookings.filter((b) => {
-      const d = b.date.split("T")[0];
+      const d = toIsoDateKey(b.date);
       return d === todayStr;
     });
     const confirmedDaily = dailyBookings.filter(
@@ -98,7 +103,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
       movements: filteredMonth
         .slice()
         .sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+          (a, b) => toIsoDateKey(b.date).localeCompare(toIsoDateKey(a.date)),
         ),
     };
   }, [bookings, selectedMonth, selectedYear, todayStr]);

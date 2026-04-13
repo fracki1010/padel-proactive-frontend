@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 import { getAvatarColor, getInitials } from "../../../utils/avatarUtils";
+import { toIsoDateKey } from "../../../utils/formatters";
 import type { Booking, User } from "../../../types";
 
 type HistoryModalProps = {
@@ -70,24 +71,26 @@ export const HistoryModal = ({
           ) : (
             <ScrollShadow className="max-h-[500px] pr-2">
               <div className="space-y-3">
-                {history.map((item) => (
-                  <div
-                    key={item._id}
-                    className="bg-dark-200/50 p-4 rounded-3xl border border-white/5 hover:border-primary/20 transition-all group"
-                  >
+                {history.map((item) => {
+                  const stableDate = new Date(`${toIsoDateKey(item.date)}T12:00:00Z`);
+                  return (
+                    <div
+                      key={item._id}
+                      className="bg-dark-200/50 p-4 rounded-3xl border border-white/5 hover:border-primary/20 transition-all group"
+                    >
                     <div className="flex flex-col sm:flex-row justify-between gap-4">
                       <div className="flex items-start gap-4">
                         <div className="bg-white/5 p-2 rounded-2xl flex flex-col items-center min-w-[55px] font-black">
                           <span className="text-[10px] text-primary uppercase">
-                            {format(new Date(item.date), "EEE", { locale: es })}
+                            {format(stableDate, "EEE", { locale: es })}
                           </span>
                           <span className="text-lg">
-                            {format(new Date(item.date), "dd")}
+                            {format(stableDate, "dd")}
                           </span>
                         </div>
                         <div>
                           <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
-                            {format(new Date(item.date), "MMMM yyyy", {
+                            {format(stableDate, "MMMM yyyy", {
                               locale: es,
                             })}
                           </p>
@@ -128,7 +131,8 @@ export const HistoryModal = ({
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </ScrollShadow>
           )}

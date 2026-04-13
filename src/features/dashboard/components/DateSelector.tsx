@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { getTodayIsoLocal, toIsoDateKey } from "../../../utils/formatters";
 
 type DateSelectorProps = {
   selectedDate: string;
@@ -13,7 +14,9 @@ export const DateSelector = ({ selectedDate, onDateChange }: DateSelectorProps) 
       const date = new Date();
       date.setDate(date.getDate() - 7 + index);
       return {
-        full: date.toISOString().split("T")[0],
+        full: toIsoDateKey(
+          new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+        ),
         dayName: date.toLocaleDateString("es-ES", { weekday: "short" }),
         dayNum: date.getDate(),
         monthName: date.toLocaleDateString("es-ES", { month: "long" }),
@@ -61,7 +64,7 @@ export const DateSelector = ({ selectedDate, onDateChange }: DateSelectorProps) 
       >
         {days.map((day) => {
           const isSelected = day.full === selectedDate;
-          const isToday = day.full === new Date().toISOString().split("T")[0];
+          const isToday = day.full === getTodayIsoLocal();
 
           return (
             <button

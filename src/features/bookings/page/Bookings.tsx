@@ -1,7 +1,7 @@
 import { Spinner } from "@heroui/react";
 import { DashboardControls } from "../../../components/FilterSidebar";
 import { BookingCard } from "../../../components/BookingCard";
-import { formatDate } from "../../../utils/formatters";
+import { formatDate, getTodayIsoLocal, toIsoDateKey } from "../../../utils/formatters";
 import { HelpCircle } from "lucide-react";
 import { useMemo } from "react";
 import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
@@ -42,9 +42,9 @@ export const Bookings = ({
         return matchesSearch && matchesCourt;
       })
       .sort((a: any, b: any) => {
-        const dateA = new Date(a.date).getTime();
-        const dateB = new Date(b.date).getTime();
-        if (dateA !== dateB) return dateB - dateA;
+        const dateA = toIsoDateKey(a.date);
+        const dateB = toIsoDateKey(b.date);
+        if (dateA !== dateB) return dateB.localeCompare(dateA);
         return (a.timeSlot?.startTime || "").localeCompare(
           b.timeSlot?.startTime || "",
         );
@@ -52,9 +52,9 @@ export const Bookings = ({
   }, [bookings, filterValue, selectedCourt]);
 
   const stats = useMemo(() => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayIsoLocal();
     const todaysBookings = bookings.filter((b: any) =>
-      b.date.startsWith(today),
+      toIsoDateKey(b.date) === today,
     );
 
     const totalSlots = (courts.length || 1) * 8;
@@ -72,7 +72,7 @@ export const Bookings = ({
   const groupedBookings = useMemo(() => {
     const groups: Record<string, any[]> = {};
     filteredBookings.forEach((booking: any) => {
-      const dateKey = new Date(booking.date).toISOString().split("T")[0];
+      const dateKey = toIsoDateKey(booking.date);
       if (!groups[dateKey]) groups[dateKey] = [];
       groups[dateKey].push(booking);
     });
