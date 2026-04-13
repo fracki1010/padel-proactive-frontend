@@ -90,6 +90,10 @@
 }
 
 @layer utilities {
+  .toast-region-safe-top {
+    padding-top: calc(env(safe-area-inset-top) + 0.75rem);
+  }
+
   .pb-safe {
     padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
   }

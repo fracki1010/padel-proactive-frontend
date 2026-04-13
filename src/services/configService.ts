@@ -3,6 +3,8 @@ import type { ConfigResponse, Court, TimeSlot } from "../types";
 import { api } from "./httpClient";
 
 const ONE_HOUR_REMINDER_KEY = "booking-reminder-one-hour-enabled";
+const CANCELLATION_GROUP_SETTINGS_KEY = "whatsapp-cancellation-group-settings";
+const WHATSAPP_GROUPS_CACHE_KEY = "whatsapp-groups-cache";
 
 const parseOneHourReminderEnabled = (responseData: any): boolean | null => {
   const data = responseData?.data ?? responseData;
@@ -19,6 +21,110 @@ const parseOneHourReminderEnabled = (responseData: any): boolean | null => {
   }
 
   return null;
+};
+
+const parseWhatsappCancellationGroupSettings = (
+  responseData: any,
+): { enabled: boolean; groupId: string; groupName: string } | null => {
+  const data = responseData?.data ?? responseData;
+
+  if (!data || typeof data !== "object") return null;
+
+  const enabledCandidates = [
+    data?.cancellationGroupEnabled,
+    data?.cancelationGroupEnabled,
+    data?.groupCancellationAlertsEnabled,
+    data?.cancelledBookingGroupEnabled,
+    data?.notifyCancelledBookingGroup,
+    data?.groupNotifications?.cancellations?.enabled,
+  ];
+  const groupIdCandidates = [
+    data?.cancellationGroupId,
+    data?.cancelationGroupId,
+    data?.groupCancellationAlertsId,
+    data?.cancelledBookingGroupId,
+    data?.groupNotifications?.cancellations?.groupId,
+  ];
+  const groupNameCandidates = [
+    data?.cancellationGroupName,
+    data?.cancelationGroupName,
+    data?.groupCancellationAlertsName,
+    data?.cancelledBookingGroupName,
+    data?.groupNotifications?.cancellations?.groupName,
+    data?.groupNotifications?.cancellations?.name,
+  ];
+
+  const enabled = enabledCandidates.find((value) => typeof value === "boolean");
+  const groupId = groupIdCandidates.find((value) => typeof value === "string");
+  const groupName = groupNameCandidates.find((value) => typeof value === "string");
+
+  if (
+    typeof enabled !== "boolean" &&
+    typeof groupId !== "string" &&
+    typeof groupName !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    enabled: Boolean(enabled),
+    groupId: typeof groupId === "string" ? groupId : "",
+    groupName: typeof groupName === "string" ? groupName : "",
+  };
+};
+
+const parseWhatsappGroups = (responseData: any): Array<{ id: string; name: string }> => {
+  const data = responseData?.data ?? responseData;
+  const groupsRaw = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.groups)
+      ? data.groups
+      : Array.isArray(data?.chats)
+        ? data.chats
+        : Array.isArray(data?.items)
+          ? data.items
+          : [];
+
+  const normalizeGroupId = (group: any): string => {
+    const directId = [group?.id, group?._id, group?.groupId, group?.chatId].find(
+      (value) => typeof value === "string",
+    );
+    if (typeof directId === "string") return directId;
+
+    const serializedNestedId = [
+      group?.id?._serialized,
+      group?.wid?._serialized,
+      group?.chatId?._serialized,
+    ].find((value) => typeof value === "string");
+    if (typeof serializedNestedId === "string") return serializedNestedId;
+
+    return "";
+  };
+
+  const normalizeGroupName = (group: any): string => {
+    const directName = [group?.name, group?.subject, group?.title].find(
+      (value) => typeof value === "string" && value.trim().length > 0,
+    );
+    return typeof directName === "string" ? directName.trim() : "";
+  };
+
+  const normalized = groupsRaw
+    .map((group: any) => {
+      const id = normalizeGroupId(group).trim();
+      const name = normalizeGroupName(group);
+
+      return { id, name: name || id };
+    })
+    .filter((group: { id: string }) => group.id.endsWith("@g.us"));
+
+  const uniqueById = new Map<string, { id: string; name: string }>();
+  for (const group of normalized) {
+    if (!uniqueById.has(group.id)) {
+      uniqueById.set(group.id, group);
+    }
+  }
+
+  return Array.from(uniqueById.values());
 };
 
 export const configService = {
@@ -207,6 +313,36 @@ export const configService = {
         url: "/config/notifications",
         payload: { oneHourBeforeEnabled: enabled },
       },
+      {
+        method: "put",
+        url: "/config/notifications",
+        payload: { notifyOneHourBeforeMatch: enabled },
+      },
+      {
+        method: "patch",
+        url: "/config/notifications",
+        payload: { notifyOneHourBeforeMatch: enabled },
+      },
+      {
+        method: "put",
+        url: "/config/notifications",
+        payload: { notifyOneHourBeforeBooking: enabled },
+      },
+      {
+        method: "patch",
+        url: "/config/notifications",
+        payload: { notifyOneHourBeforeBooking: enabled },
+      },
+      {
+        method: "put",
+        url: "/config/settings",
+        payload: { bookingReminderOneHourEnabled: enabled },
+      },
+      {
+        method: "patch",
+        url: "/config/settings",
+        payload: { bookingReminderOneHourEnabled: enabled },
+      },
     ];
 
     let lastError: any = null;
@@ -219,7 +355,13 @@ export const configService = {
           data: attempt.payload,
         });
         localStorage.setItem(ONE_HOUR_REMINDER_KEY, String(enabled));
-        return response.data;
+        return {
+          ...response.data,
+          data: {
+            ...response.data?.data,
+            oneHourReminderEnabled: enabled,
+          },
+        };
       } catch (error: any) {
         lastError = error;
       }
@@ -232,5 +374,206 @@ export const configService = {
     }
 
     throw lastError;
+  },
+
+  getWhatsappCancellationGroupSettings: async (): Promise<any> => {
+    const attempts = ["/config/whatsapp", "/config/notifications", "/config/settings"];
+
+    for (const url of attempts) {
+      try {
+        const response = await api.get(url);
+        const parsed = parseWhatsappCancellationGroupSettings(response.data);
+        if (parsed) {
+          localStorage.setItem(
+            CANCELLATION_GROUP_SETTINGS_KEY,
+            JSON.stringify(parsed),
+          );
+          return { data: parsed };
+        }
+      } catch {
+        // continue trying known compatibility routes
+      }
+    }
+
+    try {
+      const localRaw = localStorage.getItem(CANCELLATION_GROUP_SETTINGS_KEY);
+      if (localRaw) {
+        const localParsed = JSON.parse(localRaw);
+        return {
+          data: {
+            enabled: Boolean(localParsed?.enabled),
+            groupId:
+              typeof localParsed?.groupId === "string" ? localParsed.groupId : "",
+            groupName:
+              typeof localParsed?.groupName === "string"
+                ? localParsed.groupName
+                : "",
+            persistedLocally: true,
+          },
+        };
+      }
+    } catch {
+      // ignore malformed local data
+    }
+
+    return {
+      data: { enabled: false, groupId: "", groupName: "", persistedLocally: true },
+    };
+  },
+
+  updateWhatsappCancellationGroupSettings: async ({
+    enabled,
+    groupId,
+    groupName,
+  }: {
+    enabled: boolean;
+    groupId: string;
+    groupName: string;
+  }): Promise<any> => {
+    const normalizedGroupId = groupId.trim();
+    const normalizedGroupName = groupName.trim();
+    const attempts: Array<{
+      method: "put" | "patch";
+      url: string;
+      payload: Record<string, any>;
+    }> = [
+      {
+        method: "put",
+        url: "/config/whatsapp",
+        payload: {
+          cancellationGroupEnabled: enabled,
+          cancellationGroupId: normalizedGroupId,
+          cancellationGroupName: normalizedGroupName,
+        },
+      },
+      {
+        method: "patch",
+        url: "/config/whatsapp",
+        payload: {
+          cancellationGroupEnabled: enabled,
+          cancellationGroupId: normalizedGroupId,
+          cancellationGroupName: normalizedGroupName,
+        },
+      },
+      {
+        method: "put",
+        url: "/config/whatsapp",
+        payload: {
+          groupCancellationAlertsEnabled: enabled,
+          groupCancellationAlertsId: normalizedGroupId,
+          groupCancellationAlertsName: normalizedGroupName,
+        },
+      },
+      {
+        method: "patch",
+        url: "/config/whatsapp",
+        payload: {
+          groupCancellationAlertsEnabled: enabled,
+          groupCancellationAlertsId: normalizedGroupId,
+          groupCancellationAlertsName: normalizedGroupName,
+        },
+      },
+      {
+        method: "put",
+        url: "/config/notifications",
+        payload: {
+          cancelledBookingGroupEnabled: enabled,
+          cancelledBookingGroupId: normalizedGroupId,
+          cancelledBookingGroupName: normalizedGroupName,
+        },
+      },
+      {
+        method: "patch",
+        url: "/config/notifications",
+        payload: {
+          cancelledBookingGroupEnabled: enabled,
+          cancelledBookingGroupId: normalizedGroupId,
+          cancelledBookingGroupName: normalizedGroupName,
+        },
+      },
+    ];
+
+    let lastError: any = null;
+
+    for (const attempt of attempts) {
+      try {
+        const response = await api.request({
+          method: attempt.method,
+          url: attempt.url,
+          data: attempt.payload,
+        });
+
+        const normalizedResult = {
+          enabled,
+          groupId: normalizedGroupId,
+          groupName: normalizedGroupName,
+        };
+        localStorage.setItem(
+          CANCELLATION_GROUP_SETTINGS_KEY,
+          JSON.stringify(normalizedResult),
+        );
+
+        return {
+          ...response.data,
+          data: {
+            ...response.data?.data,
+            ...normalizedResult,
+          },
+        };
+      } catch (error: any) {
+        lastError = error;
+      }
+    }
+
+    const status = lastError?.response?.status;
+    if (status === 404 || status === 405 || status === 400 || !status) {
+      const normalizedResult = {
+        enabled,
+        groupId: normalizedGroupId,
+        groupName: normalizedGroupName,
+      };
+      localStorage.setItem(
+        CANCELLATION_GROUP_SETTINGS_KEY,
+        JSON.stringify(normalizedResult),
+      );
+      return { data: { ...normalizedResult, persistedLocally: true } };
+    }
+
+    throw lastError;
+  },
+
+  getWhatsappGroups: async (): Promise<any> => {
+    const attempts = [
+      "/config/whatsapp/groups",
+      "/config/whatsapp/chats?type=group",
+      "/config/whatsapp/chats",
+      "/whatsapp/groups",
+      "/whatsapp/chats?type=group",
+    ];
+
+    for (const url of attempts) {
+      try {
+        const response = await api.get(url);
+        const groups = parseWhatsappGroups(response.data);
+        if (groups.length > 0) {
+          localStorage.setItem(WHATSAPP_GROUPS_CACHE_KEY, JSON.stringify(groups));
+          return { data: groups };
+        }
+      } catch {
+        // continue trying known compatibility routes
+      }
+    }
+
+    try {
+      const localRaw = localStorage.getItem(WHATSAPP_GROUPS_CACHE_KEY);
+      const localParsed = localRaw ? JSON.parse(localRaw) : [];
+      if (Array.isArray(localParsed) && localParsed.length > 0) {
+        return { data: localParsed, persistedLocally: true };
+      }
+    } catch {
+      // ignore malformed local data
+    }
+
+    return { data: [] };
   },
 };

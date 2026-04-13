@@ -21,6 +21,7 @@ createRoot(document.getElementById("root")!).render(
             <ToastProvider
               placement="top-center"
               toastProps={{ variant: "solid" }}
+              regionProps={{ className: "toast-region-safe-top" }}
             />
             <App />
           </HeroUIProvider>

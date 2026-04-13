@@ -184,3 +184,33 @@ export const useUpdateOneHourReminderSetting = () => {
     },
   });
 };
+
+export const useWhatsappCancellationGroupSettings = () => {
+  return useQuery({
+    queryKey: ["whatsapp-cancellation-group-settings"],
+    queryFn: configService.getWhatsappCancellationGroupSettings,
+    retry: 1,
+  });
+};
+
+export const useUpdateWhatsappCancellationGroupSettings = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { enabled: boolean; groupId: string; groupName: string }) =>
+      configService.updateWhatsappCancellationGroupSettings(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["whatsapp-cancellation-group-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+    },
+  });
+};
+
+export const useWhatsappGroups = () => {
+  return useQuery({
+    queryKey: ["whatsapp-groups"],
+    queryFn: configService.getWhatsappGroups,
+    retry: 1,
+    staleTime: 60000,
+  });
+};

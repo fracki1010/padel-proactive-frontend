@@ -1,5 +1,5 @@
-import { Button, Card, CardBody, Chip, Switch } from "@heroui/react";
-import { ChevronLeft } from "lucide-react";
+import { Button, Card, CardBody, Chip, Input, Select, SelectItem, Switch } from "@heroui/react";
+import { ChevronLeft, Save } from "lucide-react";
 
 type WhatsappSettingsViewProps = {
   whatsappEnabled: boolean;
@@ -10,10 +10,21 @@ type WhatsappSettingsViewProps = {
   updateWhatsappPending: boolean;
   whatsappChipColor: "default" | "success" | "danger" | "warning";
   whatsappStatusLabelByKey: Record<string, string>;
+  cancellationGroupEnabled: boolean;
+  cancellationGroupIdInput: string;
+  cancellationGroupNameInput: string;
+  whatsappGroups: Array<{ id: string; name: string }>;
+  isLoadingWhatsappGroups: boolean;
+  updateCancellationGroupPending: boolean;
   onBack: () => void;
   onToggleWhatsapp: (enabled: boolean) => void;
   onCloseWhatsappSession: () => void;
   onSwitchWhatsappDevice: () => void;
+  onCancellationGroupEnabledChange: (enabled: boolean) => void;
+  onCancellationGroupIdChange: (value: string) => void;
+  onCancellationGroupNameChange: (value: string) => void;
+  onSelectWhatsappGroup: (groupId: string) => void;
+  onSaveCancellationGroup: () => void;
 };
 
 export const WhatsappSettingsView = ({
@@ -25,10 +36,21 @@ export const WhatsappSettingsView = ({
   updateWhatsappPending,
   whatsappChipColor,
   whatsappStatusLabelByKey,
+  cancellationGroupEnabled,
+  cancellationGroupIdInput,
+  cancellationGroupNameInput,
+  whatsappGroups,
+  isLoadingWhatsappGroups,
+  updateCancellationGroupPending,
   onBack,
   onToggleWhatsapp,
   onCloseWhatsappSession,
   onSwitchWhatsappDevice,
+  onCancellationGroupEnabledChange,
+  onCancellationGroupIdChange,
+  onCancellationGroupNameChange,
+  onSelectWhatsappGroup,
+  onSaveCancellationGroup,
 }: WhatsappSettingsViewProps) => {
   const isLockedElsewhere = whatsappStatus === "locked_elsewhere";
   const canManageSession =
@@ -110,6 +132,97 @@ export const WhatsappSettingsView = ({
             >
               Cambiar dispositivo
             </Button>
+          </div>
+
+          <div className="bg-white/5 rounded-3xl p-5 border border-white/10 space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                  Aviso a grupo por cancelaciones
+                </p>
+                <p className="text-white font-bold text-sm">
+                  El bot solo envía mensajes al grupo, no responde allí.
+                </p>
+              </div>
+              <Switch
+                isSelected={cancellationGroupEnabled}
+                onValueChange={onCancellationGroupEnabledChange}
+                isDisabled={updateCancellationGroupPending}
+                color="primary"
+                size="sm"
+              />
+            </div>
+
+            <Input
+              value={cancellationGroupNameInput}
+              onValueChange={onCancellationGroupNameChange}
+              placeholder="Nombre del grupo (ej: Cancelados Club Norte)"
+              classNames={{
+                inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
+                input: "text-white font-bold",
+              }}
+            />
+
+            <Select
+              label="Grupo de WhatsApp"
+              placeholder={
+                isLoadingWhatsappGroups
+                  ? "Cargando grupos..."
+                  : whatsappGroups.length
+                    ? "Seleccioná un grupo"
+                    : "No hay grupos disponibles"
+              }
+              labelPlacement="outside"
+              selectedKeys={
+                whatsappGroups.some((group) => group.id === cancellationGroupIdInput)
+                  ? [cancellationGroupIdInput]
+                  : []
+              }
+              onSelectionChange={(keys) => {
+                if (keys === "all") return;
+                const selectedId = Array.from(keys)[0] as string | undefined;
+                if (selectedId) onSelectWhatsappGroup(selectedId);
+              }}
+              isDisabled={isLoadingWhatsappGroups || !whatsappGroups.length}
+              classNames={{
+                trigger: "bg-white/5 border-none h-12 rounded-2xl px-4",
+                label: "text-gray-400 font-bold mb-2",
+                value: "text-white font-bold",
+                popoverContent: "bg-dark-200 border border-white/10 text-white",
+                listbox: "text-white",
+              }}
+            >
+              {whatsappGroups.map((group) => (
+                <SelectItem key={group.id} className="text-white">
+                  {group.name}
+                </SelectItem>
+              ))}
+            </Select>
+
+            <div className="flex gap-2">
+              <Input
+                value={cancellationGroupIdInput}
+                onValueChange={onCancellationGroupIdChange}
+                placeholder="ID del grupo (ej: 54911...-123456@g.us)"
+                className="flex-grow"
+                classNames={{
+                  inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
+                  input: "text-white font-bold",
+                }}
+              />
+              <Button
+                isIconOnly
+                className="h-12 w-12 bg-primary text-black rounded-2xl"
+                isLoading={updateCancellationGroupPending}
+                onPress={onSaveCancellationGroup}
+              >
+                <Save size={20} />
+              </Button>
+            </div>
+
+            <p className="text-[10px] text-gray-500 font-bold italic">
+              * El nombre es para identificarlo fácil en el panel. El envío real usa el ID @g.us.
+            </p>
           </div>
 
           {!whatsappEnabled ? (

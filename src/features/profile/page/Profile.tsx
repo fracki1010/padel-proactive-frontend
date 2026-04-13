@@ -18,6 +18,9 @@ import {
   useUpdateOneHourReminderSetting,
   useUpdateWhatsappStatus,
   useCloseWhatsappSession,
+  useWhatsappCancellationGroupSettings,
+  useUpdateWhatsappCancellationGroupSettings,
+  useWhatsappGroups,
   useCompanies,
   useCreateCompany,
   useUpdateCompanyStatus,
@@ -49,6 +52,10 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const { data: courtsData } = useCourts(true);
   const { data: slotsData } = useSlots(true);
   const { data: whatsappData, isLoading: isLoadingWhatsapp } = useWhatsappStatus();
+  const { data: whatsappCancellationGroupSettingsData } =
+    useWhatsappCancellationGroupSettings();
+  const { data: whatsappGroupsData, isLoading: isLoadingWhatsappGroups } =
+    useWhatsappGroups();
   const { data: penaltySettingsData } = usePenaltySettings();
   const { data: oneHourReminderData } = useOneHourReminderSetting();
   const { data: companiesData } = useCompanies(isSuperAdmin);
@@ -65,6 +72,8 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const updateOwnCompany = useUpdateOwnCompany();
   const updateWhatsappStatus = useUpdateWhatsappStatus();
   const closeWhatsappSession = useCloseWhatsappSession();
+  const updateWhatsappCancellationGroupSettings =
+    useUpdateWhatsappCancellationGroupSettings();
   const createCompany = useCreateCompany();
   const updateCompanyStatus = useUpdateCompanyStatus();
   const updateCompany = useUpdateCompany();
@@ -99,6 +108,55 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     typeof whatsappState?.qr === "string" && whatsappState.qr.trim().length > 0
       ? whatsappState.qr
       : "";
+  const whatsappCancellationGroupSettingsRaw =
+    whatsappCancellationGroupSettingsData?.data ?? {};
+  const cancellationGroupEnabledCandidates = [
+    whatsappCancellationGroupSettingsRaw?.enabled,
+    whatsappCancellationGroupSettingsRaw?.cancellationGroupEnabled,
+    whatsappCancellationGroupSettingsRaw?.cancelationGroupEnabled,
+    whatsappState?.cancellationGroupEnabled,
+    whatsappState?.cancelationGroupEnabled,
+    whatsappState?.groupCancellationAlertsEnabled,
+    whatsappState?.cancelledBookingGroupEnabled,
+  ];
+  const cancellationGroupIdCandidates = [
+    whatsappCancellationGroupSettingsRaw?.groupId,
+    whatsappCancellationGroupSettingsRaw?.cancellationGroupId,
+    whatsappCancellationGroupSettingsRaw?.cancelationGroupId,
+    whatsappState?.cancellationGroupId,
+    whatsappState?.cancelationGroupId,
+    whatsappState?.groupCancellationAlertsId,
+    whatsappState?.cancelledBookingGroupId,
+  ];
+  const cancellationGroupNameCandidates = [
+    whatsappCancellationGroupSettingsRaw?.groupName,
+    whatsappCancellationGroupSettingsRaw?.cancellationGroupName,
+    whatsappCancellationGroupSettingsRaw?.cancelationGroupName,
+    whatsappState?.groupName,
+    whatsappState?.cancellationGroupName,
+    whatsappState?.cancelationGroupName,
+    whatsappState?.groupCancellationAlertsName,
+    whatsappState?.cancelledBookingGroupName,
+  ];
+  const whatsappCancellationGroupEnabled = Boolean(
+    cancellationGroupEnabledCandidates.find((candidate) => typeof candidate === "boolean"),
+  );
+  const whatsappCancellationGroupId =
+    (cancellationGroupIdCandidates.find((candidate) => typeof candidate === "string") as
+      | string
+      | undefined) || "";
+  const whatsappCancellationGroupName =
+    (cancellationGroupNameCandidates.find((candidate) => typeof candidate === "string") as
+      | string
+      | undefined) || "";
+  const whatsappGroups = Array.isArray(whatsappGroupsData?.data)
+    ? whatsappGroupsData.data
+        .map((group: any) => ({
+          id: String(group?.id || "").trim(),
+          name: String(group?.name || group?.subject || group?.title || "").trim(),
+        }))
+        .filter((group: { id: string }) => group.id.endsWith("@g.us"))
+    : [];
   const userCompany =
     user?.companyId && typeof user.companyId === "object"
       ? {
@@ -134,6 +192,12 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const [newSlotStartTime, setNewSlotStartTime] = useState("");
   const [newSlotEndTime, setNewSlotEndTime] = useState("");
   const [newSlotPrice, setNewSlotPrice] = useState("");
+  const [cancellationGroupIdInput, setCancellationGroupIdInput] = useState("");
+  const [cancellationGroupNameInput, setCancellationGroupNameInput] = useState("");
+  const [isEditingCancellationGroupId, setIsEditingCancellationGroupId] =
+    useState(false);
+  const [isEditingCancellationGroupName, setIsEditingCancellationGroupName] =
+    useState(false);
 
   useEffect(() => {
     if (user?.phone) {
@@ -172,6 +236,16 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       setNewAdminCompanyId(companies[0]._id);
     }
   }, [companies, newAdminCompanyId]);
+
+  useEffect(() => {
+    if (isEditingCancellationGroupId) return;
+    setCancellationGroupIdInput(whatsappCancellationGroupId);
+  }, [whatsappCancellationGroupId, isEditingCancellationGroupId]);
+
+  useEffect(() => {
+    if (isEditingCancellationGroupName) return;
+    setCancellationGroupNameInput(whatsappCancellationGroupName);
+  }, [whatsappCancellationGroupName, isEditingCancellationGroupName]);
 
   const whatsappStatusLabelByKey: Record<string, string> = {
     disabled: "Desactivado",
@@ -291,6 +365,76 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         color: "danger",
       });
     }
+  };
+
+  const persistWhatsappCancellationGroupSettings = async (
+    nextEnabled: boolean,
+    nextGroupIdRaw: string,
+    nextGroupNameRaw: string,
+  ) => {
+    const nextGroupId = nextGroupIdRaw.trim();
+    const nextGroupName = nextGroupNameRaw.trim();
+    if (nextEnabled && !nextGroupId) {
+      addToast({
+        title: "Ingresá el ID del grupo antes de activar avisos de cancelación",
+        color: "warning",
+      });
+      return;
+    }
+
+    try {
+      const response = await updateWhatsappCancellationGroupSettings.mutateAsync({
+        enabled: nextEnabled,
+        groupId: nextGroupId,
+        groupName: nextGroupName,
+      });
+      setCancellationGroupIdInput(nextGroupId);
+      setCancellationGroupNameInput(nextGroupName);
+      setIsEditingCancellationGroupId(false);
+      setIsEditingCancellationGroupName(false);
+      addToast({
+        title: nextEnabled
+          ? "Avisos de cancelación al grupo activados"
+          : "Avisos de cancelación al grupo desactivados",
+        description: response?.data?.persistedLocally
+          ? "Guardado localmente (pendiente de soporte en backend)."
+          : undefined,
+        color: "success",
+      });
+    } catch (err: any) {
+      addToast({
+        title:
+          err?.response?.data?.error ||
+          "No se pudo actualizar el grupo de avisos de cancelación",
+        color: "danger",
+      });
+    }
+  };
+
+  const handleToggleCancellationGroup = (enabled: boolean) => {
+    persistWhatsappCancellationGroupSettings(
+      enabled,
+      cancellationGroupIdInput,
+      cancellationGroupNameInput,
+    );
+  };
+
+  const handleSaveCancellationGroupId = () => {
+    persistWhatsappCancellationGroupSettings(
+      whatsappCancellationGroupEnabled,
+      cancellationGroupIdInput,
+      cancellationGroupNameInput,
+    );
+  };
+
+  const handleSelectWhatsappGroup = (groupId: string) => {
+    const selected = whatsappGroups.find((group: any) => group.id === groupId);
+    if (!selected) return;
+
+    setCancellationGroupIdInput(selected.id);
+    setCancellationGroupNameInput(selected.name || "");
+    setIsEditingCancellationGroupId(true);
+    setIsEditingCancellationGroupName(true);
   };
 
   const handleSavePenaltyLimit = () => {
@@ -512,10 +656,29 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         }
         whatsappChipColor={whatsappChipColor}
         whatsappStatusLabelByKey={whatsappStatusLabelByKey}
+        cancellationGroupEnabled={whatsappCancellationGroupEnabled}
+        cancellationGroupIdInput={cancellationGroupIdInput}
+        cancellationGroupNameInput={cancellationGroupNameInput}
+        whatsappGroups={whatsappGroups}
+        isLoadingWhatsappGroups={isLoadingWhatsappGroups}
+        updateCancellationGroupPending={
+          updateWhatsappCancellationGroupSettings.isPending
+        }
         onBack={() => setView("menu")}
         onToggleWhatsapp={handleToggleWhatsapp}
         onCloseWhatsappSession={handleCloseWhatsappSession}
         onSwitchWhatsappDevice={handleSwitchWhatsappDevice}
+        onCancellationGroupEnabledChange={handleToggleCancellationGroup}
+        onCancellationGroupIdChange={(value) => {
+          setCancellationGroupIdInput(value);
+          setIsEditingCancellationGroupId(true);
+        }}
+        onCancellationGroupNameChange={(value) => {
+          setCancellationGroupNameInput(value);
+          setIsEditingCancellationGroupName(true);
+        }}
+        onSelectWhatsappGroup={handleSelectWhatsappGroup}
+        onSaveCancellationGroup={handleSaveCancellationGroupId}
       />
     );
   }
