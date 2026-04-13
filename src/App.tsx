@@ -206,7 +206,7 @@ export default function App() {
             ) : needsSuperAdminSetup ? (
               <SuperAdminSetup superAdminUsername={user?.username || "superadmin"} />
             ) : (
-              <div className="dark min-h-[100dvh] bg-background text-foreground flex flex-col font-sans pb-safe app-shell-root">
+              <div className="min-h-[100dvh] bg-background text-foreground flex flex-col font-sans pb-safe app-shell-root">
                 <Navbar
                   title={getScreenTitle(activeTab, isCreating)}
                   onAvatarClick={onProfileOpen}

@@ -31,6 +31,7 @@ import {
   useBootstrapDefaultTenant,
 } from "../../../hooks/useData";
 import { useAuth } from "../../../context/AuthContext";
+import { useTheme } from "../../../context/ThemeContext";
 import { CourtsView } from "../components/CourtsView";
 import { ProfileMenuView } from "../components/ProfileMenuView";
 import { ScheduleSettingsView } from "../components/ScheduleSettingsView";
@@ -43,6 +44,7 @@ interface ProfileProps {
 
 export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const { logout, user, updateUser } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const [view, setView] = useState<
     "menu" | "courts" | "schedule" | "whatsapp" | "tenants"
   >("menu");
@@ -852,10 +854,12 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       whatsappStatusLabelByKey={whatsappStatusLabelByKey}
       updateProfilePending={updateProfile.isPending}
       oneHourReminderEnabled={oneHourReminderEnabled}
+      isDarkMode={isDark}
       updateOneHourReminderPending={updateOneHourReminderSetting.isPending}
       onPhoneChange={setPhoneNumber}
       onSavePhone={handleUpdatePhone}
       onToggleOneHourReminder={handleToggleOneHourReminder}
+      onToggleTheme={toggleTheme}
       onGoToCourts={() => setView("courts")}
       onGoToWhatsapp={() => setView("whatsapp")}
       onGoToSchedule={() => setView("schedule")}

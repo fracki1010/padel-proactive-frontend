@@ -24,10 +24,12 @@ type ProfileMenuViewProps = {
   whatsappStatusLabelByKey: Record<string, string>;
   updateProfilePending: boolean;
   oneHourReminderEnabled: boolean;
+  isDarkMode: boolean;
   updateOneHourReminderPending: boolean;
   onPhoneChange: (value: string) => void;
   onSavePhone: () => void;
   onToggleOneHourReminder: (enabled: boolean) => void;
+  onToggleTheme: () => void;
   onGoToCourts: () => void;
   onGoToWhatsapp: () => void;
   onGoToSchedule: () => void;
@@ -46,10 +48,12 @@ export const ProfileMenuView = ({
   whatsappStatusLabelByKey,
   updateProfilePending,
   oneHourReminderEnabled,
+  isDarkMode,
   updateOneHourReminderPending,
   onPhoneChange,
   onSavePhone,
   onToggleOneHourReminder,
+  onToggleTheme,
   onGoToCourts,
   onGoToWhatsapp,
   onGoToSchedule,
@@ -267,10 +271,10 @@ export const ProfileMenuView = ({
               <div className="flex items-center gap-4">
                 <CreditCard size={18} className="text-gray-400" />
                 <span className="font-bold text-white text-sm">
-                  Pagos Online
+                  Modo oscuro
                 </span>
               </div>
-              <Switch defaultSelected color="primary" size="sm" />
+              <Switch isSelected={isDarkMode} onValueChange={onToggleTheme} color="primary" size="sm" />
             </div>
           </div>
         </section>
