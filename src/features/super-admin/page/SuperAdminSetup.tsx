@@ -213,7 +213,7 @@ export const SuperAdminSetup = ({
   const progress = step === 1 ? 33 : step === 2 ? 66 : 100;
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground px-4 py-6 sm:p-8 bg-[radial-gradient(circle_at_top_right,rgba(255,122,0,0.12),transparent),radial-gradient(circle_at_bottom_left,rgba(255,122,0,0.08),transparent)]">
+    <div className="min-h-[100dvh] bg-background text-foreground px-4 py-6 sm:p-8 bg-[radial-gradient(circle_at_top_right,rgba(126,169,236,0.14),transparent),radial-gradient(circle_at_bottom_left,rgba(126,169,236,0.08),transparent)]">
       <div className="max-w-2xl mx-auto space-y-6">
         <SetupHeader superAdminUsername={superAdminUsername} />
         <SetupProgress step={step} progress={progress} />

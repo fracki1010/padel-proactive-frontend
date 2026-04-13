@@ -85,7 +85,7 @@ export const NotificationsDrawer = ({
                     className={`p-6 rounded-[2rem] border transition-all ${
                       notification.isRead
                         ? "bg-white/5 border-white/5 opacity-60"
-                        : "bg-primary/10 border-primary/20 shadow-[0_0_20px_rgba(255,122,0,0.12)]"
+                        : "bg-primary/10 border-primary/20 shadow-[0_0_20px_rgba(126,169,236,0.18)]"
                     }`}
                   >
                     <div className="flex justify-between items-start mb-2">

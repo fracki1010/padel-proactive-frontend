@@ -14,8 +14,8 @@ export default defineConfig({
         short_name: "Padexa",
         description:
           "Gestiona turnos, clientes y caja de tu club desde una app instalable.",
-        theme_color: "#08080A",
-        background_color: "#08080A",
+        theme_color: "#113159",
+        background_color: "#081222",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",

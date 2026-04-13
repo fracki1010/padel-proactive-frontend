@@ -12,7 +12,7 @@ export const DashboardHeader = () => {
             PADEXA Central
           </h2>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_8px_#ff7a00]" />
+            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_8px_#7ea9ec]" />
             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
               WhatsApp Sincronizado
             </span>

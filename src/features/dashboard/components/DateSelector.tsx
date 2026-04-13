@@ -73,7 +73,7 @@ export const DateSelector = ({ selectedDate, onDateChange }: DateSelectorProps) 
               onClick={() => onDateChange(day.full)}
               className={`flex flex-col items-center justify-center min-w-[70px] h-[100px] rounded-[24px] border transition-all duration-300 relative ${
                 isSelected
-                  ? "bg-primary border-primary shadow-[0_0_20px_rgba(255,122,0,0.35)] scale-105 z-10"
+                  ? "bg-primary border-primary shadow-[0_0_20px_rgba(126,169,236,0.35)] scale-105 z-10"
                   : "bg-dark-100 border-white/5 opacity-80"
               }`}
             >
