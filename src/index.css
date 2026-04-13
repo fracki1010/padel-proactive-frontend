@@ -91,7 +91,15 @@
 
 @layer utilities {
   .toast-region-safe-top {
-    padding-top: calc(env(safe-area-inset-top) + 0.75rem);
+    /* HeroUI toast is positioned with fixed `top`, so we must override `top` (not padding). */
+    top: calc(constant(safe-area-inset-top) + 1rem) !important;
+    top: calc(env(safe-area-inset-top, 0px) + 1rem) !important;
+  }
+
+  @supports (top: max(0px)) {
+    .toast-region-safe-top {
+      top: max(calc(env(safe-area-inset-top, 0px) + 1rem), 3.5rem) !important;
+    }
   }
 
   .pb-safe {

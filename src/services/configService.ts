@@ -281,6 +281,7 @@ export const configService = {
 
   getOneHourReminderSetting: async (): Promise<any> => {
     const attempts = [
+      "/config/whatsapp",
       "/config/notifications/reminders",
       "/config/notifications",
       "/config/reminders",
@@ -310,6 +311,16 @@ export const configService = {
       url: string;
       payload: Record<string, boolean>;
     }> = [
+      {
+        method: "put",
+        url: "/config/whatsapp",
+        payload: { oneHourReminderEnabled: enabled },
+      },
+      {
+        method: "patch",
+        url: "/config/whatsapp",
+        payload: { oneHourReminderEnabled: enabled },
+      },
       {
         method: "put",
         url: "/config/notifications/reminders",
