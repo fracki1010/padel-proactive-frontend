@@ -9,6 +9,7 @@ import {
   Scale,
   WalletCards,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 import { formatCurrency, toIsoDateKey } from "../../../utils/formatters";
 
@@ -39,6 +40,23 @@ export const FinanceDesktopView = ({
   onNextMonth,
   metrics,
 }: FinanceDesktopViewProps) => {
+  const PAGE_SIZE = 10;
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(metrics.movements.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedMonth, selectedYear, metrics.movements.length]);
+
+  useEffect(() => {
+    setCurrentPage((prev) => Math.min(prev, totalPages));
+  }, [totalPages]);
+
+  const paginatedMovements = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return metrics.movements.slice(start, start + PAGE_SIZE);
+  }, [metrics.movements, currentPage]);
+
   const exportCsv = () => {
     const rows = [
       ["cliente", "concepto", "fecha", "hora", "monto", "estado_pago"],
@@ -102,8 +120,8 @@ export const FinanceDesktopView = ({
           </div>
 
           <div className="mt-4 flex items-end gap-3">
-            <span className="text-primary text-6xl font-black">$</span>
-            <h2 className="text-7xl leading-none font-black text-foreground tracking-tight">
+            <span className="text-primary text-4xl font-black">$</span>
+            <h2 className="text-5xl leading-none font-black text-foreground tracking-tight">
               {Math.round(metrics.totalPaidMonth).toLocaleString("es-AR")}
             </h2>
           </div>
@@ -127,9 +145,9 @@ export const FinanceDesktopView = ({
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">
               Cobrado Hoy
             </p>
-            <p className="text-3xl font-black text-foreground mt-2">
-              {formatCurrency(metrics.totalPaidDaily)}
-            </p>
+              <p className="text-2xl font-black text-foreground mt-2">
+                {formatCurrency(metrics.totalPaidDaily)}
+              </p>
           </div>
           <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-dark-200 p-5">
             <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-300 mb-3">
@@ -138,9 +156,9 @@ export const FinanceDesktopView = ({
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">
               Pendientes
             </p>
-            <p className="text-3xl font-black text-foreground mt-2">
-              {metrics.countPendingMonth}
-            </p>
+              <p className="text-2xl font-black text-foreground mt-2">
+                {metrics.countPendingMonth}
+              </p>
           </div>
           <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-dark-200 p-5">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-300 mb-3">
@@ -149,9 +167,9 @@ export const FinanceDesktopView = ({
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">
               Confirmados
             </p>
-            <p className="text-3xl font-black text-foreground mt-2">
-              {metrics.countConfirmedMonth}
-            </p>
+              <p className="text-2xl font-black text-foreground mt-2">
+                {metrics.countConfirmedMonth}
+              </p>
           </div>
           <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-dark-200 p-5">
             <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center text-violet-300 mb-3">
@@ -160,9 +178,9 @@ export const FinanceDesktopView = ({
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">
               Promedio
             </p>
-            <p className="text-3xl font-black text-foreground mt-2">
-              {formatCurrency(metrics.avgPrice)}
-            </p>
+              <p className="text-2xl font-black text-foreground mt-2">
+                {formatCurrency(metrics.avgPrice)}
+              </p>
           </div>
         </div>
       </div>
@@ -170,7 +188,7 @@ export const FinanceDesktopView = ({
       <div className="mt-6 rounded-3xl border border-black/10 dark:border-white/10 bg-dark-200 overflow-hidden">
         <div className="px-6 py-5 border-b border-black/10 dark:border-white/10 flex items-center justify-between">
           <div>
-            <h3 className="text-2xl font-black text-foreground tracking-tight">
+            <h3 className="text-xl font-black text-foreground tracking-tight">
               Movimientos Recientes
             </h3>
             <p className="text-xs font-semibold text-gray-500 mt-1">
@@ -209,13 +227,13 @@ export const FinanceDesktopView = ({
         </div>
 
         <div className="max-h-[460px] overflow-y-auto">
-          {metrics.movements.map((movement: any) => (
+          {paginatedMovements.map((movement: any) => (
             <div
               key={movement._id}
               className="grid grid-cols-[1.7fr_1.1fr_1fr_1fr_0.9fr_64px] items-center px-6 py-4 border-b border-black/10 dark:border-white/5 last:border-b-0"
             >
               <div className="min-w-0">
-                <p className="font-black text-foreground text-xl truncate">
+                <p className="font-black text-foreground text-base truncate">
                   {movement.clientName}
                 </p>
                 <p className="text-xs font-semibold text-gray-500">
@@ -233,7 +251,7 @@ export const FinanceDesktopView = ({
                   {movement.timeSlot?.startTime || "--:--"}
                 </p>
               </div>
-              <p className="text-2xl font-black text-foreground">
+              <p className="text-lg font-black text-foreground">
                 {formatCurrency(Number(movement.finalPrice) || 0)}
               </p>
               <Chip
@@ -261,6 +279,34 @@ export const FinanceDesktopView = ({
             </div>
           )}
         </div>
+
+        {metrics.movements.length > 0 && (
+          <div className="px-6 py-4 border-t border-black/10 dark:border-white/10 flex items-center justify-between">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">
+              {metrics.movements.length} movimientos • página {currentPage}/{totalPages}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="flat"
+                className="bg-black/10 dark:bg-white/10 font-black uppercase text-[11px]"
+                isDisabled={currentPage === 1}
+                onPress={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              >
+                Anterior
+              </Button>
+              <Button
+                size="sm"
+                variant="flat"
+                className="bg-primary/20 text-primary border border-primary/30 font-black uppercase text-[11px]"
+                isDisabled={currentPage >= totalPages}
+                onPress={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              >
+                Siguiente
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

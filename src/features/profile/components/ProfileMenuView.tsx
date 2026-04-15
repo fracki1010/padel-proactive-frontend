@@ -46,7 +46,7 @@ type MenuItemButtonProps = {
 };
 
 const menuItemBaseClass =
-  "w-full bg-dark-100 p-4 rounded-3xl border border-black/5 dark:border-white/5 flex items-center justify-between group cursor-pointer hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all";
+  "w-full bg-dark-100 p-4 rounded-2xl lg:rounded-xl border border-black/5 dark:border-white/5 flex items-center justify-between group cursor-pointer hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all";
 
 const MenuItemButton = ({
   icon,
@@ -109,38 +109,38 @@ export const ProfileMenuView = ({
         : "text-gray-400";
 
   return (
-    <div className="space-y-8 pb-10 max-w-6xl mx-auto">
-      <div className="flex flex-col items-center text-center space-y-4">
-        <div className="relative">
+    <div className="space-y-6 pb-8 max-w-6xl mx-auto lg:max-w-none">
+      <div className="flex flex-col items-center text-center gap-4 lg:flex-row lg:items-center lg:justify-between lg:text-left">
+        <div className="flex items-center gap-4">
+          <div className="relative">
           <Avatar
             src={avatarSrc}
-            className="w-32 h-32 rounded-[2.5rem] border-4 border-primary shadow-2xl shadow-primary/20"
+            className="w-24 h-24 lg:w-16 lg:h-16 rounded-[2rem] lg:rounded-xl border-4 border-primary shadow-2xl shadow-primary/20"
           />
           <div className="absolute -bottom-2 -right-2 bg-primary text-black p-2 rounded-2xl border-4 border-dark-200">
-            <Shield size={20} fill="currentColor" />
+            <Shield size={16} fill="currentColor" />
+          </div>
+          </div>
+          <div>
+            <h2 className="text-2xl lg:text-xl font-black text-foreground italic tracking-tighter uppercase">
+              {adminName}
+            </h2>
+            <p className="text-primary font-bold text-xs tracking-widest uppercase mt-1">
+              {isSuperAdmin ? "Super Admin" : "Administrador"}
+            </p>
           </div>
         </div>
-        <div>
-          <h2 className="text-3xl font-black text-foreground italic tracking-tighter uppercase">
-            {adminName}
-          </h2>
-          <p className="text-primary font-bold text-sm tracking-widest uppercase mt-1">
-            {isSuperAdmin ? "Super Admin" : "Administrador"}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3 w-full lg:w-auto lg:min-w-[260px]">
         <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-3xl">
-          <CardBody className="p-4 flex flex-col items-center border border-black/5 dark:border-white/5">
+          <CardBody className="p-3 flex flex-col items-center border border-black/5 dark:border-white/5">
             <p className="text-[10px] font-black text-gray-500 uppercase">
               Canchas
             </p>
-            <p className="text-2xl font-black text-foreground">{courtsCount}</p>
+            <p className="text-xl font-black text-foreground">{courtsCount}</p>
           </CardBody>
         </Card>
         <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-3xl">
-          <CardBody className="p-4 flex flex-col items-center border border-black/5 dark:border-white/5">
+          <CardBody className="p-3 flex flex-col items-center border border-black/5 dark:border-white/5">
             <p className="text-[10px] font-black text-gray-500 uppercase">
               WhatsApp
             </p>
@@ -154,9 +154,10 @@ export const ProfileMenuView = ({
             </Chip>
           </CardBody>
         </Card>
+        </div>
       </div>
 
-      <section className="bg-dark-100 p-6 rounded-[2.5rem] border border-black/5 dark:border-white/5 space-y-4">
+      <section className="bg-dark-100 p-5 rounded-[2rem] lg:rounded-xl border border-black/5 dark:border-white/5 space-y-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
             <Phone size={18} />
@@ -211,8 +212,8 @@ export const ProfileMenuView = ({
         </p>
       </section>
 
-      <div className="space-y-6">
-        <section>
+      <div className="space-y-6 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 lg:space-y-0">
+        <section className="min-w-0">
           <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] mb-4 px-2">
             Gestión del Club
           </h3>
@@ -221,32 +222,32 @@ export const ProfileMenuView = ({
               onPress={onGoToCourts}
               title="Mis Canchas"
               subtitle={`${courtsCount} canchas activas`}
-              icon={<MapPin size={20} />}
-              iconClassName="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all"
+              icon={<MapPin size={18} />}
+              iconClassName="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all"
             />
 
             <MenuItemButton
               onPress={onGoToWhatsapp}
               title="WhatsApp Web"
               subtitle={whatsappDisplayStatus}
-              icon={<QrCode size={20} />}
-              iconClassName="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all"
+              icon={<QrCode size={18} />}
+              iconClassName="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all"
             />
 
             <MenuItemButton
               onPress={onGoToBotAutomation}
               title="Automatización del Bot"
               subtitle="Avisos, confianza y penalizaciones"
-              icon={<Bot size={20} />}
-              iconClassName="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-black transition-all"
+              icon={<Bot size={18} />}
+              iconClassName="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-black transition-all"
             />
 
             <MenuItemButton
               onPress={onGoToSchedule}
               title="Precios y Horarios"
               subtitle="Configurar tarifas"
-              icon={<Target size={20} />}
-              iconClassName="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all"
+              icon={<Target size={18} />}
+              iconClassName="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all"
             />
 
             {canManageClubData && (
@@ -254,8 +255,8 @@ export const ProfileMenuView = ({
                 onPress={onGoToTenants}
                 title={isSuperAdmin ? "Multiempresa" : "Datos del club"}
                 subtitle={isSuperAdmin ? "Empresas y admins" : "Nombre, slug y dirección"}
-                icon={<Building2 size={20} />}
-                iconClassName="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all"
+                icon={<Building2 size={18} />}
+                iconClassName="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all"
               />
             )}
             <p className={`text-[10px] font-bold uppercase px-2 ${whatsappStatusClass}`}>
@@ -268,7 +269,7 @@ export const ProfileMenuView = ({
           <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] mb-4 px-2">
             Preferencias
           </h3>
-          <div className="bg-dark-100 p-2 rounded-[2rem] border border-black/5 dark:border-white/5 space-y-1">
+          <div className="bg-dark-100 p-2 rounded-2xl border border-black/5 dark:border-white/5 space-y-1">
             <div className="flex items-center justify-between p-4 hover:bg-black/5 dark:hover:bg-white/5 rounded-2xl transition-colors">
               <div className="flex items-center gap-4">
                 <CreditCard size={18} className="text-gray-400" />
@@ -291,8 +292,8 @@ export const ProfileMenuView = ({
 
         <Button
           fullWidth
-          className="h-16 bg-red-500/10 text-red-500 font-black rounded-3xl uppercase tracking-widest border border-red-500/20"
-          startContent={<LogOut size={20} />}
+          className="h-14 bg-red-500/10 text-red-500 font-black rounded-2xl uppercase tracking-widest border border-red-500/20"
+          startContent={<LogOut size={18} />}
           onPress={onLogout}
         >
           Cerrar Sesión

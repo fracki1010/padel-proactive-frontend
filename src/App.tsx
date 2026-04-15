@@ -10,7 +10,6 @@ import { useAuth } from "./context/AuthContext";
 import { AppMainContent } from "./features/app-shell/components/AppMainContent";
 import { BookingDetailDrawer } from "./features/app-shell/components/BookingDetailDrawer";
 import { NotificationsDrawer } from "./features/app-shell/components/NotificationsDrawer";
-import { ProfileDrawer } from "./features/app-shell/components/ProfileDrawer";
 import { Login } from "./features/auth/page/Login";
 import { SuperAdminSetup } from "./features/super-admin/page/SuperAdminSetup";
 import {
@@ -28,7 +27,7 @@ import {
 const APP_ACTIVE_TAB_KEY = "padexa:last-active-tab";
 const APP_FILTER_VALUE_KEY = "padexa:last-filter-value";
 const APP_SELECTED_COURT_KEY = "padexa:last-selected-court";
-const ALLOWED_APP_TABS = new Set(["panel", "reservas", "socios", "caja"]);
+const ALLOWED_APP_TABS = new Set(["panel", "reservas", "socios", "caja", "configuracion"]);
 
 const readStoredString = (key: string, fallback = "") => {
   if (typeof window === "undefined") return fallback;
@@ -77,6 +76,8 @@ const getScreenTitle = (activeTab: string, isCreating: boolean) => {
       return "Turnos";
     case "caja":
       return "Caja";
+    case "configuracion":
+      return "Configuración";
     default:
       return "PADEXA";
   }
@@ -137,11 +138,6 @@ export default function App() {
   );
   const { data: courtsData } = useCourts(false, isAuthenticated);
 
-  const {
-    isOpen: isProfileOpen,
-    onOpen: onProfileOpen,
-    onOpenChange: onProfileOpenChange,
-  } = useDisclosure();
   const {
     isOpen: isNotifOpen,
     onOpen: onNotifOpen,
@@ -365,14 +361,14 @@ export default function App() {
                 <DesktopSidebar
                   activeTab={activeTab}
                   onTabChange={(tab) => navigate(`/${tab}`)}
-                  onOpenProfile={onProfileOpen}
+                  onOpenSettings={() => navigate("/configuracion")}
                   onLogout={logout}
                 />
 
-                <div className="flex flex-col min-h-[100dvh]">
+                <div className="flex flex-col min-h-[100dvh] bg-[radial-gradient(circle_at_top_right,rgba(13,181,219,0.08),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(13,181,219,0.05),transparent_40%)]">
                   <Navbar
                     title={getScreenTitle(activeTab, isCreating)}
-                    onAvatarClick={onProfileOpen}
+                    onAvatarClick={() => navigate("/configuracion")}
                     onBellClick={onNotifOpen}
                     notificationCount={unreadCount}
                     avatarName={adminName}
@@ -428,13 +424,6 @@ export default function App() {
                   setSelectedBooking={setSelectedBooking}
                   updateBooking={updateBooking}
                   deleteBooking={deleteBooking}
-                  isDesktop={isDesktop}
-                />
-
-                <ProfileDrawer
-                  isOpen={isProfileOpen}
-                  onOpenChange={onProfileOpenChange}
-                  courts={courts}
                   isDesktop={isDesktop}
                 />
 

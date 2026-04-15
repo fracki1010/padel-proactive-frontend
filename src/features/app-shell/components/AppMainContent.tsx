@@ -3,6 +3,7 @@ import { Bookings } from "../../bookings/page/Bookings";
 import { Clients } from "../../clients/page/Clients";
 import { Dashboard } from "../../dashboard/page/Dashboard";
 import { Finance } from "../../finance/page/Finance";
+import { Profile } from "../../profile/page/Profile";
 
 type AppMainContentProps = {
   activeTab: string;
@@ -64,6 +65,8 @@ export const AppMainContent = ({
       );
     case "caja":
       return <Finance bookings={bookings} />;
+    case "configuracion":
+      return <Profile courts={courts} />;
     default:
       return null;
   }

@@ -5,7 +5,7 @@ import {
   Avatar,
   Badge,
 } from "@heroui/react";
-import { Bell } from "lucide-react";
+import { Bell, HelpCircle } from "lucide-react";
 import { getAvatarColor, getInitials } from "../utils/avatarUtils";
 
 interface NavbarProps {
@@ -30,19 +30,28 @@ export const Navbar = ({
   return (
     <HeroNavbar
       maxWidth="full"
-      className="bg-background/95 backdrop-blur border-none h-auto min-h-[76px] pt-safe pb-2"
+      className="bg-background/95 backdrop-blur border-b border-black/10 dark:border-white/10 h-auto min-h-[70px] pt-safe pb-2"
       classNames={{
         wrapper:
-          "w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 gap-0 h-auto min-h-[76px] items-center",
+          "w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 gap-0 h-auto min-h-[70px] items-center",
       }}
     >
       <NavbarContent justify="start" className="gap-4">
-        <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground tracking-tight truncate max-w-[56vw] sm:max-w-none">
+        <p className="text-base sm:text-lg lg:text-xl font-black text-foreground tracking-tight truncate max-w-[56vw] sm:max-w-none uppercase">
           {title}
         </p>
       </NavbarContent>
 
       <NavbarContent justify="end" className="gap-2 sm:gap-4">
+        <Button
+          isIconOnly
+          variant="light"
+          className="hidden lg:flex bg-dark-100/50 text-gray-400 border border-black/10 dark:border-white/10 w-11 h-11"
+          radius="lg"
+          isDisabled
+        >
+          <HelpCircle size={18} />
+        </Button>
         <Badge
           color="danger"
           content={notificationCount}

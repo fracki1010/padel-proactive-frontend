@@ -14,6 +14,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { FinanceDesktopView } from "../components/FinanceDesktopView";
+import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
 
 interface FinanceProps {
   bookings: any[];
@@ -107,6 +108,13 @@ export const Finance = ({ bookings }: FinanceProps) => {
         ),
     };
   }, [bookings, selectedMonth, selectedYear, todayStr]);
+
+  const {
+    visibleCount: mobileVisibleCount,
+    sentinelRef: mobileSentinelRef,
+    hasMore: mobileHasMore,
+  } = useInfiniteScroll(12, 8, metrics.movements.length);
+  const visibleMobileMovements = metrics.movements.slice(0, mobileVisibleCount);
 
   const handlePrevMonth = () => {
     if (selectedMonth === 0) {
@@ -262,7 +270,8 @@ export const Finance = ({ bookings }: FinanceProps) => {
 
         <ScrollShadow className="max-h-[460px] xl:max-h-[560px] space-y-3">
           {metrics.movements.length > 0 ? (
-            metrics.movements.map((b) => (
+            <>
+              {visibleMobileMovements.map((b) => (
               <div
                 key={b._id}
                 className="bg-dark-200 p-4 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col sm:flex-row justify-between sm:items-center gap-3 hover:border-black/10 dark:border-white/10 transition-colors group"
@@ -303,7 +312,22 @@ export const Finance = ({ bookings }: FinanceProps) => {
                   </p>
                 </div>
               </div>
-            ))
+              ))}
+              <div ref={mobileSentinelRef} className="py-2">
+                {mobileHasMore && (
+                  <div className="flex justify-center py-6">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gray-500">
+                      Cargando más...
+                    </p>
+                  </div>
+                )}
+                {!mobileHasMore && metrics.movements.length > 12 && (
+                  <p className="text-center text-gray-600 text-xs font-bold uppercase tracking-widest py-4">
+                    {metrics.movements.length} movimientos cargados
+                  </p>
+                )}
+              </div>
+            </>
           ) : (
             <div className="text-center py-10">
               <p className="text-gray-600 font-bold italic">

@@ -21,7 +21,7 @@ import {
   Smartphone,
   Trash2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { getAvatarColor, getInitials } from "../../../utils/avatarUtils";
 import type { User } from "../../../types";
@@ -63,7 +63,9 @@ export const ClientsDesktopView = ({
   onDelete,
   onClearPenalties,
 }: ClientsDesktopViewProps) => {
+  const PAGE_SIZE = 10;
   const [desktopFilter, setDesktopFilter] = useState<DesktopFilter>("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredUsers = useMemo(() => {
     const text = filterValue.toLowerCase();
@@ -94,12 +96,27 @@ export const ClientsDesktopView = ({
     return { total, debtors, suspended };
   }, [users]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [desktopFilter, filterValue, users.length]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setCurrentPage((prev) => Math.min(prev, totalPages));
+  }, [totalPages]);
+
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredUsers.slice(start, start + PAGE_SIZE);
+  }, [filteredUsers, currentPage]);
+
   return (
     <div className="hidden lg:block space-y-6 animate-in fade-in duration-500">
       <div className="flex items-start justify-between gap-6">
         <div className="space-y-4 flex-1 min-w-0">
           <div className="flex items-center gap-5">
-            <h2 className="text-2xl font-black uppercase text-primary tracking-tight">
+            <h2 className="text-xl font-black uppercase text-primary tracking-tight">
               Socios
             </h2>
             <Input
@@ -121,7 +138,7 @@ export const ClientsDesktopView = ({
             <p className="text-[11px] font-black uppercase tracking-[0.26em] text-primary/80 mb-2">
               Gestión de Comunidad
             </p>
-            <h1 className="text-5xl font-black text-foreground tracking-tight">
+            <h1 className="text-3xl xl:text-4xl font-black text-foreground tracking-tight">
               Socios Registrados
             </h1>
           </div>
@@ -152,7 +169,7 @@ export const ClientsDesktopView = ({
         <div className="shrink-0 space-y-4 pt-2">
           <Button
             color="primary"
-            className="h-14 px-8 rounded-full text-black font-black text-lg shadow-xl shadow-primary/25"
+            className="h-12 px-6 rounded-full text-black font-black text-base shadow-xl shadow-primary/25"
             startContent={<Plus size={20} />}
             onPress={onCreate}
           >
@@ -163,19 +180,19 @@ export const ClientsDesktopView = ({
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
                 Total
               </p>
-              <p className="text-4xl font-black text-foreground">{stats.total}</p>
+              <p className="text-3xl font-black text-foreground">{stats.total}</p>
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">
                 Deudores
               </p>
-              <p className="text-4xl font-black text-amber-300">{stats.debtors}</p>
+              <p className="text-3xl font-black text-amber-300">{stats.debtors}</p>
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400">
                 Inactivos
               </p>
-              <p className="text-4xl font-black text-red-300">{stats.suspended}</p>
+              <p className="text-3xl font-black text-red-300">{stats.suspended}</p>
             </div>
           </div>
         </div>
@@ -193,7 +210,8 @@ export const ClientsDesktopView = ({
             </p>
           </div>
         ) : (
-          filteredUsers.map((client) => {
+          <>
+            {paginatedUsers.map((client) => {
             const penalties = Math.max(0, client.penalties || 0);
             const penaltyDots = Array.from({ length: penaltyLimit }).map((_, index) => (
               <span
@@ -215,12 +233,12 @@ export const ClientsDesktopView = ({
               >
                 <Avatar
                   name={getInitials(client.name)}
-                  className="w-16 h-16 rounded-2xl text-foreground font-black text-xl shrink-0"
+                  className="w-14 h-14 rounded-2xl text-foreground font-black text-lg shrink-0"
                   style={{ backgroundColor: getAvatarColor(client.name) }}
                 />
 
                 <div className="min-w-0 flex-1">
-                  <p className="text-3xl font-black text-foreground truncate leading-tight">
+                  <p className="text-xl font-black text-foreground truncate leading-tight">
                     {client.name}
                   </p>
                   <p className="text-gray-400 font-semibold flex items-center gap-2 mt-1">
@@ -262,7 +280,7 @@ export const ClientsDesktopView = ({
                   </p>
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">{penaltyDots}</div>
-                    <span className="font-black text-foreground text-xl">
+                    <span className="font-black text-foreground text-lg">
                       {penalties}/{penaltyLimit}
                     </span>
                   </div>
@@ -349,7 +367,36 @@ export const ClientsDesktopView = ({
                 </div>
               </div>
             );
-          })
+          })}
+
+            {filteredUsers.length > 0 && (
+              <div className="pt-3 flex items-center justify-between">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">
+                  {filteredUsers.length} socios • página {currentPage}/{totalPages}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    className="bg-black/10 dark:bg-white/10 font-black uppercase text-[11px]"
+                    isDisabled={currentPage === 1}
+                    onPress={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  >
+                    Anterior
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    className="bg-primary/20 text-primary border border-primary/30 font-black uppercase text-[11px]"
+                    isDisabled={currentPage >= totalPages}
+                    onPress={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  >
+                    Siguiente
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

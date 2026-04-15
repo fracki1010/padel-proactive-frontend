@@ -12,7 +12,7 @@ import { cn } from "@heroui/react";
 type DesktopSidebarProps = {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  onOpenProfile: () => void;
+  onOpenSettings: () => void;
   onLogout: () => void;
 };
 
@@ -26,13 +26,13 @@ const navItems = [
 export const DesktopSidebar = ({
   activeTab,
   onTabChange,
-  onOpenProfile,
+  onOpenSettings,
   onLogout,
 }: DesktopSidebarProps) => {
   return (
-    <aside className="hidden lg:flex flex-col border-r border-black/10 dark:border-white/10 bg-dark-300/70 backdrop-blur-xl">
+    <aside className="hidden lg:sticky lg:top-0 lg:h-dvh lg:self-start lg:flex flex-col border-r border-black/10 dark:border-white/10 bg-dark-300/70 backdrop-blur-xl">
       <div className="px-8 pt-9 pb-8 border-b border-black/10 dark:border-white/10">
-        <h2 className="text-3xl font-black text-primary italic tracking-tight uppercase">
+        <h2 className="text-2xl font-black text-primary italic tracking-tight uppercase">
           PADEXA
         </h2>
         <p className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.22em] mt-2">
@@ -49,12 +49,12 @@ export const DesktopSidebar = ({
               key={item.id}
               variant="light"
               className={cn(
-                "w-full justify-start h-12 rounded-xl px-4 font-bold",
+                "w-full justify-start h-11 rounded-xl px-4 text-sm font-bold",
                 isActive
                   ? "bg-primary text-black shadow-lg shadow-primary/20"
                   : "text-gray-400 hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10",
               )}
-              startContent={<Icon size={18} />}
+              startContent={<Icon size={16} />}
               onPress={() => onTabChange(item.id)}
             >
               {item.label}
@@ -64,9 +64,9 @@ export const DesktopSidebar = ({
 
         <Button
           variant="light"
-          className="w-full justify-start h-12 rounded-xl px-4 font-bold text-gray-400 hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10"
-          startContent={<Settings size={18} />}
-          onPress={onOpenProfile}
+          className="w-full justify-start h-11 rounded-xl px-4 text-sm font-bold text-gray-400 hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10"
+          startContent={<Settings size={16} />}
+          onPress={onOpenSettings}
         >
           Configuración
         </Button>
@@ -75,8 +75,8 @@ export const DesktopSidebar = ({
       <div className="p-4 border-t border-black/10 dark:border-white/10">
         <Button
           variant="light"
-          className="w-full justify-start h-12 rounded-xl px-4 font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10"
-          startContent={<LogOut size={18} />}
+          className="w-full justify-start h-11 rounded-xl px-4 text-sm font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10"
+          startContent={<LogOut size={16} />}
           onPress={onLogout}
         >
           Cerrar Sesión
@@ -85,4 +85,3 @@ export const DesktopSidebar = ({
     </aside>
   );
 };
-

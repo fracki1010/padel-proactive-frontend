@@ -1,5 +1,6 @@
 import { Button, Chip, Input } from "@heroui/react";
 import { Calendar, ChevronDown, Filter, MoreVertical, Search } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 import { formatCurrency, toIsoDateKey } from "../../../utils/formatters";
 
@@ -24,6 +25,23 @@ export const BookingsDesktopView = ({
   onBookingClick,
   onClearFilters,
 }: BookingsDesktopViewProps) => {
+  const PAGE_SIZE = 14;
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(bookings.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterValue, selectedCourt, bookings.length]);
+
+  useEffect(() => {
+    setCurrentPage((prev) => Math.min(prev, totalPages));
+  }, [totalPages]);
+
+  const paginatedBookings = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return bookings.slice(start, start + PAGE_SIZE);
+  }, [bookings, currentPage]);
+
   return (
     <div className="hidden lg:block space-y-5 animate-in fade-in duration-500">
       <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-dark-200/70 p-5">
@@ -32,7 +50,7 @@ export const BookingsDesktopView = ({
             <p className="text-[11px] font-black uppercase tracking-[0.22em] text-primary/80 mb-2">
               Reservas
             </p>
-            <h2 className="text-5xl font-black text-foreground tracking-tight">
+            <h2 className="text-3xl xl:text-4xl font-black text-foreground tracking-tight">
               Gestión de Turnos
             </h2>
           </div>
@@ -98,7 +116,7 @@ export const BookingsDesktopView = ({
         </div>
 
         <div className="max-h-[680px] overflow-y-auto">
-          {bookings.map((booking: any) => (
+          {paginatedBookings.map((booking: any) => (
             <button
               key={booking._id}
               type="button"
@@ -106,8 +124,8 @@ export const BookingsDesktopView = ({
               onClick={() => onBookingClick(booking)}
             >
               <div className="min-w-0">
-                <p className="font-black text-foreground text-xl truncate">{booking.clientName}</p>
-                <p className="text-xs text-gray-500">{booking.clientPhone}</p>
+                <p className="font-black text-foreground text-base truncate">{booking.clientName}</p>
+                <p className="text-[11px] text-gray-500">{booking.clientPhone}</p>
               </div>
               <p className="font-semibold text-gray-300">{booking.court?.name || "-"}</p>
               <p className="font-semibold text-foreground">{toIsoDateKey(booking.date)}</p>
@@ -135,6 +153,34 @@ export const BookingsDesktopView = ({
             </div>
           )}
         </div>
+
+        {bookings.length > 0 && (
+          <div className="px-6 py-4 border-t border-black/10 dark:border-white/10 flex items-center justify-between">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">
+              {bookings.length} reservas • página {currentPage}/{totalPages}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="flat"
+                className="bg-black/10 dark:bg-white/10 font-black uppercase text-[11px]"
+                isDisabled={currentPage === 1}
+                onPress={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              >
+                Anterior
+              </Button>
+              <Button
+                size="sm"
+                variant="flat"
+                className="bg-primary/20 text-primary border border-primary/30 font-black uppercase text-[11px]"
+                isDisabled={currentPage >= totalPages}
+                onPress={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              >
+                Siguiente
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
