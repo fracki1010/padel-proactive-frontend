@@ -49,6 +49,8 @@
     --color-green-500: 34 197 94;
     --color-blue-500: 13 181 219;
     --color-orange-500: 45 212 191;
+    --toast-safe-top-offset: 1rem;
+    --toast-mobile-extra-offset: 2.25rem;
     --keyboard-height: 0px;
   }
 
@@ -124,13 +126,39 @@
 @layer utilities {
   .toast-region-safe-top {
     /* HeroUI toast is positioned with fixed `top`, so we must override `top` (not padding). */
-    top: calc(constant(safe-area-inset-top) + 1rem) !important;
-    top: calc(env(safe-area-inset-top, 0px) + 1rem) !important;
+    top: calc(constant(safe-area-inset-top) + var(--toast-safe-top-offset)) !important;
+    top: calc(env(safe-area-inset-top, 0px) + var(--toast-safe-top-offset)) !important;
   }
 
   @supports (top: max(0px)) {
     .toast-region-safe-top {
-      top: max(calc(env(safe-area-inset-top, 0px) + 1rem), 3.5rem) !important;
+      top: max(
+        calc(env(safe-area-inset-top, 0px) + var(--toast-safe-top-offset)),
+        3.5rem
+      ) !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .toast-region-safe-top {
+      top: calc(
+        env(safe-area-inset-top, 0px) + var(--toast-safe-top-offset) +
+          var(--toast-mobile-extra-offset)
+      ) !important;
+    }
+  }
+
+  @supports (top: max(0px)) {
+    @media (max-width: 768px) {
+      .toast-region-safe-top {
+        top: max(
+          calc(
+            env(safe-area-inset-top, 0px) + var(--toast-safe-top-offset) +
+              var(--toast-mobile-extra-offset)
+          ),
+          5.75rem
+        ) !important;
+      }
     }
   }
 
