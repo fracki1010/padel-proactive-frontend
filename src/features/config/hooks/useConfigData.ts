@@ -238,6 +238,7 @@ export const useUpdateWhatsappCancellationGroupSettings = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["whatsapp-cancellation-group-settings"] });
       queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+      queryClient.invalidateQueries({ queryKey: ["bot-automation-settings"] });
     },
   });
 };
@@ -248,5 +249,22 @@ export const useWhatsappGroups = () => {
     queryFn: configService.getWhatsappGroups,
     retry: 1,
     staleTime: 60000,
+  });
+};
+
+export const useWhatsappCommands = ({
+  limit = 20,
+  status = "",
+  type = "",
+}: {
+  limit?: number;
+  status?: string;
+  type?: string;
+} = {}) => {
+  return useQuery({
+    queryKey: ["whatsapp-commands", limit, status, type],
+    queryFn: () => configService.getWhatsappCommands({ limit, status, type }),
+    retry: 1,
+    refetchInterval: 5000,
   });
 };

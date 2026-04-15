@@ -1,4 +1,5 @@
 import { addToast } from "@heroui/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import {
@@ -19,6 +20,7 @@ import {
   useWhatsappCancellationGroupSettings,
   useUpdateWhatsappCancellationGroupSettings,
   useWhatsappGroups,
+  useWhatsappCommands,
   useCompanies,
   useCreateCompany,
   useUpdateCompanyStatus,
@@ -30,6 +32,7 @@ import {
 } from "../../../hooks/useData";
 import { useAuth } from "../../../context/AuthContext";
 import { useTheme } from "../../../context/ThemeContext";
+import { configService } from "../../../services/api";
 import { CourtsView } from "../components/CourtsView";
 import { BotAutomationSettingsView } from "../components/BotAutomationSettingsView";
 import { ProfileMenuView } from "../components/ProfileMenuView";
@@ -42,6 +45,7 @@ interface ProfileProps {
 }
 
 export const Profile = ({ courts: initialCourts }: ProfileProps) => {
+  const queryClient = useQueryClient();
   const { logout, user, updateUser } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [view, setView] = useState<
@@ -57,6 +61,14 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     useWhatsappCancellationGroupSettings();
   const { data: whatsappGroupsData, isLoading: isLoadingWhatsappGroups } =
     useWhatsappGroups();
+  const [commandStatusFilter, setCommandStatusFilter] = useState("");
+  const [commandTypeFilter, setCommandTypeFilter] = useState("");
+  const { data: whatsappCommandsData, isLoading: isLoadingWhatsappCommands } =
+    useWhatsappCommands({
+      limit: 20,
+      status: commandStatusFilter,
+      type: commandTypeFilter,
+    });
   const { data: botAutomationSettingsData } = useBotAutomationSettings();
   const { data: companiesData } = useCompanies(isSuperAdmin);
   const { data: adminsData } = useAdmins(isSuperAdmin);
@@ -107,6 +119,12 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     typeof whatsappState?.qr === "string" && whatsappState.qr.trim().length > 0
       ? whatsappState.qr
       : "";
+  const workerOnline = Boolean(whatsappState?.workerOnline);
+  const workerHeartbeatAt =
+    typeof whatsappState?.workerHeartbeatAt === "string" &&
+    whatsappState.workerHeartbeatAt.trim().length > 0
+      ? whatsappState.workerHeartbeatAt
+      : null;
   const whatsappCancellationGroupSettingsRaw =
     whatsappCancellationGroupSettingsData?.data ?? {};
   const cancellationGroupEnabledCandidates = [
@@ -138,32 +156,32 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     whatsappState?.cancelledBookingGroupName,
   ];
   const dailyAvailabilityDigestEnabledCandidates = [
+    whatsappCancellationGroupSettingsRaw?.dailyAvailabilityDigestEnabled,
     botAutomationSettingsData?.data?.dailyAvailabilityDigestEnabled,
     botAutomationSettingsData?.data?.dailyGroupAvailabilityEnabled,
     botAutomationSettingsData?.data?.groupDailyAvailabilityDigestEnabled,
-    whatsappCancellationGroupSettingsRaw?.dailyAvailabilityDigestEnabled,
     whatsappState?.dailyAvailabilityDigestEnabled,
     whatsappState?.dailyGroupAvailabilityEnabled,
     whatsappState?.groupDailyAvailabilityDigestEnabled,
   ];
   const dailyAvailabilityDigestHourCandidates = [
-    botAutomationSettingsData?.data?.dailyAvailabilityDigestHour,
-    botAutomationSettingsData?.data?.dailyGroupAvailabilityHour,
-    botAutomationSettingsData?.data?.groupDailyAvailabilityDigestHour,
     whatsappCancellationGroupSettingsRaw?.dailyAvailabilityDigestHour,
     whatsappCancellationGroupSettingsRaw?.dailyGroupAvailabilityHour,
     whatsappCancellationGroupSettingsRaw?.groupDailyAvailabilityDigestHour,
+    botAutomationSettingsData?.data?.dailyAvailabilityDigestHour,
+    botAutomationSettingsData?.data?.dailyGroupAvailabilityHour,
+    botAutomationSettingsData?.data?.groupDailyAvailabilityDigestHour,
     whatsappState?.dailyAvailabilityDigestHour,
     whatsappState?.dailyGroupAvailabilityHour,
     whatsappState?.groupDailyAvailabilityDigestHour,
   ];
   const dailyAvailabilityDigestNextDayCandidates = [
-    botAutomationSettingsData?.data?.dailyAvailabilityDigestNextDayEnabled,
-    botAutomationSettingsData?.data?.dailyNextDayAvailabilityEnabled,
-    botAutomationSettingsData?.data?.groupDailyAvailabilityNextDayEnabled,
     whatsappCancellationGroupSettingsRaw?.dailyAvailabilityDigestNextDayEnabled,
     whatsappCancellationGroupSettingsRaw?.dailyNextDayAvailabilityEnabled,
     whatsappCancellationGroupSettingsRaw?.groupDailyAvailabilityNextDayEnabled,
+    botAutomationSettingsData?.data?.dailyAvailabilityDigestNextDayEnabled,
+    botAutomationSettingsData?.data?.dailyNextDayAvailabilityEnabled,
+    botAutomationSettingsData?.data?.groupDailyAvailabilityNextDayEnabled,
     whatsappState?.dailyAvailabilityDigestNextDayEnabled,
     whatsappState?.dailyNextDayAvailabilityEnabled,
     whatsappState?.groupDailyAvailabilityNextDayEnabled,
@@ -202,6 +220,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           name: String(group?.name || group?.subject || group?.title || "").trim(),
         }))
         .filter((group: { id: string }) => group.id.endsWith("@g.us"))
+    : [];
+  const whatsappCommands = Array.isArray(whatsappCommandsData?.data)
+    ? whatsappCommandsData.data
     : [];
   const userCompany =
     user?.companyId && typeof user.companyId === "object"
@@ -267,6 +288,8 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const [isSavingPenaltyLimit, setIsSavingPenaltyLimit] = useState(false);
   const [isSavingDailyAvailabilityDigestSettings, setIsSavingDailyAvailabilityDigestSettings] =
     useState(false);
+  const [isWaitingWhatsappCommand, setIsWaitingWhatsappCommand] = useState(false);
+  const [retryingCommandId, setRetryingCommandId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.phone) {
@@ -395,6 +418,20 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           ? "success"
           : "warning";
 
+  const ensureWhatsappWorkerOnline = (): boolean => {
+    if (isLoadingWhatsapp) return true;
+    if (workerOnline) return true;
+
+    addToast({
+      title: "Worker de WhatsApp offline",
+      description: workerHeartbeatAt
+        ? `Último heartbeat: ${new Date(workerHeartbeatAt).toLocaleString()}`
+        : "Iniciá el servicio padel-proactive-wa-worker para aplicar acciones de WhatsApp.",
+      color: "danger",
+    });
+    return false;
+  };
+
   const handleUpdatePhone = () => {
     updateProfile.mutate(
       { phone: phoneNumber },
@@ -430,8 +467,73 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   };
 
   const handleToggleWhatsapp = (enabled: boolean) => {
+    if (!ensureWhatsappWorkerOnline()) return;
+
+    const waitForWhatsappCommand = async (
+      commandId: string,
+      successTitle: string,
+    ): Promise<void> => {
+      const normalizedId = String(commandId || "").trim();
+      if (!normalizedId) return;
+
+      setIsWaitingWhatsappCommand(true);
+      const maxAttempts = 45;
+      const delayMs = 2000;
+
+      try {
+        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+          const response = await configService.getWhatsappCommandStatus(normalizedId);
+          const status = String(response?.data?.status || "").toLowerCase();
+          const errorMessage = String(response?.data?.lastError || "").trim();
+
+          if (status === "done") {
+            queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+            addToast({ title: successTitle, color: "success" });
+            return;
+          }
+
+          if (status === "failed") {
+            queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+            throw new Error(errorMessage || "El comando de WhatsApp falló.");
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+
+        addToast({
+          title: "WhatsApp sigue procesando el cambio",
+          description: "Podés esperar unos segundos más y volver a intentar.",
+          color: "warning",
+        });
+      } finally {
+        setIsWaitingWhatsappCommand(false);
+      }
+    };
+
     updateWhatsappStatus.mutate(enabled, {
-      onSuccess: () => {
+      onSuccess: async (response: any) => {
+        const commandId = String(response?.data?.commandId || "").trim();
+        if (commandId) {
+          addToast({
+            title: "Comando enviado",
+            description: "Aplicando cambios de WhatsApp...",
+            color: "default",
+          });
+          try {
+            await waitForWhatsappCommand(
+              commandId,
+              enabled ? "WhatsApp activado" : "WhatsApp desactivado",
+            );
+          } catch (error: any) {
+            addToast({
+              title:
+                error?.message || "No se pudo completar el cambio de WhatsApp",
+              color: "danger",
+            });
+          }
+          return;
+        }
+
         addToast({
           title: enabled ? "WhatsApp activado" : "WhatsApp desactivado",
           color: "success",
@@ -447,45 +549,237 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   };
 
   const handleCloseWhatsappSession = async () => {
+    if (!ensureWhatsappWorkerOnline()) return;
+
     const shouldClose = window.confirm(
       "¿Seguro que querés cerrar la sesión de WhatsApp y dar de baja todas las sesiones/dispositivos activos?",
     );
     if (!shouldClose) return;
 
     try {
-      await closeWhatsappSession.mutateAsync();
+      const response = await closeWhatsappSession.mutateAsync();
+      const commandId = String(response?.data?.commandId || "").trim();
+
+      if (!commandId) {
+        addToast({
+          title: "Sesión de WhatsApp cerrada y dada de baja",
+          color: "success",
+        });
+        return;
+      }
+
       addToast({
-        title: "Sesión de WhatsApp cerrada y dada de baja",
-        color: "success",
+        title: "Comando enviado",
+        description: "Cerrando sesión de WhatsApp...",
+        color: "default",
       });
+
+      setIsWaitingWhatsappCommand(true);
+      try {
+        const maxAttempts = 45;
+        const delayMs = 2000;
+        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+          const statusResponse = await configService.getWhatsappCommandStatus(commandId);
+          const status = String(statusResponse?.data?.status || "").toLowerCase();
+          const errorMessage = String(statusResponse?.data?.lastError || "").trim();
+
+          if (status === "done") {
+            queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+            addToast({
+              title: "Sesión de WhatsApp cerrada y dada de baja",
+              color: "success",
+            });
+            return;
+          }
+
+          if (status === "failed") {
+            throw new Error(errorMessage || "No se pudo cerrar la sesión de WhatsApp");
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+
+        addToast({
+          title: "WhatsApp sigue procesando el cierre",
+          description: "Podés esperar unos segundos más y volver a intentar.",
+          color: "warning",
+        });
+      } finally {
+        setIsWaitingWhatsappCommand(false);
+      }
     } catch (err: any) {
       addToast({
-        title: err?.response?.data?.error || "No se pudo cerrar la sesión de WhatsApp",
+        title:
+          err?.response?.data?.error ||
+          err?.message ||
+          "No se pudo cerrar la sesión de WhatsApp",
         color: "danger",
       });
     }
   };
 
   const handleSwitchWhatsappDevice = async () => {
+    if (!ensureWhatsappWorkerOnline()) return;
+
     const shouldSwitch = window.confirm(
       "¿Querés cambiar de dispositivo? Se va a cerrar la sesión actual y se regenerará un QR nuevo.",
     );
     if (!shouldSwitch) return;
 
     try {
-      await closeWhatsappSession.mutateAsync();
-      await updateWhatsappStatus.mutateAsync(true);
-      addToast({
-        title: "Listo: escaneá el nuevo QR para vincular otro dispositivo",
-        color: "success",
-      });
+      const closeResponse = await closeWhatsappSession.mutateAsync();
+      const closeCommandId = String(closeResponse?.data?.commandId || "").trim();
+
+      if (closeCommandId) {
+        setIsWaitingWhatsappCommand(true);
+        try {
+          const maxAttempts = 45;
+          const delayMs = 2000;
+          for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+            const statusResponse =
+              await configService.getWhatsappCommandStatus(closeCommandId);
+            const status = String(statusResponse?.data?.status || "").toLowerCase();
+            const errorMessage = String(statusResponse?.data?.lastError || "").trim();
+
+            if (status === "done") {
+              break;
+            }
+
+            if (status === "failed") {
+              throw new Error(
+                errorMessage || "No se pudo cerrar la sesión actual de WhatsApp",
+              );
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
+          }
+        } finally {
+          setIsWaitingWhatsappCommand(false);
+        }
+      }
+
+      const enableResponse = await updateWhatsappStatus.mutateAsync(true);
+      const enableCommandId = String(enableResponse?.data?.commandId || "").trim();
+      if (!enableCommandId) {
+        addToast({
+          title: "Listo: escaneá el nuevo QR para vincular otro dispositivo",
+          color: "success",
+        });
+        return;
+      }
+
+      setIsWaitingWhatsappCommand(true);
+      try {
+        const maxAttempts = 45;
+        const delayMs = 2000;
+        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+          const statusResponse = await configService.getWhatsappCommandStatus(enableCommandId);
+          const status = String(statusResponse?.data?.status || "").toLowerCase();
+          const errorMessage = String(statusResponse?.data?.lastError || "").trim();
+
+          if (status === "done") {
+            queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+            addToast({
+              title: "Listo: escaneá el nuevo QR para vincular otro dispositivo",
+              color: "success",
+            });
+            return;
+          }
+
+          if (status === "failed") {
+            throw new Error(
+              errorMessage || "No se pudo iniciar la nueva sesión de WhatsApp",
+            );
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+
+        addToast({
+          title: "WhatsApp sigue procesando el cambio de dispositivo",
+          description: "El QR debería aparecer en breve.",
+          color: "warning",
+        });
+      } finally {
+        setIsWaitingWhatsappCommand(false);
+      }
     } catch (err: any) {
       addToast({
         title:
           err?.response?.data?.error ||
+          err?.message ||
           "No se pudo cambiar el dispositivo de WhatsApp",
         color: "danger",
       });
+    }
+  };
+
+  const handleRetryWhatsappCommand = async (commandId: string) => {
+    if (!ensureWhatsappWorkerOnline()) return;
+
+    const normalizedId = String(commandId || "").trim();
+    if (!normalizedId) return;
+
+    setRetryingCommandId(normalizedId);
+    try {
+      const response = await configService.retryWhatsappCommand(normalizedId);
+      const newCommandId = String(response?.data?.commandId || "").trim();
+      const commandIdToTrack = newCommandId || normalizedId;
+
+      addToast({
+        title: "Reintento encolado",
+        description: `Comando: ${commandIdToTrack.slice(0, 8)}...`,
+        color: "success",
+      });
+
+      setIsWaitingWhatsappCommand(true);
+      try {
+        const maxAttempts = 45;
+        const delayMs = 2000;
+
+        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+          const statusResponse =
+            await configService.getWhatsappCommandStatus(commandIdToTrack);
+          const status = String(statusResponse?.data?.status || "").toLowerCase();
+          const errorMessage = String(statusResponse?.data?.lastError || "").trim();
+
+          if (status === "done") {
+            queryClient.invalidateQueries({ queryKey: ["whatsapp-commands"] });
+            queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+            addToast({
+              title: "Comando reintentado con éxito",
+              color: "success",
+            });
+            return;
+          }
+
+          if (status === "failed") {
+            queryClient.invalidateQueries({ queryKey: ["whatsapp-commands"] });
+            throw new Error(errorMessage || "El reintento volvió a fallar.");
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+
+        queryClient.invalidateQueries({ queryKey: ["whatsapp-commands"] });
+        addToast({
+          title: "El reintento sigue en proceso",
+          description: "El estado se actualizará automáticamente en el historial.",
+          color: "warning",
+        });
+      } finally {
+        setIsWaitingWhatsappCommand(false);
+      }
+    } catch (err: any) {
+      addToast({
+        title:
+          err?.response?.data?.error ||
+          err?.message ||
+          "No se pudo reintentar el comando",
+        color: "danger",
+      });
+    } finally {
+      setRetryingCommandId(null);
     }
   };
 
@@ -536,14 +830,17 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       );
       setIsEditingCancellationGroupId(false);
       setIsEditingCancellationGroupName(false);
+      const persistedLocally = Boolean(response?.data?.persistedLocally);
       addToast({
-        title: nextEnabled
-          ? "Avisos de cancelación al grupo activados"
-          : "Avisos de cancelación al grupo desactivados",
-        description: response?.data?.persistedLocally
-          ? "Guardado localmente (pendiente de soporte en backend)."
+        title: persistedLocally
+          ? "Guardado solo localmente (sin persistir en backend)"
+          : nextEnabled
+            ? "Avisos de cancelación al grupo activados"
+            : "Avisos de cancelación al grupo desactivados",
+        description: persistedLocally
+          ? "El backend no aceptó esta configuración. Los cambios pueden perderse al recargar."
           : undefined,
-        color: "success",
+        color: persistedLocally ? "warning" : "success",
       });
     } catch (err: any) {
       addToast({
@@ -1073,9 +1370,13 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         whatsappStatus={whatsappStatus}
         whatsappQr={whatsappQr}
         whatsappState={whatsappState}
+        workerOnline={workerOnline}
+        workerHeartbeatAt={workerHeartbeatAt}
         isLoadingWhatsapp={isLoadingWhatsapp}
         updateWhatsappPending={
-          updateWhatsappStatus.isPending || closeWhatsappSession.isPending
+          updateWhatsappStatus.isPending ||
+          closeWhatsappSession.isPending ||
+          isWaitingWhatsappCommand
         }
         whatsappChipColor={whatsappChipColor}
         whatsappStatusLabelByKey={whatsappStatusLabelByKey}
@@ -1083,6 +1384,11 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         cancellationGroupIdInput={cancellationGroupIdInput}
         cancellationGroupNameInput={cancellationGroupNameInput}
         whatsappGroups={whatsappGroups}
+        whatsappCommands={whatsappCommands}
+        isLoadingWhatsappCommands={isLoadingWhatsappCommands}
+        commandStatusFilter={commandStatusFilter}
+        commandTypeFilter={commandTypeFilter}
+        retryingCommandId={retryingCommandId}
         isLoadingWhatsappGroups={isLoadingWhatsappGroups}
         updateCancellationGroupPending={
           updateWhatsappCancellationGroupSettings.isPending
@@ -1102,6 +1408,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         }}
         onSelectWhatsappGroup={handleSelectWhatsappGroup}
         onSaveCancellationGroup={handleSaveCancellationGroupId}
+        onChangeCommandStatusFilter={setCommandStatusFilter}
+        onChangeCommandTypeFilter={setCommandTypeFilter}
+        onRetryWhatsappCommand={handleRetryWhatsappCommand}
       />
     );
   }

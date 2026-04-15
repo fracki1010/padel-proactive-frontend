@@ -6,6 +6,8 @@ type WhatsappSettingsViewProps = {
   whatsappStatus: string;
   whatsappQr: string;
   whatsappState: any;
+  workerOnline: boolean;
+  workerHeartbeatAt: string | null;
   isLoadingWhatsapp: boolean;
   updateWhatsappPending: boolean;
   whatsappChipColor: "default" | "success" | "danger" | "warning";
@@ -14,6 +16,21 @@ type WhatsappSettingsViewProps = {
   cancellationGroupIdInput: string;
   cancellationGroupNameInput: string;
   whatsappGroups: Array<{ id: string; name: string }>;
+  whatsappCommands: Array<{
+    id: string;
+    type: string;
+    status: string;
+    attempts: number;
+    maxAttempts: number;
+    lastError: string | null;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+    processedAt?: string | null;
+  }>;
+  isLoadingWhatsappCommands: boolean;
+  commandStatusFilter: string;
+  commandTypeFilter: string;
+  retryingCommandId: string | null;
   isLoadingWhatsappGroups: boolean;
   updateCancellationGroupPending: boolean;
   onBack: () => void;
@@ -25,6 +42,9 @@ type WhatsappSettingsViewProps = {
   onCancellationGroupNameChange: (value: string) => void;
   onSelectWhatsappGroup: (groupId: string) => void;
   onSaveCancellationGroup: () => void;
+  onChangeCommandStatusFilter: (value: string) => void;
+  onChangeCommandTypeFilter: (value: string) => void;
+  onRetryWhatsappCommand: (commandId: string) => void;
 };
 
 export const WhatsappSettingsView = ({
@@ -32,6 +52,8 @@ export const WhatsappSettingsView = ({
   whatsappStatus,
   whatsappQr,
   whatsappState,
+  workerOnline,
+  workerHeartbeatAt,
   isLoadingWhatsapp,
   updateWhatsappPending,
   whatsappChipColor,
@@ -40,6 +62,11 @@ export const WhatsappSettingsView = ({
   cancellationGroupIdInput,
   cancellationGroupNameInput,
   whatsappGroups,
+  whatsappCommands,
+  isLoadingWhatsappCommands,
+  commandStatusFilter,
+  commandTypeFilter,
+  retryingCommandId,
   isLoadingWhatsappGroups,
   updateCancellationGroupPending,
   onBack,
@@ -51,6 +78,9 @@ export const WhatsappSettingsView = ({
   onCancellationGroupNameChange,
   onSelectWhatsappGroup,
   onSaveCancellationGroup,
+  onChangeCommandStatusFilter,
+  onChangeCommandTypeFilter,
+  onRetryWhatsappCommand,
 }: WhatsappSettingsViewProps) => {
   const isLockedElsewhere = whatsappStatus === "locked_elsewhere";
   const canManageSession =
@@ -59,6 +89,12 @@ export const WhatsappSettingsView = ({
   const canSaveCancellationGroup =
     !updateCancellationGroupPending &&
     (!cancellationGroupEnabled || Boolean(cancellationGroupIdInput.trim()));
+  const commandStatusLabelByKey: Record<string, string> = {
+    queued: "En cola",
+    processing: "Procesando",
+    done: "Completado",
+    failed: "Fallido",
+  };
   const nextStepMessage = !whatsappEnabled
     ? "Activá WhatsApp para iniciar el servicio."
     : whatsappStatus === "ready"
@@ -106,6 +142,24 @@ export const WhatsappSettingsView = ({
                 Siguiente paso
               </p>
               <p className="text-foreground font-bold text-sm">{nextStepMessage}</p>
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                Worker WhatsApp
+              </p>
+              <div className="flex items-center gap-2">
+                <Chip
+                  color={workerOnline ? "success" : "danger"}
+                  variant="flat"
+                  className="font-bold uppercase"
+                  size="sm"
+                >
+                  {workerOnline ? "Online" : "Offline"}
+                </Chip>
+                <p className="text-xs text-gray-400 font-medium">
+                  Último heartbeat: {workerHeartbeatAt || "sin datos"}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -352,6 +406,130 @@ export const WhatsappSettingsView = ({
               {new Date(whatsappState.updatedAt).toLocaleString()}
             </p>
           )}
+
+          <div className="bg-black/5 dark:bg-white/5 rounded-3xl p-5 border border-black/10 dark:border-white/10 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                Historial de comandos (últimos 20)
+              </p>
+              {isLoadingWhatsappCommands ? (
+                <Chip size="sm" variant="flat" className="font-bold uppercase">
+                  Cargando
+                </Chip>
+              ) : null}
+            </div>
+
+            {!whatsappCommands.length ? (
+              <p className="text-xs text-gray-400 font-bold">
+                No hay comandos recientes para mostrar.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <Select
+                    label="Estado"
+                    labelPlacement="outside"
+                    placeholder="Todos"
+                    selectedKeys={[commandStatusFilter || "__all__"]}
+                    onSelectionChange={(keys) => {
+                      if (keys === "all") return;
+                      const selected = (Array.from(keys)[0] as string | undefined) || "__all__";
+                      onChangeCommandStatusFilter(selected === "__all__" ? "" : selected);
+                    }}
+                    classNames={{
+                      trigger: "bg-black/5 dark:bg-white/5 border-none h-11 rounded-2xl px-4",
+                      label: "text-gray-400 font-bold mb-2",
+                      value: "text-foreground font-bold",
+                      popoverContent: "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                    }}
+                  >
+                    <SelectItem key="__all__" className="text-foreground">Todos</SelectItem>
+                    <SelectItem key="queued" className="text-foreground">En cola</SelectItem>
+                    <SelectItem key="processing" className="text-foreground">Procesando</SelectItem>
+                    <SelectItem key="done" className="text-foreground">Completado</SelectItem>
+                    <SelectItem key="failed" className="text-foreground">Fallido</SelectItem>
+                  </Select>
+                  <Select
+                    label="Tipo"
+                    labelPlacement="outside"
+                    placeholder="Todos"
+                    selectedKeys={[commandTypeFilter || "__all__"]}
+                    onSelectionChange={(keys) => {
+                      if (keys === "all") return;
+                      const selected = (Array.from(keys)[0] as string | undefined) || "__all__";
+                      onChangeCommandTypeFilter(selected === "__all__" ? "" : selected);
+                    }}
+                    classNames={{
+                      trigger: "bg-black/5 dark:bg-white/5 border-none h-11 rounded-2xl px-4",
+                      label: "text-gray-400 font-bold mb-2",
+                      value: "text-foreground font-bold",
+                      popoverContent: "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                    }}
+                  >
+                    <SelectItem key="__all__" className="text-foreground">Todos</SelectItem>
+                    <SelectItem key="set_enabled" className="text-foreground">Activar/Desactivar</SelectItem>
+                    <SelectItem key="send_message" className="text-foreground">Enviar mensaje</SelectItem>
+                    <SelectItem key="restart_client" className="text-foreground">Reiniciar cliente</SelectItem>
+                    <SelectItem key="list_groups" className="text-foreground">Listar grupos</SelectItem>
+                    <SelectItem key="notify_cancellation_group" className="text-foreground">Aviso cancelación grupo</SelectItem>
+                  </Select>
+                </div>
+                {whatsappCommands.map((command) => {
+                  const status = String(command?.status || "").toLowerCase();
+                  const statusLabel = commandStatusLabelByKey[status] || status || "Desconocido";
+                  const chipColor: "default" | "success" | "warning" | "danger" =
+                    status === "done"
+                      ? "success"
+                      : status === "failed"
+                        ? "danger"
+                        : status === "processing"
+                          ? "warning"
+                          : "default";
+
+                  return (
+                    <div
+                      key={command.id}
+                      className="rounded-2xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 space-y-2"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-[11px] text-foreground font-black uppercase tracking-wide">
+                          {command.type || "comando"}
+                        </p>
+                        <Chip size="sm" color={chipColor} variant="flat" className="font-bold uppercase">
+                          {statusLabel}
+                        </Chip>
+                      </div>
+                      <p className="text-[11px] text-gray-400 font-bold">
+                        Intentos: {Number(command.attempts || 0)} / {Number(command.maxAttempts || 0)}
+                      </p>
+                      {!!command.lastError && (
+                        <p className="text-[11px] text-danger-300 font-bold">
+                          Error: {command.lastError}
+                        </p>
+                      )}
+                      <p className="text-[10px] text-gray-500 font-bold italic">
+                        Creado: {command.createdAt ? new Date(command.createdAt).toLocaleString() : "N/D"}
+                      </p>
+                      {status === "failed" ? (
+                        <div className="flex justify-end">
+                          <Button
+                            size="sm"
+                            variant="flat"
+                            color="warning"
+                            className="font-black uppercase text-black"
+                            isLoading={retryingCommandId === command.id}
+                            onPress={() => onRetryWhatsappCommand(command.id)}
+                          >
+                            Reintentar
+                          </Button>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </CardBody>
       </Card>
     </div>

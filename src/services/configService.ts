@@ -364,6 +364,44 @@ export const configService = {
     return response.data;
   },
 
+  getWhatsappCommandStatus: async (commandId: string): Promise<any> => {
+    const normalizedId = String(commandId || "").trim();
+    if (!normalizedId) {
+      throw new Error("commandId inválido");
+    }
+    const response = await api.get(`/whatsapp/commands/${normalizedId}`);
+    return response.data;
+  },
+
+  getWhatsappCommands: async ({
+    limit = 20,
+    status = "",
+    type = "",
+  }: {
+    limit?: number;
+    status?: string;
+    type?: string;
+  } = {}): Promise<any> => {
+    const normalizedLimit = Math.min(100, Math.max(1, Number(limit) || 20));
+    const response = await api.get("/whatsapp/commands", {
+      params: {
+        limit: normalizedLimit,
+        ...(status ? { status } : {}),
+        ...(type ? { type } : {}),
+      },
+    });
+    return response.data;
+  },
+
+  retryWhatsappCommand: async (commandId: string): Promise<any> => {
+    const normalizedId = String(commandId || "").trim();
+    if (!normalizedId) {
+      throw new Error("commandId inválido");
+    }
+    const response = await api.post(`/whatsapp/commands/${normalizedId}/retry`);
+    return response.data;
+  },
+
   updateWhatsappStatus: async (enabled: boolean): Promise<any> => {
     const attempts: Array<{
       method: "put" | "patch";
