@@ -12,10 +12,8 @@ import {
   useUpdateOwnCompany,
   useWhatsappStatus,
   useUpdateBasePrice,
-  usePenaltySettings,
-  useUpdatePenaltySettings,
-  useOneHourReminderSetting,
-  useUpdateOneHourReminderSetting,
+  useBotAutomationSettings,
+  useUpdateBotAutomationSettings,
   useUpdateWhatsappStatus,
   useCloseWhatsappSession,
   useWhatsappCancellationGroupSettings,
@@ -33,6 +31,7 @@ import {
 import { useAuth } from "../../../context/AuthContext";
 import { useTheme } from "../../../context/ThemeContext";
 import { CourtsView } from "../components/CourtsView";
+import { BotAutomationSettingsView } from "../components/BotAutomationSettingsView";
 import { ProfileMenuView } from "../components/ProfileMenuView";
 import { ScheduleSettingsView } from "../components/ScheduleSettingsView";
 import { TenantsView } from "../components/TenantsView";
@@ -46,7 +45,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const { logout, user, updateUser } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [view, setView] = useState<
-    "menu" | "courts" | "schedule" | "whatsapp" | "tenants"
+    "menu" | "courts" | "schedule" | "whatsapp" | "bot-automation" | "tenants"
   >("menu");
   const isSuperAdmin = user?.role === "super_admin";
   const canManageClubData = isSuperAdmin || Boolean(user?.companyId);
@@ -58,8 +57,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     useWhatsappCancellationGroupSettings();
   const { data: whatsappGroupsData, isLoading: isLoadingWhatsappGroups } =
     useWhatsappGroups();
-  const { data: penaltySettingsData } = usePenaltySettings();
-  const { data: oneHourReminderData } = useOneHourReminderSetting();
+  const { data: botAutomationSettingsData } = useBotAutomationSettings();
   const { data: companiesData } = useCompanies(isSuperAdmin);
   const { data: adminsData } = useAdmins(isSuperAdmin);
 
@@ -68,8 +66,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const updateSlot = useUpdateSlot();
   const createSlot = useCreateSlot();
   const updateBasePrice = useUpdateBasePrice();
-  const updatePenaltySettings = useUpdatePenaltySettings();
-  const updateOneHourReminderSetting = useUpdateOneHourReminderSetting();
+  const updateBotAutomationSettings = useUpdateBotAutomationSettings();
   const updateProfile = useUpdateProfile();
   const updateOwnCompany = useUpdateOwnCompany();
   const updateWhatsappStatus = useUpdateWhatsappStatus();
@@ -141,10 +138,35 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     whatsappState?.cancelledBookingGroupName,
   ];
   const dailyAvailabilityDigestEnabledCandidates = [
+    botAutomationSettingsData?.data?.dailyAvailabilityDigestEnabled,
+    botAutomationSettingsData?.data?.dailyGroupAvailabilityEnabled,
+    botAutomationSettingsData?.data?.groupDailyAvailabilityDigestEnabled,
     whatsappCancellationGroupSettingsRaw?.dailyAvailabilityDigestEnabled,
     whatsappState?.dailyAvailabilityDigestEnabled,
     whatsappState?.dailyGroupAvailabilityEnabled,
     whatsappState?.groupDailyAvailabilityDigestEnabled,
+  ];
+  const dailyAvailabilityDigestHourCandidates = [
+    botAutomationSettingsData?.data?.dailyAvailabilityDigestHour,
+    botAutomationSettingsData?.data?.dailyGroupAvailabilityHour,
+    botAutomationSettingsData?.data?.groupDailyAvailabilityDigestHour,
+    whatsappCancellationGroupSettingsRaw?.dailyAvailabilityDigestHour,
+    whatsappCancellationGroupSettingsRaw?.dailyGroupAvailabilityHour,
+    whatsappCancellationGroupSettingsRaw?.groupDailyAvailabilityDigestHour,
+    whatsappState?.dailyAvailabilityDigestHour,
+    whatsappState?.dailyGroupAvailabilityHour,
+    whatsappState?.groupDailyAvailabilityDigestHour,
+  ];
+  const dailyAvailabilityDigestNextDayCandidates = [
+    botAutomationSettingsData?.data?.dailyAvailabilityDigestNextDayEnabled,
+    botAutomationSettingsData?.data?.dailyNextDayAvailabilityEnabled,
+    botAutomationSettingsData?.data?.groupDailyAvailabilityNextDayEnabled,
+    whatsappCancellationGroupSettingsRaw?.dailyAvailabilityDigestNextDayEnabled,
+    whatsappCancellationGroupSettingsRaw?.dailyNextDayAvailabilityEnabled,
+    whatsappCancellationGroupSettingsRaw?.groupDailyAvailabilityNextDayEnabled,
+    whatsappState?.dailyAvailabilityDigestNextDayEnabled,
+    whatsappState?.dailyNextDayAvailabilityEnabled,
+    whatsappState?.groupDailyAvailabilityNextDayEnabled,
   ];
   const whatsappCancellationGroupEnabled = Boolean(
     cancellationGroupEnabledCandidates.find((candidate) => typeof candidate === "boolean"),
@@ -159,6 +181,17 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       | undefined) || "";
   const whatsappDailyAvailabilityDigestEnabled = Boolean(
     dailyAvailabilityDigestEnabledCandidates.find(
+      (candidate) => typeof candidate === "boolean",
+    ),
+  );
+  const whatsappDailyAvailabilityDigestHour =
+    (dailyAvailabilityDigestHourCandidates.find(
+      (candidate) =>
+        typeof candidate === "string" &&
+        /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(candidate),
+    ) as string | undefined) || "09:00";
+  const whatsappDailyAvailabilityDigestNextDayEnabled = Boolean(
+    dailyAvailabilityDigestNextDayCandidates.find(
       (candidate) => typeof candidate === "boolean",
     ),
   );
@@ -189,13 +222,19 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       ? [userCompany]
       : [];
   const admins = adminsData?.data || [];
-  const oneHourReminderEnabled = Boolean(
-    oneHourReminderData?.data?.oneHourReminderEnabled,
-  );
+  const botAutomationSettings = botAutomationSettingsData?.data || {};
 
   const [phoneNumber, setPhoneNumber] = useState("");
   const [basePriceInput, setBasePriceInput] = useState("");
   const [penaltyLimitInput, setPenaltyLimitInput] = useState("");
+  const [penaltyEnabledInput, setPenaltyEnabledInput] = useState(true);
+  const [attendanceReminderLeadMinutesInput, setAttendanceReminderLeadMinutesInput] =
+    useState("");
+  const [cancellationLockHoursInput, setCancellationLockHoursInput] = useState("");
+  const [trustedClientConfirmationCountInput, setTrustedClientConfirmationCountInput] =
+    useState("");
+  const [botOneHourReminderEnabledInput, setBotOneHourReminderEnabledInput] =
+    useState(true);
   const [companyNameInput, setCompanyNameInput] = useState("");
   const [newAdminUsername, setNewAdminUsername] = useState("");
   const [newAdminPassword, setNewAdminPassword] = useState("");
@@ -209,9 +248,24 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const [cancellationGroupNameInput, setCancellationGroupNameInput] = useState("");
   const [dailyAvailabilityDigestEnabledInput, setDailyAvailabilityDigestEnabledInput] =
     useState(false);
+  const [dailyAvailabilityDigestHourInput, setDailyAvailabilityDigestHourInput] =
+    useState("09:00");
+  const [
+    dailyAvailabilityDigestNextDayEnabledInput,
+    setDailyAvailabilityDigestNextDayEnabledInput,
+  ] = useState(false);
   const [isEditingCancellationGroupId, setIsEditingCancellationGroupId] =
     useState(false);
   const [isEditingCancellationGroupName, setIsEditingCancellationGroupName] =
+    useState(false);
+  const [isSavingReminderToggle, setIsSavingReminderToggle] = useState(false);
+  const [isSavingPenaltyToggle, setIsSavingPenaltyToggle] = useState(false);
+  const [isSavingReminderMinutes, setIsSavingReminderMinutes] = useState(false);
+  const [isSavingCancellationLockHours, setIsSavingCancellationLockHours] =
+    useState(false);
+  const [isSavingTrustedCount, setIsSavingTrustedCount] = useState(false);
+  const [isSavingPenaltyLimit, setIsSavingPenaltyLimit] = useState(false);
+  const [isSavingDailyAvailabilityDigestSettings, setIsSavingDailyAvailabilityDigestSettings] =
     useState(false);
 
   useEffect(() => {
@@ -221,10 +275,49 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   }, [user]);
 
   useEffect(() => {
-    const backendLimit = penaltySettingsData?.data?.penaltyLimit;
+    const backendLimit = botAutomationSettings?.penaltyLimit;
     if (!backendLimit) return;
     setPenaltyLimitInput(String(backendLimit));
-  }, [penaltySettingsData]);
+  }, [botAutomationSettings]);
+
+  useEffect(() => {
+    const backendPenaltyEnabledCandidate = [
+      botAutomationSettings?.penaltyEnabled,
+      botAutomationSettings?.penaltySystemEnabled,
+    ].find((value) => typeof value === "boolean");
+
+    if (typeof backendPenaltyEnabledCandidate === "boolean") {
+      setPenaltyEnabledInput(backendPenaltyEnabledCandidate);
+    }
+  }, [botAutomationSettings]);
+
+  useEffect(() => {
+    const leadMinutes = botAutomationSettings?.attendanceReminderLeadMinutes;
+    if (!leadMinutes) return;
+    setAttendanceReminderLeadMinutesInput(String(leadMinutes));
+  }, [botAutomationSettings]);
+
+  useEffect(() => {
+    const lockHours = botAutomationSettings?.cancellationLockHours;
+    if (lockHours === undefined || lockHours === null) return;
+    if (!Number.isInteger(Number(lockHours))) return;
+    setCancellationLockHoursInput(String(Number(lockHours)));
+  }, [botAutomationSettings]);
+
+  useEffect(() => {
+    const trustedCount = botAutomationSettings?.trustedClientConfirmationCount;
+    if (!trustedCount) return;
+    setTrustedClientConfirmationCountInput(String(trustedCount));
+  }, [botAutomationSettings]);
+
+  useEffect(() => {
+    const fromBotConfig = botAutomationSettings?.oneHourReminderEnabled;
+    if (typeof fromBotConfig === "boolean") {
+      setBotOneHourReminderEnabledInput(fromBotConfig);
+      return;
+    }
+    setBotOneHourReminderEnabledInput(true);
+  }, [botAutomationSettings]);
 
   useEffect(() => {
     if (!slots.length) return;
@@ -265,6 +358,16 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   useEffect(() => {
     setDailyAvailabilityDigestEnabledInput(whatsappDailyAvailabilityDigestEnabled);
   }, [whatsappDailyAvailabilityDigestEnabled]);
+
+  useEffect(() => {
+    setDailyAvailabilityDigestHourInput(whatsappDailyAvailabilityDigestHour);
+  }, [whatsappDailyAvailabilityDigestHour]);
+
+  useEffect(() => {
+    setDailyAvailabilityDigestNextDayEnabledInput(
+      whatsappDailyAvailabilityDigestNextDayEnabled,
+    );
+  }, [whatsappDailyAvailabilityDigestNextDayEnabled]);
 
   const whatsappStatusLabelByKey: Record<string, string> = {
     disabled: "Desactivado",
@@ -391,9 +494,12 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     nextGroupIdRaw: string,
     nextGroupNameRaw: string,
     nextDailyAvailabilityDigestEnabled: boolean,
+    nextDailyAvailabilityDigestHourRaw: string,
+    nextDailyAvailabilityDigestNextDayEnabled: boolean,
   ) => {
     const nextGroupId = nextGroupIdRaw.trim();
     const nextGroupName = nextGroupNameRaw.trim();
+    const nextDailyAvailabilityDigestHour = nextDailyAvailabilityDigestHourRaw.trim();
     if (nextEnabled && !nextGroupId) {
       addToast({
         title: "Ingresá el ID del grupo antes de activar avisos de cancelación",
@@ -402,16 +508,32 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       return;
     }
 
+    if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(nextDailyAvailabilityDigestHour)) {
+      addToast({
+        title: "Ingresá una hora válida en formato HH:mm.",
+        color: "warning",
+      });
+      return;
+    }
+
     try {
+      setIsSavingDailyAvailabilityDigestSettings(true);
       const response = await updateWhatsappCancellationGroupSettings.mutateAsync({
         enabled: nextEnabled,
         groupId: nextGroupId,
         groupName: nextGroupName,
         dailyAvailabilityDigestEnabled: nextDailyAvailabilityDigestEnabled,
+        dailyAvailabilityDigestHour: nextDailyAvailabilityDigestHour,
+        dailyAvailabilityDigestNextDayEnabled:
+          nextDailyAvailabilityDigestNextDayEnabled,
       });
       setCancellationGroupIdInput(nextGroupId);
       setCancellationGroupNameInput(nextGroupName);
       setDailyAvailabilityDigestEnabledInput(nextDailyAvailabilityDigestEnabled);
+      setDailyAvailabilityDigestHourInput(nextDailyAvailabilityDigestHour);
+      setDailyAvailabilityDigestNextDayEnabledInput(
+        nextDailyAvailabilityDigestNextDayEnabled,
+      );
       setIsEditingCancellationGroupId(false);
       setIsEditingCancellationGroupName(false);
       addToast({
@@ -430,6 +552,8 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           "No se pudo actualizar el grupo de avisos de cancelación",
         color: "danger",
       });
+    } finally {
+      setIsSavingDailyAvailabilityDigestSettings(false);
     }
   };
 
@@ -439,6 +563,8 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       cancellationGroupIdInput,
       cancellationGroupNameInput,
       dailyAvailabilityDigestEnabledInput,
+      dailyAvailabilityDigestHourInput,
+      dailyAvailabilityDigestNextDayEnabledInput,
     );
   };
 
@@ -448,10 +574,12 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       cancellationGroupIdInput,
       cancellationGroupNameInput,
       dailyAvailabilityDigestEnabledInput,
+      dailyAvailabilityDigestHourInput,
+      dailyAvailabilityDigestNextDayEnabledInput,
     );
   };
 
-  const handleToggleDailyAvailabilityDigest = (enabled: boolean) => {
+  const handleToggleDailyAvailabilityDigestFromBot = (enabled: boolean) => {
     if (enabled && !cancellationGroupIdInput.trim()) {
       addToast({
         title: "Primero seleccioná un grupo para enviar el resumen diario",
@@ -465,6 +593,46 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       cancellationGroupIdInput,
       cancellationGroupNameInput,
       enabled,
+      dailyAvailabilityDigestHourInput,
+      dailyAvailabilityDigestNextDayEnabledInput,
+    );
+  };
+
+  const handleToggleDailyAvailabilityDigestNextDayFromBot = (enabled: boolean) => {
+    if (enabled && !cancellationGroupIdInput.trim()) {
+      addToast({
+        title: "Primero seleccioná un grupo para enviar la disponibilidad de mañana",
+        color: "warning",
+      });
+      return;
+    }
+
+    persistWhatsappCancellationGroupSettings(
+      whatsappCancellationGroupEnabled,
+      cancellationGroupIdInput,
+      cancellationGroupNameInput,
+      dailyAvailabilityDigestEnabledInput,
+      dailyAvailabilityDigestHourInput,
+      enabled,
+    );
+  };
+
+  const handleSaveDailyAvailabilityDigestSchedule = () => {
+    if (!cancellationGroupIdInput.trim()) {
+      addToast({
+        title: "Primero configurá un grupo en WhatsApp Web para usar estos avisos",
+        color: "warning",
+      });
+      return;
+    }
+
+    persistWhatsappCancellationGroupSettings(
+      whatsappCancellationGroupEnabled,
+      cancellationGroupIdInput,
+      cancellationGroupNameInput,
+      dailyAvailabilityDigestEnabledInput,
+      dailyAvailabilityDigestHourInput,
+      dailyAvailabilityDigestNextDayEnabledInput,
     );
   };
 
@@ -478,53 +646,267 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     setIsEditingCancellationGroupName(true);
   };
 
-  const handleSavePenaltyLimit = () => {
-    const parsed = Number(penaltyLimitInput);
-    if (!Number.isInteger(parsed) || parsed < 1) {
+  const getServerBotAutomationSnapshot = () => {
+    const rawPenaltyEnabled = [
+      botAutomationSettings?.penaltyEnabled,
+      botAutomationSettings?.penaltySystemEnabled,
+    ].find((value) => typeof value === "boolean");
+
+    return {
+      oneHourReminderEnabled:
+        typeof botAutomationSettings?.oneHourReminderEnabled === "boolean"
+          ? botAutomationSettings.oneHourReminderEnabled
+          : true,
+      penaltyEnabled:
+        typeof rawPenaltyEnabled === "boolean" ? rawPenaltyEnabled : true,
+      attendanceReminderLeadMinutes:
+        Number(botAutomationSettings?.attendanceReminderLeadMinutes) || 60,
+      cancellationLockHours:
+        Number.isInteger(Number(botAutomationSettings?.cancellationLockHours))
+          ? Number(botAutomationSettings?.cancellationLockHours)
+          : 0,
+      trustedClientConfirmationCount:
+        Number(botAutomationSettings?.trustedClientConfirmationCount) || 3,
+      penaltyLimit: Number(botAutomationSettings?.penaltyLimit) || 2,
+    };
+  };
+
+  const restoreBotAutomationSnapshot = (snapshot: {
+    oneHourReminderEnabled: boolean;
+    penaltyEnabled: boolean;
+    attendanceReminderLeadMinutes: number;
+    cancellationLockHours: number;
+    trustedClientConfirmationCount: number;
+    penaltyLimit: number;
+  }) => {
+    setBotOneHourReminderEnabledInput(Boolean(snapshot.oneHourReminderEnabled));
+    setPenaltyEnabledInput(Boolean(snapshot.penaltyEnabled));
+    setAttendanceReminderLeadMinutesInput(
+      String(snapshot.attendanceReminderLeadMinutes),
+    );
+    setCancellationLockHoursInput(String(snapshot.cancellationLockHours));
+    setTrustedClientConfirmationCountInput(
+      String(snapshot.trustedClientConfirmationCount),
+    );
+    setPenaltyLimitInput(String(snapshot.penaltyLimit));
+  };
+
+  const syncBotAutomationFromResponse = (response: any) => {
+    const data = response?.data || {};
+    if (typeof data?.oneHourReminderEnabled === "boolean") {
+      setBotOneHourReminderEnabledInput(data.oneHourReminderEnabled);
+    }
+    const responsePenaltyEnabled = [
+      data?.penaltyEnabled,
+      data?.penaltySystemEnabled,
+    ].find((value) => typeof value === "boolean");
+    if (typeof responsePenaltyEnabled === "boolean") {
+      setPenaltyEnabledInput(responsePenaltyEnabled);
+    }
+    if (Number.isInteger(Number(data?.attendanceReminderLeadMinutes))) {
+      setAttendanceReminderLeadMinutesInput(
+        String(Number(data.attendanceReminderLeadMinutes)),
+      );
+    }
+    if (Number.isInteger(Number(data?.cancellationLockHours))) {
+      setCancellationLockHoursInput(String(Number(data.cancellationLockHours)));
+    }
+    if (Number.isInteger(Number(data?.trustedClientConfirmationCount))) {
+      setTrustedClientConfirmationCountInput(
+        String(Number(data.trustedClientConfirmationCount)),
+      );
+    }
+    if (Number.isInteger(Number(data?.penaltyLimit))) {
+      setPenaltyLimitInput(String(Number(data.penaltyLimit)));
+    }
+  };
+
+  const handleToggleBotOneHourReminderRealtime = async (enabled: boolean) => {
+    const previousSnapshot = getServerBotAutomationSnapshot();
+    setBotOneHourReminderEnabledInput(enabled);
+    setIsSavingReminderToggle(true);
+    try {
+      const response = await updateBotAutomationSettings.mutateAsync({
+        oneHourReminderEnabled: enabled,
+      });
+      syncBotAutomationFromResponse(response);
       addToast({
-        title: "Ingresá un límite válido (entero mayor o igual a 1).",
+        title: enabled ? "Confirmación previa activada" : "Confirmación previa desactivada",
+        color: "success",
+      });
+    } catch (err: any) {
+      restoreBotAutomationSnapshot(previousSnapshot);
+      addToast({
+        title:
+          err?.response?.data?.error ||
+          err?.message ||
+          "No se pudo actualizar la confirmación previa",
+        color: "danger",
+      });
+    } finally {
+      setIsSavingReminderToggle(false);
+    }
+  };
+
+  const handleTogglePenaltyEnabledRealtime = async (enabled: boolean) => {
+    const previousSnapshot = getServerBotAutomationSnapshot();
+    setPenaltyEnabledInput(enabled);
+    setIsSavingPenaltyToggle(true);
+    try {
+      const response = await updateBotAutomationSettings.mutateAsync({
+        penaltyEnabled: enabled,
+      });
+      syncBotAutomationFromResponse(response);
+      addToast({
+        title: enabled ? "Penalizaciones activadas" : "Penalizaciones desactivadas",
+        color: "success",
+      });
+    } catch (err: any) {
+      restoreBotAutomationSnapshot(previousSnapshot);
+      addToast({
+        title:
+          err?.response?.data?.error ||
+          err?.message ||
+          "No se pudo actualizar el estado de penalizaciones",
+        color: "danger",
+      });
+    } finally {
+      setIsSavingPenaltyToggle(false);
+    }
+  };
+
+  const handleSaveReminderMinutes = async () => {
+    const parsedLeadMinutes = Number(attendanceReminderLeadMinutesInput);
+    if (!Number.isInteger(parsedLeadMinutes) || parsedLeadMinutes < 5 || parsedLeadMinutes > 240) {
+      addToast({
+        title: "Minutos de aviso inválidos (usar entero entre 5 y 240).",
         color: "danger",
       });
       return;
     }
 
-    updatePenaltySettings.mutate(parsed, {
-      onSuccess: () => {
-        addToast({ title: "Límite de penalizaciones actualizado", color: "success" });
-      },
-      onError: (err: any) => {
-        addToast({
-          title:
-            err?.response?.data?.error ||
-            "No se pudo actualizar el límite de penalizaciones",
-          color: "danger",
-        });
-      },
-    });
+    const previousSnapshot = getServerBotAutomationSnapshot();
+    setIsSavingReminderMinutes(true);
+    try {
+      const response = await updateBotAutomationSettings.mutateAsync({
+        attendanceReminderLeadMinutes: parsedLeadMinutes,
+      });
+      syncBotAutomationFromResponse(response);
+      addToast({ title: "Minutos de aviso actualizados", color: "success" });
+    } catch (err: any) {
+      restoreBotAutomationSnapshot(previousSnapshot);
+      addToast({
+        title:
+          err?.response?.data?.error ||
+          err?.message ||
+          "No se pudo actualizar los minutos de aviso",
+        color: "danger",
+      });
+    } finally {
+      setIsSavingReminderMinutes(false);
+    }
   };
 
-  const handleToggleOneHourReminder = (enabled: boolean) => {
-    updateOneHourReminderSetting.mutate(enabled, {
-      onSuccess: (response: any) => {
-        addToast({
-          title: enabled
-            ? "Recordatorio de 1 hora activado"
-            : "Recordatorio de 1 hora desactivado",
-          description: response?.data?.persistedLocally
-            ? "Guardado localmente (pendiente de soporte en backend)."
-            : undefined,
-          color: "success",
-        });
-      },
-      onError: (err: any) => {
-        addToast({
-          title:
-            err?.response?.data?.error ||
-            "No se pudo actualizar el recordatorio de 1 hora",
-          color: "danger",
-        });
-      },
-    });
+  const handleSaveCancellationLockHours = async () => {
+    const parsedHours = Number(cancellationLockHoursInput);
+    if (!Number.isInteger(parsedHours) || parsedHours < 0 || parsedHours > 72) {
+      addToast({
+        title: "Bloqueo de cancelación inválido (usar entero entre 0 y 72).",
+        color: "danger",
+      });
+      return;
+    }
+
+    const previousSnapshot = getServerBotAutomationSnapshot();
+    setIsSavingCancellationLockHours(true);
+    try {
+      const response = await updateBotAutomationSettings.mutateAsync({
+        cancellationLockHours: parsedHours,
+      });
+      syncBotAutomationFromResponse(response);
+      addToast({
+        title: "Bloqueo de cancelación actualizado",
+        color: "success",
+      });
+    } catch (err: any) {
+      restoreBotAutomationSnapshot(previousSnapshot);
+      addToast({
+        title:
+          err?.response?.data?.error ||
+          err?.message ||
+          "No se pudo actualizar el bloqueo de cancelación",
+        color: "danger",
+      });
+    } finally {
+      setIsSavingCancellationLockHours(false);
+    }
+  };
+
+  const handleSaveTrustedConfirmationCount = async () => {
+    const parsedTrustedCount = Number(trustedClientConfirmationCountInput);
+    if (!Number.isInteger(parsedTrustedCount) || parsedTrustedCount < 1 || parsedTrustedCount > 20) {
+      addToast({
+        title: "Confirmaciones para cliente confiable inválidas (1 a 20).",
+        color: "danger",
+      });
+      return;
+    }
+
+    const previousSnapshot = getServerBotAutomationSnapshot();
+    setIsSavingTrustedCount(true);
+    try {
+      const response = await updateBotAutomationSettings.mutateAsync({
+        trustedClientConfirmationCount: parsedTrustedCount,
+      });
+      syncBotAutomationFromResponse(response);
+      addToast({
+        title: "Umbral de cliente confiable actualizado",
+        color: "success",
+      });
+    } catch (err: any) {
+      restoreBotAutomationSnapshot(previousSnapshot);
+      addToast({
+        title:
+          err?.response?.data?.error ||
+          err?.message ||
+          "No se pudo actualizar el umbral de cliente confiable",
+        color: "danger",
+      });
+    } finally {
+      setIsSavingTrustedCount(false);
+    }
+  };
+
+  const handleSavePenaltyLimit = async () => {
+    const parsedPenalty = Number(penaltyLimitInput);
+    if (!Number.isInteger(parsedPenalty) || parsedPenalty < 1) {
+      addToast({
+        title: "Límite de penalizaciones inválido (entero mayor o igual a 1).",
+        color: "danger",
+      });
+      return;
+    }
+
+    const previousSnapshot = getServerBotAutomationSnapshot();
+    setIsSavingPenaltyLimit(true);
+    try {
+      const response = await updateBotAutomationSettings.mutateAsync({
+        penaltyLimit: parsedPenalty,
+      });
+      syncBotAutomationFromResponse(response);
+      addToast({ title: "Límite de penalizaciones actualizado", color: "success" });
+    } catch (err: any) {
+      restoreBotAutomationSnapshot(previousSnapshot);
+      addToast({
+        title:
+          err?.response?.data?.error ||
+          err?.message ||
+          "No se pudo actualizar el límite de penalizaciones",
+        color: "danger",
+      });
+    } finally {
+      setIsSavingPenaltyLimit(false);
+    }
   };
 
   const handleCreateCompany = () => {
@@ -700,7 +1082,6 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         cancellationGroupEnabled={whatsappCancellationGroupEnabled}
         cancellationGroupIdInput={cancellationGroupIdInput}
         cancellationGroupNameInput={cancellationGroupNameInput}
-        dailyAvailabilityDigestEnabled={dailyAvailabilityDigestEnabledInput}
         whatsappGroups={whatsappGroups}
         isLoadingWhatsappGroups={isLoadingWhatsappGroups}
         updateCancellationGroupPending={
@@ -720,7 +1101,6 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           setIsEditingCancellationGroupName(true);
         }}
         onSelectWhatsappGroup={handleSelectWhatsappGroup}
-        onToggleDailyAvailabilityDigest={handleToggleDailyAvailabilityDigest}
         onSaveCancellationGroup={handleSaveCancellationGroupId}
       />
     );
@@ -798,6 +1178,55 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     );
   }
 
+  if (view === "bot-automation") {
+    return (
+      <BotAutomationSettingsView
+        oneHourReminderEnabled={botOneHourReminderEnabledInput}
+        penaltyEnabled={penaltyEnabledInput}
+        attendanceReminderLeadMinutesInput={attendanceReminderLeadMinutesInput}
+        cancellationLockHoursInput={cancellationLockHoursInput}
+        trustedClientConfirmationCountInput={trustedClientConfirmationCountInput}
+        penaltyLimitInput={penaltyLimitInput}
+        dailyAvailabilityDigestEnabled={dailyAvailabilityDigestEnabledInput}
+        dailyAvailabilityDigestHourInput={dailyAvailabilityDigestHourInput}
+        dailyAvailabilityDigestNextDayEnabled={
+          dailyAvailabilityDigestNextDayEnabledInput
+        }
+        cancellationGroupConfigured={Boolean(cancellationGroupIdInput.trim())}
+        isSavingReminderToggle={isSavingReminderToggle}
+        isSavingPenaltyToggle={isSavingPenaltyToggle}
+        isSavingReminderMinutes={isSavingReminderMinutes}
+        isSavingCancellationLockHours={isSavingCancellationLockHours}
+        isSavingTrustedCount={isSavingTrustedCount}
+        isSavingPenaltyLimit={isSavingPenaltyLimit}
+        isSavingDailyAvailabilityDigestSettings={
+          isSavingDailyAvailabilityDigestSettings
+        }
+        onBack={() => setView("menu")}
+        onToggleOneHourReminder={handleToggleBotOneHourReminderRealtime}
+        onTogglePenaltyEnabled={handleTogglePenaltyEnabledRealtime}
+        onAttendanceReminderLeadMinutesChange={setAttendanceReminderLeadMinutesInput}
+        onCancellationLockHoursChange={setCancellationLockHoursInput}
+        onTrustedClientConfirmationCountChange={
+          setTrustedClientConfirmationCountInput
+        }
+        onPenaltyLimitChange={setPenaltyLimitInput}
+        onToggleDailyAvailabilityDigest={handleToggleDailyAvailabilityDigestFromBot}
+        onDailyAvailabilityDigestHourChange={setDailyAvailabilityDigestHourInput}
+        onToggleDailyAvailabilityDigestNextDay={
+          handleToggleDailyAvailabilityDigestNextDayFromBot
+        }
+        onSaveReminderMinutes={handleSaveReminderMinutes}
+        onSaveCancellationLockHours={handleSaveCancellationLockHours}
+        onSaveTrustedCount={handleSaveTrustedConfirmationCount}
+        onSavePenaltyLimit={handleSavePenaltyLimit}
+        onSaveDailyAvailabilityDigestSettings={
+          handleSaveDailyAvailabilityDigestSchedule
+        }
+      />
+    );
+  }
+
   if (view === "courts") {
     return (
       <CourtsView
@@ -822,19 +1251,15 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         newSlotEndTime={newSlotEndTime}
         newSlotPrice={newSlotPrice}
         basePriceInput={basePriceInput}
-        penaltyLimitInput={penaltyLimitInput}
         createSlotPending={createSlot.isPending}
         updateBasePricePending={updateBasePrice.isPending}
-        updatePenaltySettingsPending={updatePenaltySettings.isPending}
         onBack={() => setView("menu")}
         onSlotStartTimeChange={setNewSlotStartTime}
         onSlotEndTimeChange={setNewSlotEndTime}
         onSlotPriceChange={setNewSlotPrice}
         onBasePriceChange={setBasePriceInput}
-        onPenaltyLimitChange={setPenaltyLimitInput}
         onCreateSlot={handleCreateSlot}
         onSaveBasePrice={handleSaveBasePrice}
-        onSavePenaltyLimit={handleSavePenaltyLimit}
         onToggleSlot={(id, isActive) =>
           updateSlot.mutate({ id, data: { isActive } })
         }
@@ -849,20 +1274,19 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       canManageClubData={canManageClubData}
       courtsCount={courts.length}
       phoneNumber={phoneNumber}
+      savedPhoneNumber={String(user?.phone || "")}
       whatsappEnabled={whatsappEnabled}
       whatsappStatus={whatsappStatus}
       whatsappStatusLabelByKey={whatsappStatusLabelByKey}
       updateProfilePending={updateProfile.isPending}
-      oneHourReminderEnabled={oneHourReminderEnabled}
       isDarkMode={isDark}
-      updateOneHourReminderPending={updateOneHourReminderSetting.isPending}
       onPhoneChange={setPhoneNumber}
       onSavePhone={handleUpdatePhone}
-      onToggleOneHourReminder={handleToggleOneHourReminder}
       onToggleTheme={toggleTheme}
       onGoToCourts={() => setView("courts")}
       onGoToWhatsapp={() => setView("whatsapp")}
       onGoToSchedule={() => setView("schedule")}
+      onGoToBotAutomation={() => setView("bot-automation")}
       onGoToTenants={() => setView("tenants")}
       onLogout={logout}
     />

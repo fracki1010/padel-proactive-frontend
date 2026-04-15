@@ -5,6 +5,7 @@ import { formatDate, getTodayIsoLocal, toIsoDateKey } from "../../../utils/forma
 import { HelpCircle } from "lucide-react";
 import { useMemo } from "react";
 import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
+import { BookingsDesktopView } from "../components/BookingsDesktopView";
 
 interface BookingsProps {
   bookings: any[];
@@ -27,6 +28,8 @@ export const Bookings = ({
   onCourtChange,
   onBookingClick,
 }: BookingsProps) => {
+  const hasActiveFilters = Boolean(filterValue.trim()) || selectedCourt !== "all";
+
   const filteredBookings = useMemo(() => {
     return bookings
       .filter((booking: any) => {
@@ -90,69 +93,104 @@ export const Bookings = ({
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 w-full overflow-x-hidden">
-      <div className="flex flex-col">
-        <h1 className="text-2xl font-bold text-white mb-2">
+      <BookingsDesktopView
+        bookings={filteredBookings}
+        courts={courts}
+        filterValue={filterValue}
+        onFilterChange={onFilterChange}
+        selectedCourt={selectedCourt}
+        onCourtChange={onCourtChange}
+        onBookingClick={onBookingClick}
+        onClearFilters={() => {
+          onFilterChange("");
+          onCourtChange("all");
+        }}
+      />
+
+      <div className="lg:hidden flex flex-col">
+        <h1 className="text-2xl font-bold text-foreground mb-2">
           Turnos Históricos
         </h1>
         <p className="text-gray-500 text-sm">Registro de todas las reservas</p>
       </div>
 
-      <DashboardControls
-        filterValue={filterValue}
-        onFilterChange={onFilterChange}
-        stats={stats}
-        selectedCourt={selectedCourt}
-        onCourtChange={onCourtChange}
-      />
+      <div className="lg:hidden xl:grid xl:grid-cols-[340px_minmax(0,1fr)] xl:gap-8 2xl:gap-10 xl:items-start">
+        <div className="xl:sticky xl:top-4 xl:self-start">
+          <DashboardControls
+            filterValue={filterValue}
+            onFilterChange={onFilterChange}
+            stats={stats}
+            selectedCourt={selectedCourt}
+            onCourtChange={onCourtChange}
+          />
+        </div>
 
-      <div className="space-y-12 w-full">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center min-h-[300px]">
-            <Spinner size="lg" color="primary" />
-          </div>
-        ) : groupedBookings.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[300px] text-center p-8 bg-dark-200 rounded-3xl border border-white/5">
-            <HelpCircle size={48} className="text-gray-600 mb-4" />
-            <h3 className="text-xl font-bold mb-1 text-white">No hay turnos</h3>
-            <p className="text-gray-500 text-sm">No se encontraron reservas.</p>
-          </div>
-        ) : (
-          <>
-            {visibleGroups.map(([dateKey, group]) => (
-              <div key={dateKey} className="space-y-6 w-full">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
-                    {formatDate(dateKey)}
-                  </h2>
-                  <div className="h-[1px] flex-grow bg-white/5"></div>
-                </div>
-                <div className="space-y-4 w-full">
-                  {group.map((booking) => (
-                    <BookingCard
-                      key={booking._id}
-                      booking={booking}
-                      onClick={onBookingClick}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            {/* Sentinel para infinite scroll */}
-            <div ref={sentinelRef} className="py-2">
-              {hasMore && (
-                <div className="flex justify-center py-6">
-                  <Spinner color="primary" size="sm" />
-                </div>
-              )}
-              {!hasMore && groupedBookings.length > 5 && (
-                <p className="text-center text-gray-600 text-xs font-bold uppercase tracking-widest py-4">
-                  {filteredBookings.length} reservas cargadas
-                </p>
+        <div className="space-y-12 w-full mt-8 xl:mt-0">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center min-h-[300px]">
+              <Spinner size="lg" color="primary" />
+            </div>
+          ) : groupedBookings.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[300px] text-center p-8 bg-dark-200 rounded-3xl border border-black/5 dark:border-white/5">
+              <HelpCircle size={48} className="text-gray-600 mb-4" />
+              <h3 className="text-xl font-bold mb-1 text-foreground">
+                {hasActiveFilters ? "Sin resultados para tu filtro" : "No hay turnos"}
+              </h3>
+              <p className="text-gray-500 text-sm">
+                {hasActiveFilters
+                  ? "Probá limpiar búsqueda o cambiar la cancha."
+                  : "Aún no hay reservas cargadas en el historial."}
+              </p>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  className="mt-4 text-xs font-black uppercase tracking-wider text-primary hover:opacity-80 transition-opacity"
+                  onClick={() => {
+                    onFilterChange("");
+                    onCourtChange("all");
+                  }}
+                >
+                  Limpiar filtros
+                </button>
               )}
             </div>
-          </>
-        )}
+          ) : (
+            <>
+              {visibleGroups.map(([dateKey, group]) => (
+                <div key={dateKey} className="space-y-6 w-full">
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                      {formatDate(dateKey)}
+                    </h2>
+                    <div className="h-[1px] flex-grow bg-black/5 dark:bg-white/5"></div>
+                  </div>
+                  <div className="space-y-4 2xl:space-y-0 2xl:grid 2xl:grid-cols-2 2xl:gap-4 w-full">
+                    {group.map((booking) => (
+                      <BookingCard
+                        key={booking._id}
+                        booking={booking}
+                        onClick={onBookingClick}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              <div ref={sentinelRef} className="py-2">
+                {hasMore && (
+                  <div className="flex justify-center py-6">
+                    <Spinner color="primary" size="sm" />
+                  </div>
+                )}
+                {!hasMore && groupedBookings.length > 5 && (
+                  <p className="text-center text-gray-600 text-xs font-bold uppercase tracking-widest py-4">
+                    {filteredBookings.length} reservas cargadas
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

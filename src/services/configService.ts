@@ -5,6 +5,12 @@ import { api } from "./httpClient";
 const ONE_HOUR_REMINDER_KEY = "booking-reminder-one-hour-enabled";
 const CANCELLATION_GROUP_SETTINGS_KEY = "whatsapp-cancellation-group-settings";
 const WHATSAPP_GROUPS_CACHE_KEY = "whatsapp-groups-cache";
+let isBotAutomationEndpointAvailable: boolean | null = null;
+const DEFAULT_ATTENDANCE_REMINDER_LEAD_MINUTES = 60;
+const DEFAULT_TRUSTED_CLIENT_CONFIRMATION_COUNT = 3;
+const DEFAULT_PENALTY_LIMIT = 2;
+const DEFAULT_PENALTY_ENABLED = true;
+const DEFAULT_CANCELLATION_LOCK_HOURS = 2;
 
 const parseOneHourReminderEnabled = (responseData: any): boolean | null => {
   const data = responseData?.data ?? responseData;
@@ -30,6 +36,8 @@ const parseWhatsappCancellationGroupSettings = (
   groupId: string;
   groupName: string;
   dailyAvailabilityDigestEnabled: boolean;
+  dailyAvailabilityDigestHour: string;
+  dailyAvailabilityDigestNextDayEnabled: boolean;
 } | null => {
   const data = responseData?.data ?? responseData;
 
@@ -64,6 +72,18 @@ const parseWhatsappCancellationGroupSettings = (
     data?.groupDailyAvailabilityDigestEnabled,
     data?.groupNotifications?.dailyAvailability?.enabled,
   ];
+  const dailyAvailabilityDigestHourCandidates = [
+    data?.dailyAvailabilityDigestHour,
+    data?.dailyGroupAvailabilityHour,
+    data?.groupDailyAvailabilityDigestHour,
+    data?.groupNotifications?.dailyAvailability?.hour,
+  ];
+  const dailyAvailabilityDigestNextDayEnabledCandidates = [
+    data?.dailyAvailabilityDigestNextDayEnabled,
+    data?.dailyNextDayAvailabilityEnabled,
+    data?.groupDailyAvailabilityNextDayEnabled,
+    data?.groupNotifications?.dailyAvailability?.nextDayEnabled,
+  ];
 
   const enabled = enabledCandidates.find((value) => typeof value === "boolean");
   const groupId = groupIdCandidates.find((value) => typeof value === "string");
@@ -72,12 +92,22 @@ const parseWhatsappCancellationGroupSettings = (
     dailyAvailabilityDigestEnabledCandidates.find(
       (value) => typeof value === "boolean",
     );
+  const dailyAvailabilityDigestHour = dailyAvailabilityDigestHourCandidates.find(
+    (value) =>
+      typeof value === "string" && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value),
+  );
+  const dailyAvailabilityDigestNextDayEnabled =
+    dailyAvailabilityDigestNextDayEnabledCandidates.find(
+      (value) => typeof value === "boolean",
+    );
 
   if (
     typeof enabled !== "boolean" &&
     typeof groupId !== "string" &&
     typeof groupName !== "string" &&
-    typeof dailyAvailabilityDigestEnabled !== "boolean"
+    typeof dailyAvailabilityDigestEnabled !== "boolean" &&
+    typeof dailyAvailabilityDigestHour !== "string" &&
+    typeof dailyAvailabilityDigestNextDayEnabled !== "boolean"
   ) {
     return null;
   }
@@ -87,6 +117,13 @@ const parseWhatsappCancellationGroupSettings = (
     groupId: typeof groupId === "string" ? groupId : "",
     groupName: typeof groupName === "string" ? groupName : "",
     dailyAvailabilityDigestEnabled: Boolean(dailyAvailabilityDigestEnabled),
+    dailyAvailabilityDigestHour:
+      typeof dailyAvailabilityDigestHour === "string"
+        ? dailyAvailabilityDigestHour
+        : "09:00",
+    dailyAvailabilityDigestNextDayEnabled: Boolean(
+      dailyAvailabilityDigestNextDayEnabled,
+    ),
   };
 };
 
@@ -144,6 +181,28 @@ const parseWhatsappGroups = (responseData: any): Array<{ id: string; name: strin
   return Array.from(uniqueById.values());
 };
 
+const parsePenaltySystemEnabled = (responseData: any): boolean | null => {
+  const data = responseData?.data ?? responseData;
+  const candidates = [
+    data?.penaltyEnabled,
+    data?.penaltySystemEnabled,
+    data?.penaltiesEnabled,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "boolean") return candidate;
+  }
+
+  return null;
+};
+
+const parsePenaltyLimit = (responseData: any): number | null => {
+  const data = responseData?.data ?? responseData;
+  const parsed = Number(data?.penaltyLimit);
+  if (Number.isInteger(parsed) && parsed >= 1) return parsed;
+  return null;
+};
+
 export const configService = {
   getCourts: async (all = false): Promise<ConfigResponse<Court>> => {
     const response = await api.get(`/config/courts${all ? "?all=true" : ""}`);
@@ -188,6 +247,116 @@ export const configService = {
   updatePenaltySettings: async (penaltyLimit: number): Promise<any> => {
     const response = await api.put("/config/penalties", { penaltyLimit });
     return response.data;
+  },
+
+  getBotAutomationSettings: async (): Promise<any> => {
+    if (isBotAutomationEndpointAvailable !== false) {
+      try {
+        const response = await api.get("/config/bot-automation");
+        isBotAutomationEndpointAvailable = true;
+        return response.data;
+      } catch (error: any) {
+        const status = error?.response?.status;
+        if (![404, 405].includes(status)) {
+          throw error;
+        }
+        isBotAutomationEndpointAvailable = false;
+      }
+    }
+
+    // Compatibilidad con backends viejos sin /config/bot-automation
+    const [oneHourResponse, penaltiesResponse] = await Promise.allSettled([
+      configService.getOneHourReminderSetting(),
+      configService.getPenaltySettings(),
+    ]);
+
+    const oneHourReminderEnabled =
+      oneHourResponse.status === "fulfilled"
+        ? Boolean(oneHourResponse.value?.data?.oneHourReminderEnabled)
+        : true;
+
+    const penaltiesData =
+      penaltiesResponse.status === "fulfilled" ? penaltiesResponse.value : null;
+    const penaltyEnabledParsed = parsePenaltySystemEnabled(penaltiesData);
+    const penaltyLimitParsed = parsePenaltyLimit(penaltiesData);
+
+    return {
+      success: true,
+      data: {
+        oneHourReminderEnabled,
+        attendanceReminderLeadMinutes: DEFAULT_ATTENDANCE_REMINDER_LEAD_MINUTES,
+        cancellationLockHours: DEFAULT_CANCELLATION_LOCK_HOURS,
+        trustedClientConfirmationCount:
+          DEFAULT_TRUSTED_CLIENT_CONFIRMATION_COUNT,
+        penaltyEnabled:
+          typeof penaltyEnabledParsed === "boolean"
+            ? penaltyEnabledParsed
+            : DEFAULT_PENALTY_ENABLED,
+        penaltySystemEnabled:
+          typeof penaltyEnabledParsed === "boolean"
+            ? penaltyEnabledParsed
+            : DEFAULT_PENALTY_ENABLED,
+        penaltyLimit: penaltyLimitParsed ?? DEFAULT_PENALTY_LIMIT,
+        compatibilityMode: true,
+      },
+    };
+  },
+
+  updateBotAutomationSettings: async (payload: {
+    oneHourReminderEnabled?: boolean;
+    attendanceReminderLeadMinutes?: number;
+    cancellationLockHours?: number;
+    trustedClientConfirmationCount?: number;
+    penaltyEnabled?: boolean;
+    penaltySystemEnabled?: boolean;
+    penaltyLimit?: number;
+  }): Promise<any> => {
+    if (isBotAutomationEndpointAvailable !== false) {
+      try {
+        const response = await api.put("/config/bot-automation", payload);
+        isBotAutomationEndpointAvailable = true;
+        return response.data;
+      } catch (error: any) {
+        const status = error?.response?.status;
+        if (![404, 405].includes(status)) {
+          throw error;
+        }
+        isBotAutomationEndpointAvailable = false;
+      }
+    }
+
+    // Compatibilidad con backends viejos sin /config/bot-automation
+    const hasUnsupportedFields =
+      payload.attendanceReminderLeadMinutes !== undefined ||
+      payload.cancellationLockHours !== undefined ||
+      payload.trustedClientConfirmationCount !== undefined ||
+      payload.penaltyEnabled !== undefined ||
+      payload.penaltySystemEnabled !== undefined;
+
+    if (hasUnsupportedFields) {
+      throw new Error(
+        "El backend actual no soporta esta configuración. Actualizá el backend o usá VITE_API_URL local.",
+      );
+    }
+
+    const operations: Array<Promise<any>> = [];
+
+    if (typeof payload.oneHourReminderEnabled === "boolean") {
+      operations.push(
+        configService.updateOneHourReminderSetting(payload.oneHourReminderEnabled),
+      );
+    }
+
+    if (payload.penaltyLimit !== undefined) {
+      operations.push(configService.updatePenaltySettings(payload.penaltyLimit));
+    }
+
+    if (!operations.length) {
+      throw new Error("No hay cambios compatibles para guardar.");
+    }
+
+    await Promise.all(operations);
+    return configService.getBotAutomationSettings();
   },
 
   getWhatsappStatus: async (): Promise<any> => {
@@ -439,6 +608,16 @@ export const configService = {
             dailyAvailabilityDigestEnabled: Boolean(
               localParsed?.dailyAvailabilityDigestEnabled,
             ),
+            dailyAvailabilityDigestHour:
+              typeof localParsed?.dailyAvailabilityDigestHour === "string" &&
+              /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(
+                localParsed.dailyAvailabilityDigestHour,
+              )
+                ? localParsed.dailyAvailabilityDigestHour
+                : "09:00",
+            dailyAvailabilityDigestNextDayEnabled: Boolean(
+              localParsed?.dailyAvailabilityDigestNextDayEnabled,
+            ),
             persistedLocally: true,
           },
         };
@@ -453,6 +632,8 @@ export const configService = {
         groupId: "",
         groupName: "",
         dailyAvailabilityDigestEnabled: false,
+        dailyAvailabilityDigestHour: "09:00",
+        dailyAvailabilityDigestNextDayEnabled: false,
         persistedLocally: true,
       },
     };
@@ -463,14 +644,23 @@ export const configService = {
     groupId,
     groupName,
     dailyAvailabilityDigestEnabled,
+    dailyAvailabilityDigestHour,
+    dailyAvailabilityDigestNextDayEnabled,
   }: {
     enabled: boolean;
     groupId: string;
     groupName: string;
     dailyAvailabilityDigestEnabled: boolean;
+    dailyAvailabilityDigestHour: string;
+    dailyAvailabilityDigestNextDayEnabled: boolean;
   }): Promise<any> => {
     const normalizedGroupId = groupId.trim();
     const normalizedGroupName = groupName.trim();
+    const normalizedDailyAvailabilityDigestHour =
+      typeof dailyAvailabilityDigestHour === "string" &&
+      /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(dailyAvailabilityDigestHour.trim())
+        ? dailyAvailabilityDigestHour.trim()
+        : "09:00";
     const attempts: Array<{
       method: "put" | "patch";
       url: string;
@@ -484,6 +674,8 @@ export const configService = {
           cancellationGroupId: normalizedGroupId,
           cancellationGroupName: normalizedGroupName,
           dailyAvailabilityDigestEnabled,
+          dailyAvailabilityDigestHour: normalizedDailyAvailabilityDigestHour,
+          dailyAvailabilityDigestNextDayEnabled,
         },
       },
       {
@@ -494,6 +686,8 @@ export const configService = {
           cancellationGroupId: normalizedGroupId,
           cancellationGroupName: normalizedGroupName,
           dailyAvailabilityDigestEnabled,
+          dailyAvailabilityDigestHour: normalizedDailyAvailabilityDigestHour,
+          dailyAvailabilityDigestNextDayEnabled,
         },
       },
       {
@@ -504,6 +698,8 @@ export const configService = {
           groupCancellationAlertsId: normalizedGroupId,
           groupCancellationAlertsName: normalizedGroupName,
           dailyGroupAvailabilityEnabled: dailyAvailabilityDigestEnabled,
+          dailyGroupAvailabilityHour: normalizedDailyAvailabilityDigestHour,
+          dailyNextDayAvailabilityEnabled: dailyAvailabilityDigestNextDayEnabled,
         },
       },
       {
@@ -514,6 +710,8 @@ export const configService = {
           groupCancellationAlertsId: normalizedGroupId,
           groupCancellationAlertsName: normalizedGroupName,
           dailyGroupAvailabilityEnabled: dailyAvailabilityDigestEnabled,
+          dailyGroupAvailabilityHour: normalizedDailyAvailabilityDigestHour,
+          dailyNextDayAvailabilityEnabled: dailyAvailabilityDigestNextDayEnabled,
         },
       },
       {
@@ -524,6 +722,9 @@ export const configService = {
           cancelledBookingGroupId: normalizedGroupId,
           cancelledBookingGroupName: normalizedGroupName,
           groupDailyAvailabilityDigestEnabled: dailyAvailabilityDigestEnabled,
+          groupDailyAvailabilityDigestHour: normalizedDailyAvailabilityDigestHour,
+          groupDailyAvailabilityNextDayEnabled:
+            dailyAvailabilityDigestNextDayEnabled,
         },
       },
       {
@@ -534,6 +735,9 @@ export const configService = {
           cancelledBookingGroupId: normalizedGroupId,
           cancelledBookingGroupName: normalizedGroupName,
           groupDailyAvailabilityDigestEnabled: dailyAvailabilityDigestEnabled,
+          groupDailyAvailabilityDigestHour: normalizedDailyAvailabilityDigestHour,
+          groupDailyAvailabilityNextDayEnabled:
+            dailyAvailabilityDigestNextDayEnabled,
         },
       },
     ];
@@ -553,6 +757,8 @@ export const configService = {
           groupId: normalizedGroupId,
           groupName: normalizedGroupName,
           dailyAvailabilityDigestEnabled,
+          dailyAvailabilityDigestHour: normalizedDailyAvailabilityDigestHour,
+          dailyAvailabilityDigestNextDayEnabled,
         };
         localStorage.setItem(
           CANCELLATION_GROUP_SETTINGS_KEY,
@@ -578,6 +784,8 @@ export const configService = {
         groupId: normalizedGroupId,
         groupName: normalizedGroupName,
         dailyAvailabilityDigestEnabled,
+        dailyAvailabilityDigestHour: normalizedDailyAvailabilityDigestHour,
+        dailyAvailabilityDigestNextDayEnabled,
       };
       localStorage.setItem(
         CANCELLATION_GROUP_SETTINGS_KEY,

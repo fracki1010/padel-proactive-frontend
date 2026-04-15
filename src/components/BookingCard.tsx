@@ -58,21 +58,21 @@ export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
     <Card
       isPressable
       onPress={() => onClick?.(booking)}
-      className="w-full rounded-[1.6rem] bg-dark-200/90 border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-2xl shadow-black/20"
+      className="w-full rounded-[1.6rem] bg-dark-200/90 border border-black/10 dark:border-white/10 hover:border-primary/40 transition-all duration-300 shadow-2xl shadow-black/20"
     >
       <CardBody className="p-5 flex flex-wrap sm:flex-nowrap items-center gap-4 sm:gap-6 min-w-0">
-        <div className="flex flex-col items-center min-w-[72px] rounded-2xl bg-white/[0.04] border border-white/10 px-2.5 py-2">
-          <span className="text-xl font-black text-white leading-none">
+        <div className="flex flex-col items-center min-w-[72px] rounded-2xl bg-black/[0.04] dark:bg-white/[0.04] border border-black/10 dark:border-white/10 px-2.5 py-2">
+          <span className="text-xl font-black text-foreground leading-none">
             {booking.timeSlot?.startTime}
           </span>
-          <span className="text-[10px] font-bold text-white/40 uppercase">
+          <span className="text-[10px] font-bold text-foreground/40 uppercase">
             90 MIN
           </span>
         </div>
 
         <div className="flex flex-col flex-grow min-w-0">
           <div className="flex items-center gap-2 mb-0.5 flex-wrap min-w-0">
-            <span className="font-black text-white text-lg truncate min-w-0 flex-1 tracking-tight">
+            <span className="font-black text-foreground text-lg truncate min-w-0 flex-1 tracking-tight">
               {booking.clientName}
             </span>
             <Chip
@@ -94,18 +94,18 @@ export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs">
-            <span className="inline-flex items-center gap-1.5 text-white/60 font-semibold min-w-0">
-              <UserRound size={13} className="text-white/35 shrink-0" />
+            <span className="inline-flex items-center gap-1.5 text-foreground/60 font-semibold min-w-0">
+              <UserRound size={13} className="text-foreground/35 shrink-0" />
               <span className="truncate">{booking.clientPhone}</span>
             </span>
-            <span className="hidden sm:block h-3 w-px bg-white/10" />
-            <span className="inline-flex items-center gap-1.5 text-white/60 font-semibold min-w-0">
-              <MapPin size={13} className="text-white/35 shrink-0" />
+            <span className="hidden sm:block h-3 w-px bg-black/10 dark:bg-white/10" />
+            <span className="inline-flex items-center gap-1.5 text-foreground/60 font-semibold min-w-0">
+              <MapPin size={13} className="text-foreground/35 shrink-0" />
               <span className="truncate">{booking.court?.name}</span>
             </span>
-            <span className="hidden sm:block h-3 w-px bg-white/10" />
-            <span className="inline-flex items-center gap-1.5 text-white/50 font-semibold">
-              <Clock3 size={13} className="text-white/35 shrink-0" />
+            <span className="hidden sm:block h-3 w-px bg-black/10 dark:bg-white/10" />
+            <span className="inline-flex items-center gap-1.5 text-foreground/50 font-semibold">
+              <Clock3 size={13} className="text-foreground/35 shrink-0" />
               90 min
             </span>
           </div>

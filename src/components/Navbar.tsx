@@ -32,11 +32,12 @@ export const Navbar = ({
       maxWidth="full"
       className="bg-background/95 backdrop-blur border-none h-auto min-h-[76px] pt-safe pb-2"
       classNames={{
-        wrapper: "px-4 sm:px-6 gap-0 h-auto min-h-[76px] items-center",
+        wrapper:
+          "w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 gap-0 h-auto min-h-[76px] items-center",
       }}
     >
       <NavbarContent justify="start" className="gap-4">
-        <p className="text-lg sm:text-xl font-bold text-white tracking-tight truncate max-w-[56vw] sm:max-w-none">
+        <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground tracking-tight truncate max-w-[56vw] sm:max-w-none">
           {title}
         </p>
       </NavbarContent>

@@ -28,7 +28,7 @@ export const DashboardControls = ({
   const courts = courtsData?.data || [];
 
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6 w-full xl:bg-dark-200/70 xl:border xl:border-black/5 xl:dark:border-white/5 xl:rounded-[2rem] xl:p-5">
       {/* Search Bar */}
       <Input
         isClearable
@@ -39,23 +39,23 @@ export const DashboardControls = ({
         className="max-w-full"
         classNames={{
           inputWrapper: "bg-dark-100/50 border-none h-14 rounded-2xl",
-          input: "text-white placeholder:text-gray-500",
+          input: "text-foreground placeholder:text-gray-500",
         }}
       />
 
       {/* Stats Cards */}
       {showStats && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {stats.map((stat) => (
             <Card
               key={stat.label}
-              className="bg-dark-200 border border-white/5 h-24"
+              className="bg-dark-200 border border-black/5 dark:border-white/5 h-24"
             >
               <CardBody className="p-4 flex flex-col justify-center">
                 <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">
                   {stat.label}
                 </p>
-                <p className="text-3xl font-black text-white">{stat.value}</p>
+                <p className="text-3xl font-black text-foreground">{stat.value}</p>
               </CardBody>
             </Card>
           ))}
@@ -72,7 +72,7 @@ export const DashboardControls = ({
           classNames={{
             base: "w-full overflow-x-auto",
             tabList:
-              "gap-6 w-full relative rounded-none p-0 border-b border-white/5",
+              "gap-6 w-full relative rounded-none p-0 border-b border-black/5 dark:border-white/5",
             cursor: "w-full bg-primary",
             tab: "max-w-fit px-0 h-12",
             tabContent:

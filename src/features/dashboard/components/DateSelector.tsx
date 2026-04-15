@@ -50,7 +50,7 @@ export const DateSelector = ({ selectedDate, onDateChange }: DateSelectorProps) 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-black text-white uppercase tracking-tight">
+        <h3 className="text-lg font-black text-foreground uppercase tracking-tight">
           Seleccionar Fecha
         </h3>
         <span className="text-xs font-bold text-primary capitalize">
@@ -74,7 +74,7 @@ export const DateSelector = ({ selectedDate, onDateChange }: DateSelectorProps) 
               className={`flex flex-col items-center justify-center min-w-[70px] h-[100px] rounded-[24px] border transition-all duration-300 relative ${
                 isSelected
                   ? "bg-primary border-primary shadow-[0_0_20px_rgba(126,169,236,0.35)] scale-105 z-10"
-                  : "bg-dark-100 border-white/5 opacity-80"
+                  : "bg-dark-100 border-black/5 dark:border-white/5 opacity-80"
               }`}
             >
               {isToday && (
@@ -90,7 +90,7 @@ export const DateSelector = ({ selectedDate, onDateChange }: DateSelectorProps) 
                 {day.dayName}
               </span>
               <span
-                className={`text-2xl font-black ${isSelected ? "text-black" : "text-white"}`}
+                className={`text-2xl font-black ${isSelected ? "text-black" : "text-foreground"}`}
               >
                 {day.dayNum}
               </span>

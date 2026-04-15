@@ -7,19 +7,15 @@ type ScheduleSettingsViewProps = {
   newSlotEndTime: string;
   newSlotPrice: string;
   basePriceInput: string;
-  penaltyLimitInput: string;
   createSlotPending: boolean;
   updateBasePricePending: boolean;
-  updatePenaltySettingsPending: boolean;
   onBack: () => void;
   onSlotStartTimeChange: (value: string) => void;
   onSlotEndTimeChange: (value: string) => void;
   onSlotPriceChange: (value: string) => void;
   onBasePriceChange: (value: string) => void;
-  onPenaltyLimitChange: (value: string) => void;
   onCreateSlot: () => void;
   onSaveBasePrice: () => void;
-  onSavePenaltyLimit: () => void;
   onToggleSlot: (id: string, isActive: boolean) => void;
 };
 
@@ -29,39 +25,35 @@ export const ScheduleSettingsView = ({
   newSlotEndTime,
   newSlotPrice,
   basePriceInput,
-  penaltyLimitInput,
   createSlotPending,
   updateBasePricePending,
-  updatePenaltySettingsPending,
   onBack,
   onSlotStartTimeChange,
   onSlotEndTimeChange,
   onSlotPriceChange,
   onBasePriceChange,
-  onPenaltyLimitChange,
   onCreateSlot,
   onSaveBasePrice,
-  onSavePenaltyLimit,
   onToggleSlot,
 }: ScheduleSettingsViewProps) => {
   return (
-    <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+    <div className="space-y-6 animate-in slide-in-from-right-4 duration-300 max-w-6xl mx-auto">
       <div className="flex items-center gap-4">
         <Button
           isIconOnly
           variant="flat"
           onClick={onBack}
-          className="bg-white/5 text-white rounded-2xl"
+          className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl"
         >
           <ChevronLeft size={20} />
         </Button>
-        <h3 className="text-xl font-black text-white uppercase italic">
+        <h3 className="text-xl font-black text-foreground uppercase italic">
           Horarios y Precios
         </h3>
       </div>
 
       <div className="space-y-4">
-        <section className="bg-dark-100 p-6 rounded-[2.5rem] border border-white/5 space-y-4">
+        <section className="bg-dark-100 p-6 rounded-[2.5rem] border border-black/5 dark:border-white/5 space-y-4">
           <div className="flex items-center gap-3">
             <Clock className="text-primary" size={20} />
             <p className="font-bold text-primary uppercase text-xs tracking-widest">
@@ -75,8 +67,8 @@ export const ScheduleSettingsView = ({
               onValueChange={onSlotStartTimeChange}
               placeholder="Inicio"
               classNames={{
-                inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
-                input: "text-white font-bold",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                input: "text-foreground font-bold",
               }}
             />
             <Input
@@ -85,8 +77,8 @@ export const ScheduleSettingsView = ({
               onValueChange={onSlotEndTimeChange}
               placeholder="Fin"
               classNames={{
-                inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
-                input: "text-white font-bold",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                input: "text-foreground font-bold",
               }}
             />
             <Input
@@ -95,8 +87,8 @@ export const ScheduleSettingsView = ({
               onValueChange={onSlotPriceChange}
               placeholder="Precio"
               classNames={{
-                inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
-                input: "text-white font-bold",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                input: "text-foreground font-bold",
               }}
             />
           </div>
@@ -127,8 +119,8 @@ export const ScheduleSettingsView = ({
               type="number"
               className="flex-grow"
               classNames={{
-                inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
-                input: "text-white font-bold",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                input: "text-foreground font-bold",
               }}
             />
             <Button
@@ -137,39 +129,6 @@ export const ScheduleSettingsView = ({
               isLoading={updateBasePricePending}
             >
               Guardar Base
-            </Button>
-          </div>
-        </section>
-
-        <section className="bg-orange-500/10 p-6 rounded-[2.5rem] border border-orange-500/20">
-          <div className="flex items-center gap-3 mb-4">
-            <Shield className="text-orange-400" size={20} />
-            <p className="font-bold text-orange-400 uppercase text-xs tracking-widest">
-              Penalizaciones
-            </p>
-          </div>
-          <p className="text-[10px] text-gray-400 font-bold uppercase mb-4 leading-relaxed">
-            Define cuántas cancelaciones acumula un cliente antes de quedar bloqueado en WhatsApp.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Input
-              value={penaltyLimitInput}
-              onValueChange={onPenaltyLimitChange}
-              placeholder="Ej: 2"
-              type="number"
-              min={1}
-              className="flex-grow"
-              classNames={{
-                inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
-                input: "text-white font-bold",
-              }}
-            />
-            <Button
-              className="h-12 bg-orange-400 text-black font-black rounded-2xl uppercase text-[10px] w-full sm:w-auto"
-              onPress={onSavePenaltyLimit}
-              isLoading={updatePenaltySettingsPending}
-            >
-              Guardar Límite
             </Button>
           </div>
         </section>
@@ -194,21 +153,21 @@ export const ScheduleSettingsView = ({
           </Button>
         </section>
 
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
           {slots.map((slot: any) => (
             <Card
               key={slot._id}
-              className="bg-dark-100 border border-white/5 rounded-[2rem]"
+              className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[2rem]"
             >
               <CardBody className="p-5 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-4">
                   <div
-                    className={`w-12 h-12 ${slot.isActive ? "bg-primary/10 text-primary" : "bg-white/5 text-gray-500"} rounded-2xl flex items-center justify-center`}
+                    className={`w-12 h-12 ${slot.isActive ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-gray-500"} rounded-2xl flex items-center justify-center`}
                   >
                     <Clock size={20} />
                   </div>
                   <div>
-                    <p className="font-bold text-white text-base">
+                    <p className="font-bold text-foreground text-base">
                       {slot.startTime} - {slot.endTime}
                     </p>
                     <p className="text-[10px] text-primary font-black uppercase tracking-widest">

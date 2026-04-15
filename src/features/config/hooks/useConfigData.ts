@@ -173,6 +173,35 @@ export const useUpdatePenaltySettings = () => {
   });
 };
 
+export const useBotAutomationSettings = () => {
+  return useQuery({
+    queryKey: ["bot-automation-settings"],
+    queryFn: configService.getBotAutomationSettings,
+    retry: 1,
+  });
+};
+
+export const useUpdateBotAutomationSettings = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: {
+      oneHourReminderEnabled?: boolean;
+      attendanceReminderLeadMinutes?: number;
+      cancellationLockHours?: number;
+      trustedClientConfirmationCount?: number;
+      penaltyEnabled?: boolean;
+      penaltySystemEnabled?: boolean;
+      penaltyLimit?: number;
+    }) => configService.updateBotAutomationSettings(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bot-automation-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["penalty-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["one-hour-reminder-setting"] });
+    },
+  });
+};
+
 export const useUpdateOneHourReminderSetting = () => {
   const queryClient = useQueryClient();
 
@@ -202,6 +231,8 @@ export const useUpdateWhatsappCancellationGroupSettings = () => {
       groupId: string;
       groupName: string;
       dailyAvailabilityDigestEnabled: boolean;
+      dailyAvailabilityDigestHour: string;
+      dailyAvailabilityDigestNextDayEnabled: boolean;
     }) =>
       configService.updateWhatsappCancellationGroupSettings(payload),
     onSuccess: () => {

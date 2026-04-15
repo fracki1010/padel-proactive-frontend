@@ -1,10 +1,7 @@
-import { useMemo, useState } from "react";
-import { getTodayIsoLocal, toIsoDateKey } from "../../../utils/formatters";
+import { useEffect, useState } from "react";
 
-import { useSlots, useBookings } from "../../../hooks/useData";
-import { CourtsAvailability } from "../components/CourtsAvailability";
-import { DateSelector } from "../components/DateSelector";
-import { TimeFilterTabs } from "../components/TimeFilterTabs";
+import { DashboardDesktopView } from "./DashboardDesktopView";
+import { DashboardMobileView } from "./DashboardMobileView";
 
 interface DashboardProps {
   courts: any[];
@@ -12,51 +9,29 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ courts, onBookingClick }: DashboardProps) => {
-  const [selectedDate, setSelectedDate] = useState(
-    getTodayIsoLocal(),
-  );
-  const [activeFilter, setActiveFilter] = useState("afternoon");
-  const { data: slotsData, isLoading: isLoadingSlots } = useSlots();
-  const { data: bookingsData, isLoading: isLoadingBookings } = useBookings(selectedDate);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(min-width: 1024px)").matches;
+  });
 
-  const slots = slotsData?.data || [];
-  const dashboardBookings = bookingsData?.data || [];
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsDesktop(event.matches);
+    };
 
-  const filteredSlots = useMemo(() => {
-    return slots.filter((slot: any) => {
-      const startHour = parseInt(slot.startTime.split(":")[0]);
-      if (activeFilter === "morning") return startHour < 12;
-      if (activeFilter === "afternoon") return startHour >= 12 && startHour < 18;
-      if (activeFilter === "night") return startHour >= 18;
-      return true;
-    });
-  }, [slots, activeFilter]);
+    setIsDesktop(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleChange);
 
-  const getSlotBookings = (slotId: string, courtId: string) => {
-    return dashboardBookings.filter(
-      (booking: any) =>
-        toIsoDateKey(booking.date) === selectedDate &&
-        booking.court?._id === courtId &&
-        booking.timeSlot?._id === slotId,
-    );
-  };
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange);
+    };
+  }, []);
 
-  return (
-    <div className="space-y-8 pb-10 animate-in fade-in duration-700">
-      {/* <DashboardHeader /> */}
+  if (isDesktop) {
+    return <DashboardDesktopView courts={courts} onBookingClick={onBookingClick} />;
+  }
 
-      <DateSelector selectedDate={selectedDate} onDateChange={setSelectedDate} />
-
-      <TimeFilterTabs activeFilter={activeFilter} onFilterChange={setActiveFilter} />
-
-      <CourtsAvailability
-        courts={courts}
-        filteredSlots={filteredSlots}
-        isLoading={isLoadingSlots || isLoadingBookings}
-        selectedDate={selectedDate}
-        getSlotBookings={getSlotBookings}
-        onBookingClick={onBookingClick}
-      />
-    </div>
-  );
+  return <DashboardMobileView courts={courts} onBookingClick={onBookingClick} />;
 };
+

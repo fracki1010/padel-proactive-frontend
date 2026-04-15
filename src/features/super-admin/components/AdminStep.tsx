@@ -38,7 +38,7 @@ export const AdminStep = ({
   onCreateAdmin,
 }: AdminStepProps) => {
   return (
-    <Card className="bg-dark-100/70 border border-white/10 rounded-[2rem]">
+    <Card className="bg-dark-100/70 border border-black/10 dark:border-white/10 rounded-[2rem]">
       <CardBody className="p-5 sm:p-6 space-y-4">
         <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">
           Paso 3 • Primer admin de empresa
@@ -47,7 +47,7 @@ export const AdminStep = ({
         <select
           value={selectedCompanyId}
           onChange={(event) => onSelectCompany(event.target.value)}
-          className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 text-white font-bold w-full"
+          className="h-12 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 px-4 text-foreground font-bold w-full"
         >
           <option value="" disabled>
             Seleccionar empresa
@@ -68,8 +68,8 @@ export const AdminStep = ({
           isInvalid={Boolean(usernameError)}
           errorMessage={usernameError}
           classNames={{
-            inputWrapper: "bg-white/5 border-white/10 h-12 rounded-2xl",
-            input: "text-white font-bold",
+            inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-2xl",
+            input: "text-foreground font-bold",
             label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
           }}
         />
@@ -84,8 +84,8 @@ export const AdminStep = ({
           isInvalid={Boolean(passwordError)}
           errorMessage={passwordError}
           classNames={{
-            inputWrapper: "bg-white/5 border-white/10 h-12 rounded-2xl",
-            input: "text-white font-bold",
+            inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-2xl",
+            input: "text-foreground font-bold",
             label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
           }}
         />
@@ -99,15 +99,15 @@ export const AdminStep = ({
           isInvalid={Boolean(phoneError)}
           errorMessage={phoneError}
           classNames={{
-            inputWrapper: "bg-white/5 border-white/10 h-12 rounded-2xl",
-            input: "text-white font-bold",
+            inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-2xl",
+            input: "text-foreground font-bold",
             label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
           }}
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <Button
-            className="h-12 bg-white/10 text-white font-black uppercase rounded-2xl"
+            className="h-12 bg-black/10 dark:bg-white/10 text-foreground font-black uppercase rounded-2xl"
             onPress={onBack}
           >
             Volver

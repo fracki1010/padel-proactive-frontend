@@ -186,18 +186,18 @@ export const TenantsView = ({
   };
 
   return (
-    <div className="space-y-6 animate-in slide-in-from-right-4 duration-300 pb-8">
+    <div className="space-y-6 animate-in slide-in-from-right-4 duration-300 pb-8 max-w-6xl mx-auto">
       <div className="flex items-center gap-4">
         <Button
           isIconOnly
           variant="flat"
           onClick={onBack}
-          className="bg-white/5 text-white rounded-2xl"
+          className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl"
         >
           <ChevronLeft size={20} />
         </Button>
         <div>
-          <h3 className="text-xl font-black text-white uppercase italic">
+          <h3 className="text-xl font-black text-foreground uppercase italic">
             {isSuperAdmin ? "Multiempresa" : "Datos del club"}
           </h3>
           <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">
@@ -209,7 +209,7 @@ export const TenantsView = ({
       </div>
 
       {isSuperAdmin && (
-        <Card className="bg-dark-100 border border-white/5 rounded-[2rem]">
+        <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[2rem]">
           <CardBody className="p-6 space-y-3">
             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
               Crear Empresa / Bootstrap
@@ -221,8 +221,8 @@ export const TenantsView = ({
                 placeholder="Nombre de empresa"
                 className="flex-grow"
                 classNames={{
-                  inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
-                  input: "text-white font-bold",
+                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                  input: "text-foreground font-bold",
                 }}
               />
               <Button
@@ -245,7 +245,7 @@ export const TenantsView = ({
       )}
 
       {isSuperAdmin && (
-        <Card className="bg-dark-100 border border-white/5 rounded-[2rem]">
+        <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[2rem]">
           <CardBody className="p-6 space-y-3">
             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
               Crear Admin de Empresa
@@ -255,8 +255,8 @@ export const TenantsView = ({
               onValueChange={onAdminUsernameChange}
               placeholder="Usuario admin"
               classNames={{
-                inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
-                input: "text-white font-bold",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                input: "text-foreground font-bold",
               }}
             />
             <Input
@@ -265,8 +265,8 @@ export const TenantsView = ({
               placeholder="Contraseña"
               type="password"
               classNames={{
-                inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
-                input: "text-white font-bold",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                input: "text-foreground font-bold",
               }}
             />
             <Input
@@ -274,14 +274,14 @@ export const TenantsView = ({
               onValueChange={onAdminPhoneChange}
               placeholder="Teléfono (opcional)"
               classNames={{
-                inputWrapper: "bg-white/5 border-none h-12 rounded-2xl px-4",
-                input: "text-white font-bold",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                input: "text-foreground font-bold",
               }}
             />
             <select
               value={newAdminCompanyId}
               onChange={(event) => onAdminCompanyChange(event.target.value)}
-              className="h-12 rounded-2xl bg-white/5 border-none px-4 text-white font-bold"
+              className="h-12 rounded-2xl bg-black/5 dark:bg-white/5 border-none px-4 text-foreground font-bold"
             >
               <option value="" disabled>
                 Seleccionar empresa
@@ -308,29 +308,30 @@ export const TenantsView = ({
           {isSuperAdmin ? "Empresas" : "Mi club"}
         </p>
         {companies.length === 0 && (
-          <Card className="bg-dark-100 border border-white/5 rounded-[1.5rem]">
+          <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[1.5rem]">
             <CardBody className="p-6 text-center">
-              <p className="text-sm font-bold text-white">No hay clubes para mostrar</p>
+              <p className="text-sm font-bold text-foreground">No hay clubes para mostrar</p>
               <p className="text-[11px] text-gray-500 mt-1">
                 Cuando exista una empresa asignada, va a aparecer acá.
               </p>
             </CardBody>
           </Card>
         )}
-        {companies.map((company: any) => (
-          <Card
-            key={company._id}
-            className="bg-dark-100 border border-white/5 rounded-[1.8rem] overflow-hidden"
-          >
-            <CardBody className="p-0">
-              <div className="px-5 py-4 border-b border-white/5 bg-gradient-to-r from-white/[0.06] to-transparent">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          {companies.map((company: any) => (
+            <Card
+              key={company._id}
+              className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[1.8rem] overflow-hidden"
+            >
+              <CardBody className="p-0">
+              <div className="px-5 py-4 border-b border-black/5 dark:border-white/5 bg-gradient-to-r from-white/[0.06] to-transparent">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-xl bg-primary/15 text-primary flex items-center justify-center">
                         <Building2 size={16} />
                       </div>
-                      <p className="font-black text-white text-base truncate">
+                      <p className="font-black text-foreground text-base truncate">
                         {company.name}
                       </p>
                     </div>
@@ -338,7 +339,7 @@ export const TenantsView = ({
                       <Chip
                         size="sm"
                         variant="flat"
-                        className="bg-white/10 text-gray-200 font-bold uppercase text-[10px]"
+                        className="bg-black/10 dark:bg-white/10 text-gray-200 font-bold uppercase text-[10px]"
                       >
                         {company.slug || "sin-slug"}
                       </Chip>
@@ -375,8 +376,8 @@ export const TenantsView = ({
                       startContent={<PencilLine size={14} className="text-gray-500" />}
                       classNames={{
                         inputWrapper:
-                          "bg-white/5 border-white/10 data-[hover=true]:border-white/20 rounded-xl h-11",
-                        input: "text-sm text-white font-bold",
+                          "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 data-[hover=true]:border-black/20 dark:border-white/20 rounded-xl h-11",
+                        input: "text-sm text-foreground font-bold",
                       }}
                     />
                   </div>
@@ -391,8 +392,8 @@ export const TenantsView = ({
                       startContent={<Link2 size={14} className="text-gray-500" />}
                       classNames={{
                         inputWrapper:
-                          "bg-white/5 border-white/10 data-[hover=true]:border-white/20 rounded-xl h-11",
-                        input: "text-sm text-white",
+                          "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 data-[hover=true]:border-black/20 dark:border-white/20 rounded-xl h-11",
+                        input: "text-sm text-foreground",
                       }}
                     />
                   </div>
@@ -409,8 +410,8 @@ export const TenantsView = ({
                     startContent={<MapPin size={14} className="text-gray-500" />}
                     classNames={{
                       inputWrapper:
-                        "bg-white/5 border-white/10 data-[hover=true]:border-white/20 rounded-xl h-11",
-                      input: "text-sm text-white",
+                        "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 data-[hover=true]:border-black/20 dark:border-white/20 rounded-xl h-11",
+                      input: "text-sm text-foreground",
                     }}
                   />
                 </div>
@@ -426,7 +427,7 @@ export const TenantsView = ({
                     Guardar Info
                   </Button>
                   <Button
-                    className="h-11 bg-white/10 text-white font-black rounded-xl uppercase text-[10px]"
+                    className="h-11 bg-black/10 dark:bg-white/10 text-foreground font-black rounded-xl uppercase text-[10px]"
                     variant="flat"
                     onPress={() => handleCopyAddress(company)}
                     startContent={<Copy size={14} />}
@@ -434,7 +435,7 @@ export const TenantsView = ({
                     Copiar
                   </Button>
                   <Button
-                    className="h-11 bg-white/10 text-white font-black rounded-xl uppercase text-[10px]"
+                    className="h-11 bg-black/10 dark:bg-white/10 text-foreground font-black rounded-xl uppercase text-[10px]"
                     variant="flat"
                     onPress={() => handleOpenMaps(company)}
                     startContent={<ExternalLink size={14} />}
@@ -443,9 +444,10 @@ export const TenantsView = ({
                   </Button>
                 </div>
               </div>
-            </CardBody>
-          </Card>
-        ))}
+              </CardBody>
+            </Card>
+          ))}
+        </div>
       </div>
 
       {isSuperAdmin && (
@@ -453,27 +455,29 @@ export const TenantsView = ({
           <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">
             Admins
           </p>
-          {admins.map((admin: any) => (
-            <Card
-              key={admin._id}
-              className="bg-dark-100 border border-white/5 rounded-[1.5rem]"
-            >
-              <CardBody className="p-4 flex items-center justify-between gap-3">
-                <div>
-                  <p className="font-bold text-white">{admin.username}</p>
-                  <p className="text-[10px] text-gray-500 uppercase font-bold">
-                    {admin.companyId?.name || "Sin empresa"} • {admin.role}
-                  </p>
-                </div>
-                <Switch
-                  isSelected={Boolean(admin.isActive)}
-                  onValueChange={(value) => onUpdateAdminStatus(admin._id, value)}
-                  color="primary"
-                  size="sm"
-                />
-              </CardBody>
-            </Card>
-          ))}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+            {admins.map((admin: any) => (
+              <Card
+                key={admin._id}
+                className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[1.5rem]"
+              >
+                <CardBody className="p-4 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-bold text-foreground">{admin.username}</p>
+                    <p className="text-[10px] text-gray-500 uppercase font-bold">
+                      {admin.companyId?.name || "Sin empresa"} • {admin.role}
+                    </p>
+                  </div>
+                  <Switch
+                    isSelected={Boolean(admin.isActive)}
+                    onValueChange={(value) => onUpdateAdminStatus(admin._id, value)}
+                    color="primary"
+                    size="sm"
+                  />
+                </CardBody>
+              </Card>
+            ))}
+          </div>
         </div>
       )}
     </div>

@@ -18,6 +18,7 @@ const getInitialTheme = (): ThemeMode => {
 
   const saved = window.localStorage.getItem(STORAGE_KEY);
   if (saved === "light" || saved === "dark") return saved;
+  if (saved === "night") return "dark";
 
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 };
@@ -27,8 +28,11 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.toggle("dark", theme === "dark");
-    root.style.colorScheme = theme;
+    const isDark = theme === "dark";
+    // Keep both class names for compatibility with existing utility classes/libraries.
+    root.classList.toggle("night", isDark);
+    root.classList.toggle("dark", isDark);
+    root.style.colorScheme = isDark ? "dark" : "light";
     window.localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);
 
@@ -52,4 +56,3 @@ export const useTheme = () => {
   }
   return context;
 };
-

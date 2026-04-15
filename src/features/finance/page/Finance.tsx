@@ -8,12 +8,12 @@ import {
 import { useState, useMemo } from "react";
 import {
   Calendar,
-  TrendingUp,
   CheckCircle2,
   Clock,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { FinanceDesktopView } from "../components/FinanceDesktopView";
 
 interface FinanceProps {
   bookings: any[];
@@ -127,9 +127,19 @@ export const Finance = ({ bookings }: FinanceProps) => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-8 xl:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <FinanceDesktopView
+        months={months}
+        selectedMonth={selectedMonth}
+        selectedYear={selectedYear}
+        onPrevMonth={handlePrevMonth}
+        onNextMonth={handleNextMonth}
+        metrics={metrics}
+      />
+
+      <div className="lg:hidden space-y-8">
       {/* Selector de Mes */}
-      <div className="flex items-center justify-between bg-dark-200 p-2 rounded-2xl border border-white/5">
+      <div className="flex items-center justify-between bg-dark-200 p-2 rounded-2xl border border-black/5 dark:border-white/5">
         <Button
           isIconOnly
           variant="light"
@@ -139,7 +149,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
           <ChevronLeft size={20} />
         </Button>
         <div className="text-center">
-          <h2 className="text-lg font-black text-white uppercase tracking-tighter">
+          <h2 className="text-lg font-black text-foreground uppercase tracking-tighter">
             {months[selectedMonth]} {selectedYear}
           </h2>
           <p className="text-[10px] font-bold text-primary uppercase tracking-widest">
@@ -157,19 +167,9 @@ export const Finance = ({ bookings }: FinanceProps) => {
       </div>
 
       {/* Grid de Métricas Principales */}
-      <div className="grid grid-cols-1 gap-4">
-        {/* Recaudación Mensual */}
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-4">
         <Card className="bg-primary shadow-[0_0_30px_rgba(126,169,236,0.22)] border-none overflow-hidden relative group">
-          <div className="absolute -right-8 -top-8 w-32 h-32 bg-black/10 rounded-full blur-3xl group-hover:bg-black/20 transition-all duration-700"></div>
           <CardBody className="p-6 sm:p-8">
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-3 bg-black/10 rounded-2xl">
-                <TrendingUp size={24} className="text-black" />
-              </div>
-              <span className="text-[10px] font-black text-black/40 uppercase tracking-widest bg-black/5 px-3 py-1 rounded-full">
-                Este Mes
-              </span>
-            </div>
             <p className="text-[10px] font-black text-black/60 uppercase tracking-[0.2em] mb-1">
               Efectivo en Caja (Mes)
             </p>
@@ -208,9 +208,8 @@ export const Finance = ({ bookings }: FinanceProps) => {
           </CardBody>
         </Card>
 
-        {/* Recaudación Diaria */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Card className="bg-dark-200 border border-white/5 rounded-[2rem]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4">
+          <Card className="bg-dark-200 border border-black/5 dark:border-white/5 rounded-[2rem]">
             <CardBody className="p-6">
               <div className="flex flex-col gap-1">
                 <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center mb-2">
@@ -219,7 +218,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
                   Cobrado Hoy
                 </p>
-                <h4 className="text-2xl font-black text-white">
+                <h4 className="text-2xl font-black text-foreground">
                   {formatCurrency(metrics.totalPaidDaily)}
                 </h4>
                 <p className="text-[10px] font-bold text-gray-600 uppercase mt-1">
@@ -229,7 +228,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
             </CardBody>
           </Card>
 
-          <Card className="bg-dark-200 border border-white/5 rounded-[2rem]">
+          <Card className="bg-dark-200 border border-black/5 dark:border-white/5 rounded-[2rem]">
             <CardBody className="p-6">
               <div className="flex flex-col gap-1">
                 <div className="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center mb-2">
@@ -238,7 +237,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
                   Pendientes
                 </p>
-                <h4 className="text-2xl font-black text-white">
+                <h4 className="text-2xl font-black text-foreground">
                   {metrics.countPendingMonth}
                 </h4>
                 <p className="text-[10px] font-bold text-gray-600 uppercase mt-1">
@@ -261,12 +260,12 @@ export const Finance = ({ bookings }: FinanceProps) => {
           </span>
         </div>
 
-        <ScrollShadow className="max-h-[400px] space-y-3">
+        <ScrollShadow className="max-h-[460px] xl:max-h-[560px] space-y-3">
           {metrics.movements.length > 0 ? (
             metrics.movements.map((b) => (
               <div
                 key={b._id}
-                className="bg-dark-200 p-4 rounded-3xl border border-white/5 flex flex-col sm:flex-row justify-between sm:items-center gap-3 hover:border-white/10 transition-colors group"
+                className="bg-dark-200 p-4 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col sm:flex-row justify-between sm:items-center gap-3 hover:border-black/10 dark:border-white/10 transition-colors group"
               >
                 <div className="flex items-center gap-4">
                   <div
@@ -283,7 +282,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
                     )}
                   </div>
                   <div>
-                    <p className="font-bold text-white group-hover:text-primary transition-colors">
+                    <p className="font-bold text-foreground group-hover:text-primary transition-colors">
                       {b.clientName}
                     </p>
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">
@@ -293,7 +292,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
                 </div>
                 <div className="text-right">
                   <p
-                    className={`font-black text-lg ${b.status === "confirmado" ? "text-white" : "text-gray-500 line-through"}`}
+                    className={`font-black text-lg ${b.status === "confirmado" ? "text-foreground" : "text-gray-500 line-through"}`}
                   >
                     {formatCurrency(b.finalPrice)}
                   </p>
@@ -313,6 +312,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
             </div>
           )}
         </ScrollShadow>
+      </div>
       </div>
     </div>
   );

@@ -83,13 +83,13 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      size="full"
-      className="bg-dark-300 text-white dark"
+      size="4xl"
+      className="bg-dark-300 text-foreground dark"
       backdrop="blur"
       scrollBehavior="inside"
     >
       <ModalContent>
-        <ModalHeader className="flex flex-col gap-1 border-b border-white/5 pb-4">
+        <ModalHeader className="flex flex-col gap-1 border-b border-black/5 dark:border-white/5 pb-4">
           <h2 className="text-xl font-black">
             {mode === "create" ? "Nuevo Socio" : "Editar Socio"}
           </h2>
@@ -134,7 +134,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
             </div>
 
             {fixedTurns.length === 0 ? (
-              <p className="text-sm text-gray-500 bg-dark-200 p-4 rounded-2xl border border-dashed border-white/5 text-center">
+              <p className="text-sm text-gray-500 bg-dark-200 p-4 rounded-2xl border border-dashed border-black/5 dark:border-white/5 text-center">
                 No tiene turnos fijos asignados.
               </p>
             ) : (
@@ -142,7 +142,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
                 {fixedTurns.map((fixedTurn, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end bg-dark-200 p-3 rounded-2xl border border-white/5 relative group"
+                    className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end bg-dark-200 p-3 rounded-2xl border border-black/5 dark:border-white/5 relative group"
                   >
                     <div className="sm:col-span-4">
                       <Select
@@ -152,12 +152,12 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
                         className="dark"
                         classNames={{
                           trigger:
-                            "bg-dark-100/50 border-white/10 h-14 rounded-xl",
+                            "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
                           label: "text-gray-400 font-bold mb-2",
-                          value: "text-white font-bold",
+                          value: "text-foreground font-bold",
                           popoverContent:
-                            "bg-dark-200 border border-white/10 text-white",
-                          listbox: "text-white",
+                            "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                          listbox: "text-foreground",
                         }}
                         selectedKeys={[fixedTurn.dayOfWeek.toString()]}
                         onSelectionChange={(keys) => {
@@ -185,12 +185,12 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
                         className="dark"
                         classNames={{
                           trigger:
-                            "bg-dark-100/50 border-white/10 h-14 rounded-xl",
+                            "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
                           label: "text-gray-400 font-bold mb-2",
-                          value: "text-white font-bold",
+                          value: "text-foreground font-bold",
                           popoverContent:
-                            "bg-dark-200 border border-white/10 text-white",
-                          listbox: "text-white",
+                            "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                          listbox: "text-foreground",
                         }}
                         selectedKeys={[fixedTurn.court?._id || fixedTurn.court || ""]}
                         onSelectionChange={(keys) => {
@@ -212,12 +212,12 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
                         className="dark"
                         classNames={{
                           trigger:
-                            "bg-dark-100/50 border-white/10 h-14 rounded-xl",
+                            "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
                           label: "text-gray-400 font-bold mb-2",
-                          value: "text-white font-bold",
+                          value: "text-foreground font-bold",
                           popoverContent:
-                            "bg-dark-200 border border-white/10 text-white",
-                          listbox: "text-white",
+                            "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                          listbox: "text-foreground",
                         }}
                         selectedKeys={[fixedTurn.timeSlot?._id || fixedTurn.timeSlot || ""]}
                         onSelectionChange={(keys) => {
@@ -248,7 +248,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
             )}
           </div>
         </ModalBody>
-        <ModalFooter className="border-t border-white/5 pt-4">
+        <ModalFooter className="border-t border-black/5 dark:border-white/5 pt-4">
           <Button
             variant="light"
             onPress={onClose}

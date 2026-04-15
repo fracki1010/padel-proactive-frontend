@@ -18,6 +18,8 @@ export const CourtsAvailability = ({
   getSlotBookings,
   onBookingClick,
 }: CourtsAvailabilityProps) => {
+  const now = new Date();
+
   return (
     <div className="space-y-6">
       <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">
@@ -49,23 +51,35 @@ export const CourtsAvailability = ({
 
                 const isTaken = !!activeBooking && activeBooking.status !== "suspendido";
                 const isSuspended = !!activeBooking && activeBooking.status === "suspendido";
-                const isPast = new Date(selectedDate + "T23:59:59") < new Date();
+                const slotDateTime = new Date(`${selectedDate}T${slot.startTime}:00`);
+                const isPast = slotDateTime < now;
+                const state = isSuspended
+                  ? "suspended"
+                  : isTaken
+                    ? "taken"
+                    : isPast
+                      ? "past"
+                      : "available";
 
                 return (
                   <Card
                     key={`${court._id}-${slot._id}`}
                     className={`bg-dark-100 border transition-all ${
-                      isTaken || (isPast && !isTaken) || isSuspended
-                        ? "opacity-50 border-white/5 grayscale-[0.5]"
-                        : "border-white/5 hover:border-primary/30"
-                    } ${isSuspended ? "border-red-500/30 bg-red-500/5" : ""}`}
+                      state === "suspended"
+                        ? "border-red-500/40 bg-red-500/10"
+                        : state === "taken"
+                          ? "border-amber-500/20 bg-amber-500/5"
+                          : state === "past"
+                            ? "border-black/10 dark:border-white/10 bg-dark-100/70 opacity-75"
+                            : "border-black/10 dark:border-white/10 hover:border-primary/40"
+                    }`}
                   >
                     <CardBody className="p-4 flex flex-row items-center gap-4">
                       <div
-                        className={`flex flex-col items-center min-w-[60px] p-2 bg-dark-200 rounded-2xl border ${isSuspended ? "border-red-500/20" : "border-white/5"}`}
+                        className={`flex flex-col items-center min-w-[60px] p-2 bg-dark-200 rounded-2xl border ${isSuspended ? "border-red-500/20" : "border-black/5 dark:border-white/5"}`}
                       >
                         <span
-                          className={`text-lg font-black ${isSuspended ? "text-red-500" : "text-white"}`}
+                          className={`text-lg font-black ${isSuspended ? "text-red-500" : "text-foreground"}`}
                         >
                           {slot.startTime}
                         </span>
@@ -74,10 +88,8 @@ export const CourtsAvailability = ({
                         </span>
                       </div>
 
-                      <div className="flex-grow">
-                        <h4
-                          className={`font-bold ${isTaken || (isPast && !isTaken) || isSuspended ? "line-through text-gray-500" : "text-white"}`}
-                        >
+                      <div className="flex-grow min-w-0">
+                        <h4 className={`font-bold ${state === "available" ? "text-foreground" : "text-gray-500"}`}>
                           {court.name}
                         </h4>
                         <p
@@ -120,7 +132,7 @@ export const CourtsAvailability = ({
                       ) : isTaken ? (
                         <Button
                           size="sm"
-                          className="bg-dark-200 text-gray-500 font-black rounded-xl uppercase px-4 hover:bg-white/5"
+                          className="bg-dark-200 text-gray-500 font-black rounded-xl uppercase px-4 hover:bg-black/5 dark:hover:bg-white/5"
                           onClick={() => onBookingClick(activeBooking)}
                         >
                           Detalles
@@ -139,7 +151,7 @@ export const CourtsAvailability = ({
                             size="sm"
                             isIconOnly
                             variant="flat"
-                            className="bg-white/5 text-gray-500 rounded-xl"
+                            className="bg-black/5 dark:bg-white/5 text-gray-500 rounded-xl"
                             onClick={() =>
                               onBookingClick({
                                 status: "suspendido",

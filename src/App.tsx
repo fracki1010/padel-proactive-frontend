@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { addToast, useDisclosure } from "@heroui/react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import { BottomNav } from "./components/BottomNav";
+import { DesktopSidebar } from "./components/DesktopSidebar";
 import { Navbar } from "./components/Navbar";
 import { PwaManager } from "./components/PwaManager";
 import { useAuth } from "./context/AuthContext";
@@ -24,6 +25,46 @@ import {
   useUpdateBooking,
 } from "./hooks/useData";
 
+const APP_ACTIVE_TAB_KEY = "padexa:last-active-tab";
+const APP_FILTER_VALUE_KEY = "padexa:last-filter-value";
+const APP_SELECTED_COURT_KEY = "padexa:last-selected-court";
+const ALLOWED_APP_TABS = new Set(["panel", "reservas", "socios", "caja"]);
+
+const readStoredString = (key: string, fallback = "") => {
+  if (typeof window === "undefined") return fallback;
+  const value = window.localStorage.getItem(key);
+  return typeof value === "string" ? value : fallback;
+};
+
+const readStoredTab = () => {
+  const storedTab = readStoredString(APP_ACTIVE_TAB_KEY, "panel");
+  return ALLOWED_APP_TABS.has(storedTab) ? storedTab : "panel";
+};
+
+const getTabFromPathname = (pathname: string): string | null => {
+  const [firstSegment = ""] = pathname.split("/").filter(Boolean);
+  return ALLOWED_APP_TABS.has(firstSegment) ? firstSegment : null;
+};
+
+const isCreateBookingPath = (pathname: string) => pathname === "/reservas/nueva";
+
+const getBookingIdFromPathname = (pathname: string): string | null => {
+  const [firstSegment = "", secondSegment = ""] = pathname.split("/").filter(Boolean);
+  if (firstSegment !== "reservas") return null;
+  if (!secondSegment || secondSegment === "nueva") return null;
+  return secondSegment;
+};
+
+const getSafeReturnPath = (candidate?: string): string => {
+  if (!candidate) return "/reservas";
+
+  const pathname = candidate.split("?")[0];
+  if (pathname === "/reservas") return pathname;
+
+  const tab = getTabFromPathname(pathname);
+  return tab ? `/${tab}` : "/reservas";
+};
+
 const getScreenTitle = (activeTab: string, isCreating: boolean) => {
   if (isCreating) return "Nueva Reserva";
 
@@ -42,13 +83,34 @@ const getScreenTitle = (activeTab: string, isCreating: boolean) => {
 };
 
 export default function App() {
-  const { token, user, isLoading: isAuthLoading } = useAuth();
-  const [filterValue, setFilterValue] = useState("");
-  const [activeTab, setActiveTab] = useState("panel");
-  const [isCreating, setIsCreating] = useState(false);
-  const [selectedCourt, setSelectedCourt] = useState("all");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { token, user, logout, isLoading: isAuthLoading } = useAuth();
+  const [filterValue, setFilterValue] = useState(() =>
+    readStoredString(APP_FILTER_VALUE_KEY, ""),
+  );
+  const [selectedCourt, setSelectedCourt] = useState(() =>
+    readStoredString(APP_SELECTED_COURT_KEY, "all"),
+  );
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(min-width: 1024px)").matches;
+  });
+  const activeTab = useMemo(() => {
+    const routeTab = getTabFromPathname(location.pathname);
+    return routeTab ?? readStoredTab();
+  }, [location.pathname]);
+  const isCreating = isCreateBookingPath(location.pathname);
+  const bookingIdFromPath = useMemo(
+    () => getBookingIdFromPathname(location.pathname),
+    [location.pathname],
+  );
+  const returnPathFromLocationState = useMemo(() => {
+    const state = location.state as { from?: string } | null;
+    return getSafeReturnPath(state?.from);
+  }, [location.state]);
 
   const isAuthenticated = Boolean(token);
   const isSuperAdmin = user?.role === "super_admin";
@@ -75,11 +137,6 @@ export default function App() {
   );
   const { data: courtsData } = useCourts(false, isAuthenticated);
 
-  const {
-    isOpen: isBookingDetailOpen,
-    onOpen: onBookingDetailOpen,
-    onOpenChange: onBookingDetailOpenChange,
-  } = useDisclosure();
   const {
     isOpen: isProfileOpen,
     onOpen: onProfileOpen,
@@ -109,11 +166,49 @@ export default function App() {
     return notificationsData.data.filter((notification: any) => !notification.isRead).length;
   }, [notificationsData]);
 
+  const getNotificationBookingId = (notification: any) => {
+    const candidates = [
+      notification?.bookingId,
+      notification?.booking?._id,
+      notification?.data?.bookingId,
+      notification?.metadata?.bookingId,
+    ];
+
+    return String(
+      candidates.find((candidate) => typeof candidate === "string") || "",
+    ).trim();
+  };
+
+  const handleOpenBookingFromNotification = (notification: any) => {
+    const bookingId = getNotificationBookingId(notification);
+    if (!bookingId) {
+      addToast({
+        title: "Esta notificación no tiene un turno vinculado.",
+        color: "warning",
+      });
+      return;
+    }
+
+    const relatedBooking = bookings.find((booking: any) => booking?._id === bookingId);
+    if (!relatedBooking) {
+      navigate("/reservas");
+      addToast({
+        title: "No encontramos ese turno en memoria. Revisalo desde Reservas.",
+        color: "warning",
+      });
+      return;
+    }
+
+    navigate(`/reservas/${relatedBooking._id}`, {
+      state: { from: getSafeReturnPath(location.pathname) },
+    });
+  };
+
   const handleBookingClick = (booking: any) => {
     setSelectedBooking(booking);
 
     if (booking.status === "disponible") {
-      setIsCreating(true);
+      navigate("/reservas/nueva");
       return;
     }
 
@@ -144,12 +239,68 @@ export default function App() {
       return;
     }
 
-    onBookingDetailOpen();
+    if (booking?._id) {
+      navigate(`/reservas/${booking._id}`, {
+        state: { from: getSafeReturnPath(location.pathname) },
+      });
+      return;
+    }
+
+    addToast({
+      title: "No se pudo abrir el detalle del turno.",
+      color: "warning",
+    });
   };
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [activeTab, isCreating]);
+
+  useEffect(() => {
+    if (!bookingIdFromPath) return;
+    if (isBookingsLoading) return;
+
+    const relatedBooking = bookings.find((booking: any) => booking?._id === bookingIdFromPath);
+    if (relatedBooking) {
+      setSelectedBooking(relatedBooking);
+      return;
+    }
+
+    addToast({
+      title: "No encontramos ese turno. Revisalo desde Reservas.",
+      color: "warning",
+    });
+    navigate("/reservas", { replace: true });
+  }, [bookingIdFromPath, bookings, isBookingsLoading, navigate]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsDesktop(event.matches);
+    };
+
+    setIsDesktop(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(APP_ACTIVE_TAB_KEY, activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(APP_FILTER_VALUE_KEY, filterValue);
+  }, [filterValue]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(APP_SELECTED_COURT_KEY, selectedCourt);
+  }, [selectedCourt]);
 
   useEffect(() => {
     console.log("🔔 Notificaciones actualizadas:", {
@@ -205,66 +356,86 @@ export default function App() {
               <Navigate to="/login" replace />
             ) : needsSuperAdminSetup ? (
               <SuperAdminSetup superAdminUsername={user?.username || "superadmin"} />
+            ) : location.pathname === "/" ? (
+              <Navigate to={`/${readStoredTab()}`} replace />
+            ) : getTabFromPathname(location.pathname) === null ? (
+              <Navigate to="/panel" replace />
             ) : (
-              <div className="min-h-[100dvh] bg-background text-foreground flex flex-col font-sans pb-safe app-shell-root">
-                <Navbar
-                  title={getScreenTitle(activeTab, isCreating)}
-                  onAvatarClick={onProfileOpen}
-                  onBellClick={onNotifOpen}
-                  notificationCount={unreadCount}
-                  avatarName={adminName}
-                  avatarSrc={navAvatarSrc}
+              <div className="min-h-[100dvh] bg-background text-foreground font-sans pb-safe lg:pb-0 app-shell-root lg:grid lg:grid-cols-[290px_minmax(0,1fr)]">
+                <DesktopSidebar
+                  activeTab={activeTab}
+                  onTabChange={(tab) => navigate(`/${tab}`)}
+                  onOpenProfile={onProfileOpen}
+                  onLogout={logout}
                 />
 
-                <main
-                  className={`flex-grow px-4 pt-4 sm:px-6 sm:pt-6 w-full max-w-3xl mx-auto relative app-shell-main ${isKeyboardOpen ? "pb-4 sm:pb-6" : "pb-28 sm:pb-32"}`}
-                >
-                  <AppMainContent
-                    activeTab={activeTab}
-                    isCreating={isCreating}
-                    selectedBooking={selectedBooking}
-                    bookings={bookings}
-                    courts={courts}
-                    isBookingsLoading={isBookingsLoading}
-                    filterValue={filterValue}
-                    selectedCourt={selectedCourt}
-                    onCancelCreate={() => {
-                      setIsCreating(false);
-                      setSelectedBooking(null);
-                    }}
-                    onFilterChange={setFilterValue}
-                    onCourtChange={setSelectedCourt}
-                    onBookingClick={handleBookingClick}
+                <div className="flex flex-col min-h-[100dvh]">
+                  <Navbar
+                    title={getScreenTitle(activeTab, isCreating)}
+                    onAvatarClick={onProfileOpen}
+                    onBellClick={onNotifOpen}
+                    notificationCount={unreadCount}
+                    avatarName={adminName}
+                    avatarSrc={navAvatarSrc}
                   />
-                </main>
+
+                  <main
+                    className={`flex-grow px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8 w-full max-w-[1520px] mx-auto relative app-shell-main ${isKeyboardOpen ? "pb-4 sm:pb-6 lg:pb-10" : "pb-28 sm:pb-32 lg:pb-10"}`}
+                  >
+                    <AppMainContent
+                      activeTab={activeTab}
+                      isCreating={isCreating}
+                      selectedBooking={selectedBooking}
+                      bookings={bookings}
+                      courts={courts}
+                      isBookingsLoading={isBookingsLoading}
+                      filterValue={filterValue}
+                      selectedCourt={selectedCourt}
+                      onCancelCreate={() => {
+                        setSelectedBooking(null);
+                        navigate("/reservas");
+                      }}
+                      onFilterChange={setFilterValue}
+                      onCourtChange={setSelectedCourt}
+                      onBookingClick={handleBookingClick}
+                    />
+                  </main>
+                </div>
 
                 <BottomNav
                   activeTab={activeTab}
                   isKeyboardOpen={isKeyboardOpen}
                   onTabChange={(tab: string) => {
                     if (tab === "fab") {
-                      setIsCreating(true);
+                      setSelectedBooking(null);
+                      navigate("/reservas/nueva");
                       return;
                     }
 
-                    setActiveTab(tab);
-                    setIsCreating(false);
+                    navigate(`/${tab}`);
                   }}
                 />
 
                 <BookingDetailDrawer
-                  isOpen={isBookingDetailOpen}
-                  onOpenChange={onBookingDetailOpenChange}
+                  isOpen={Boolean(bookingIdFromPath && selectedBooking)}
+                  onOpenChange={(isOpen) => {
+                    if (!isOpen) {
+                      setSelectedBooking(null);
+                      navigate(returnPathFromLocationState);
+                    }
+                  }}
                   selectedBooking={selectedBooking}
                   setSelectedBooking={setSelectedBooking}
                   updateBooking={updateBooking}
                   deleteBooking={deleteBooking}
+                  isDesktop={isDesktop}
                 />
 
                 <ProfileDrawer
                   isOpen={isProfileOpen}
                   onOpenChange={onProfileOpenChange}
                   courts={courts}
+                  isDesktop={isDesktop}
                 />
 
                 <NotificationsDrawer
@@ -272,6 +443,8 @@ export default function App() {
                   onOpenChange={onNotifOpenChange}
                   notificationsData={notificationsData}
                   markAllRead={markAllRead}
+                  onOpenRelatedBooking={handleOpenBookingFromNotification}
+                  isDesktop={isDesktop}
                 />
               </div>
             )

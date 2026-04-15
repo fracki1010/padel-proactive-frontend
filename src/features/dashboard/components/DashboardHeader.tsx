@@ -8,7 +8,7 @@ export const DashboardHeader = () => {
           </div>
         </div>
         <div>
-          <h2 className="text-xl font-black text-white italic uppercase tracking-tighter">
+          <h2 className="text-xl font-black text-foreground italic uppercase tracking-tighter">
             PADEXA Central
           </h2>
           <div className="flex items-center gap-1.5 mt-0.5">

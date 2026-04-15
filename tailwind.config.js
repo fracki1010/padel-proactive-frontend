@@ -10,8 +10,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Theme tokens: edit these variables in src/index.css
-        // to rebrand the app quickly without touching component classes.
+        // TechNeon theme tokens (light/dark live in src/index.css).
         background: "rgb(var(--color-background) / <alpha-value>)",
         foreground: "rgb(var(--color-foreground) / <alpha-value>)",
         primary: {
@@ -35,6 +34,19 @@ export default {
         accent: {
           blue: "rgb(var(--color-accent-blue) / <alpha-value>)",
           orange: "rgb(var(--color-accent-orange) / <alpha-value>)",
+        },
+        // Semantic aliases to make Yacht Club usage explicit in components.
+        yacht: {
+          sea: "rgb(var(--color-primary-500) / <alpha-value>)",
+          deep: "rgb(var(--color-primary-800) / <alpha-value>)",
+          foam: "rgb(var(--color-accent-blue) / <alpha-value>)",
+          sand: "rgb(var(--color-accent-orange) / <alpha-value>)",
+        },
+        tech: {
+          neon: "rgb(var(--color-primary-500) / <alpha-value>)",
+          deep: "rgb(var(--color-dark-300) / <alpha-value>)",
+          cyan: "rgb(var(--color-accent-blue) / <alpha-value>)",
+          mint: "rgb(var(--color-accent-orange) / <alpha-value>)",
         },
         white: "rgb(var(--color-white) / <alpha-value>)",
         black: "rgb(var(--color-black) / <alpha-value>)",

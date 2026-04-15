@@ -40,7 +40,7 @@ export const Login = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background flex items-center justify-center px-4 py-6 sm:p-6 bg-[radial-gradient(circle_at_top_right,rgba(126,169,236,0.1),transparent),radial-gradient(circle_at_bottom_left,rgba(126,169,236,0.08),transparent)]">
-      <div className="w-full max-w-md space-y-6 sm:space-y-8 animate-in fade-in zoom-in duration-500">
+      <div className="w-full max-w-md lg:max-w-lg space-y-6 sm:space-y-8 animate-in fade-in zoom-in duration-500">
         <div className="text-center space-y-2">
           <div className="mx-auto w-16 h-16 bg-primary/20 rounded-[2rem] flex items-center justify-center border border-primary/20 mb-6 group">
             <Activity
@@ -48,7 +48,7 @@ export const Login = () => {
               size={32}
             />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white italic tracking-tighter uppercase">
+          <h1 className="text-3xl sm:text-4xl font-black text-foreground italic tracking-tighter uppercase">
             PADEXA
           </h1>
           <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">
@@ -56,7 +56,7 @@ export const Login = () => {
           </p>
         </div>
 
-        <Card className="bg-dark-100/50 backdrop-blur-xl border border-white/5 rounded-[2.5rem] shadow-2xl p-4">
+        <Card className="bg-dark-100/50 backdrop-blur-xl border border-black/5 dark:border-white/5 rounded-[2.5rem] shadow-2xl p-4">
           <CardBody className="p-4">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
@@ -70,10 +70,10 @@ export const Login = () => {
                   onChange={(e) => setUsername(e.target.value)}
                   classNames={{
                     inputWrapper:
-                      "bg-white/5 border-white/5 group-data-[focus=true]:border-primary/50 transition-all h-14 rounded-2xl",
+                      "bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 group-data-[focus=true]:border-primary/50 transition-all h-14 rounded-2xl",
                     label:
                       "text-gray-400 font-bold uppercase text-[10px] tracking-widest pl-1",
-                    input: "text-white font-bold",
+                    input: "text-foreground font-bold",
                   }}
                   startContent={<User className="text-gray-500" size={18} />}
                 />
@@ -89,10 +89,10 @@ export const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   classNames={{
                     inputWrapper:
-                      "bg-white/5 border-white/5 group-data-[focus=true]:border-primary/50 transition-all h-14 rounded-2xl",
+                      "bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 group-data-[focus=true]:border-primary/50 transition-all h-14 rounded-2xl",
                     label:
                       "text-gray-400 font-bold uppercase text-[10px] tracking-widest pl-1",
-                    input: "text-white font-bold",
+                    input: "text-foreground font-bold",
                   }}
                   startContent={<Lock className="text-gray-500" size={18} />}
                   endContent={

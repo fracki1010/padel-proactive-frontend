@@ -36,12 +36,12 @@ export const HistoryModal = ({
       isOpen={isOpen}
       onClose={onClose}
       size="2xl"
-      className="bg-dark-300 text-white"
+      className="bg-dark-300 text-foreground"
       backdrop="blur"
       scrollBehavior="inside"
     >
       <ModalContent>
-        <ModalHeader className="flex flex-col gap-1 border-b border-white/5 pb-4">
+        <ModalHeader className="flex flex-col gap-1 border-b border-black/5 dark:border-white/5 pb-4">
           <div className="flex items-center gap-3">
             <Avatar
               name={getInitials(user?.name || "")}
@@ -62,7 +62,7 @@ export const HistoryModal = ({
               <Spinner color="primary" />
             </div>
           ) : history.length === 0 ? (
-            <div className="text-center py-12 bg-dark-200 rounded-3xl border border-white/5">
+            <div className="text-center py-12 bg-dark-200 rounded-3xl border border-black/5 dark:border-white/5">
               <Info size={32} className="mx-auto text-gray-600 mb-2" />
               <p className="text-gray-500">
                 Este socio aún no tiene actividad registrada.
@@ -76,11 +76,11 @@ export const HistoryModal = ({
                   return (
                     <div
                       key={item._id}
-                      className="bg-dark-200/50 p-4 rounded-3xl border border-white/5 hover:border-primary/20 transition-all group"
+                      className="bg-dark-200/50 p-4 rounded-3xl border border-black/5 dark:border-white/5 hover:border-primary/20 transition-all group"
                     >
                     <div className="flex flex-col sm:flex-row justify-between gap-4">
                       <div className="flex items-start gap-4">
-                        <div className="bg-white/5 p-2 rounded-2xl flex flex-col items-center min-w-[55px] font-black">
+                        <div className="bg-black/5 dark:bg-white/5 p-2 rounded-2xl flex flex-col items-center min-w-[55px] font-black">
                           <span className="text-[10px] text-primary uppercase">
                             {format(stableDate, "EEE", { locale: es })}
                           </span>
@@ -95,11 +95,11 @@ export const HistoryModal = ({
                             })}
                           </p>
                           <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1.5 font-bold text-white">
+                            <div className="flex items-center gap-1.5 font-bold text-foreground">
                               <Clock size={14} className="text-primary" />
                               {item.timeSlot?.startTime}
                             </div>
-                            <div className="h-3 w-[1px] bg-white/10 hidden sm:block" />
+                            <div className="h-3 w-[1px] bg-black/10 dark:bg-white/10 hidden sm:block" />
                             <p className="text-sm font-medium text-gray-300">
                               {item.court?.name || "Mantenimiento"}
                             </p>
@@ -107,7 +107,7 @@ export const HistoryModal = ({
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between sm:flex-col sm:items-end sm:justify-center gap-2 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0">
+                      <div className="flex items-center justify-between sm:flex-col sm:items-end sm:justify-center gap-2 border-t sm:border-t-0 border-black/5 dark:border-white/5 pt-3 sm:pt-0">
                         <Chip
                           size="sm"
                           variant="flat"
@@ -124,7 +124,7 @@ export const HistoryModal = ({
                         >
                           {item.status.toUpperCase()}
                         </Chip>
-                        <p className="text-xl font-black text-white">
+                        <p className="text-xl font-black text-foreground">
                           <span className="text-xs text-primary mr-1">$</span>
                           {item.finalPrice}
                         </p>

@@ -152,31 +152,31 @@ export const BookingForm = ({
   };
 
   return (
-    <div className="flex flex-col gap-6 animate-in slide-in-from-right-10 duration-500">
+    <div className="flex flex-col gap-6 animate-in slide-in-from-right-10 duration-500 w-full max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Button
           isIconOnly
           variant="light"
           onPress={onCancel}
-          className="text-white"
+          className="text-foreground"
         >
           <ArrowLeft size={24} />
         </Button>
-        <h1 className="text-xl sm:text-2xl font-bold text-white">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">
           {initialData?._id ? "Editar Turno" : "Nueva Reserva"}
         </h1>
       </div>
 
       {/* Hero Card */}
-      <Card className="bg-dark-200 border border-white/5 overflow-hidden rounded-[2rem]">
+      <Card className="bg-dark-200 border border-black/5 dark:border-white/5 overflow-hidden rounded-[2rem]">
         <div className="relative h-40 bg-[url('https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
           <CardBody className="relative z-10 p-5 sm:p-6 flex flex-col justify-end h-full">
             <span className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">
               ID RESERVA: #PDL-882
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-white">
+            <h2 className="text-2xl sm:text-3xl font-black text-foreground">
               Reserva de Cancha
             </h2>
           </CardBody>
@@ -199,12 +199,12 @@ export const BookingForm = ({
         <section className="space-y-6">
           <div className="flex items-center gap-2 px-1">
             <UserIcon size={16} className="text-primary" />
-            <h3 className="text-xs font-black text-white uppercase tracking-widest">
+            <h3 className="text-xs font-black text-foreground uppercase tracking-widest">
               Información del Cliente
             </h3>
           </div>
 
-          <div className="space-y-6 bg-dark-100/30 p-4 sm:p-6 rounded-3xl border border-white/5">
+          <div className="space-y-6 bg-dark-100/30 p-4 sm:p-6 rounded-3xl border border-black/5 dark:border-white/5">
             <Autocomplete
               label="Nombre del Socio"
               placeholder="Escribe o selecciona un socio"
@@ -218,16 +218,16 @@ export const BookingForm = ({
               allowsCustomValue={true}
               classNames={{
                 base: "max-w-full",
-                popoverContent: "bg-dark-200 border border-white/10 text-white",
-                listboxWrapper: "bg-dark-200 border border-white/10",
-                listbox: "text-white",
+                popoverContent: "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                listboxWrapper: "bg-dark-200 border border-black/10 dark:border-white/10",
+                listbox: "text-foreground",
               }}
               inputProps={{
                 classNames: {
                   inputWrapper:
-                    "bg-dark-100/50 border-white/10 h-14 rounded-xl",
+                    "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
                   label: "text-gray-400 font-bold mb-2",
-                  input: "text-white font-bold",
+                  input: "text-foreground font-bold",
                 },
               }}
             >
@@ -235,7 +235,7 @@ export const BookingForm = ({
                 <AutocompleteItem
                   key={u.name}
                   textValue={u.name}
-                  className="text-white hover:bg-white/5"
+                  className="text-foreground hover:bg-black/5 dark:hover:bg-white/5"
                 >
                   <div className="flex items-center gap-2">
                     <Avatar
@@ -267,9 +267,9 @@ export const BookingForm = ({
                 className="flex-grow"
                 classNames={{
                   inputWrapper:
-                    "bg-dark-100/50 border-white/10 h-14 rounded-xl",
+                    "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
                   label: "text-gray-400 font-bold mb-2",
-                  input: "text-white font-bold",
+                  input: "text-foreground font-bold",
                 }}
                 startContent={
                   <MessageSquare size={18} className="text-gray-500" />
@@ -293,12 +293,12 @@ export const BookingForm = ({
         <section className="space-y-6">
           <div className="flex items-center gap-2 px-1">
             <Calendar size={16} className="text-primary" />
-            <h3 className="text-xs font-black text-white uppercase tracking-widest">
+            <h3 className="text-xs font-black text-foreground uppercase tracking-widest">
               Cancha y Horario
             </h3>
           </div>
 
-          <div className="space-y-6 bg-dark-100/30 p-4 sm:p-6 rounded-3xl border border-white/5">
+          <div className="space-y-6 bg-dark-100/30 p-4 sm:p-6 rounded-3xl border border-black/5 dark:border-white/5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Select
                 label="Cancha de Padel"
@@ -309,17 +309,17 @@ export const BookingForm = ({
                   setCourtId(Array.from(keys)[0] as string)
                 }
                 classNames={{
-                  trigger: "bg-dark-100/50 border-white/10 h-14 rounded-xl",
+                  trigger: "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
                   label: "text-gray-400 font-bold mb-2",
-                  value: "text-white font-bold",
+                  value: "text-foreground font-bold",
                   popoverContent:
-                    "bg-dark-200 border border-white/10 text-white",
-                  listbox: "text-white",
+                    "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                  listbox: "text-foreground",
                 }}
                 startContent={<MapPin size={18} className="text-gray-500" />}
               >
                 {courts.map((c) => (
-                  <SelectItem key={c._id} className="text-white">
+                  <SelectItem key={c._id} className="text-foreground">
                     {c.name}
                   </SelectItem>
                 ))}
@@ -332,9 +332,9 @@ export const BookingForm = ({
                 onValueChange={setDate}
                 classNames={{
                   inputWrapper:
-                    "bg-dark-100/50 border-white/10 h-14 rounded-xl",
+                    "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
                   label: "text-gray-400 font-bold mb-2",
-                  input: "text-white font-bold",
+                  input: "text-foreground font-bold",
                 }}
               />
             </div>
@@ -348,11 +348,11 @@ export const BookingForm = ({
                 setTime(Array.from(keys)[0] as string)
               }
               classNames={{
-                trigger: "bg-dark-100/50 border-white/10 h-14 rounded-xl",
+                trigger: "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
                 label: "text-gray-400 font-bold mb-2",
-                value: "text-white font-bold",
-                popoverContent: "bg-dark-200 border border-white/10 text-white",
-                listbox: "text-white",
+                value: "text-foreground font-bold",
+                popoverContent: "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                listbox: "text-foreground",
               }}
               startContent={<Clock size={18} className="text-gray-500" />}
             >
@@ -360,7 +360,7 @@ export const BookingForm = ({
                 <SelectItem
                   key={s.startTime}
                   textValue={s.startTime}
-                  className="text-white"
+                  className="text-foreground"
                 >
                   {s.startTime} - {s.endTime}
                 </SelectItem>
@@ -373,17 +373,17 @@ export const BookingForm = ({
         <section className="space-y-6">
           <div className="flex items-center gap-2 px-1">
             <CheckCircle2 size={16} className="text-primary" />
-            <h3 className="text-xs font-black text-white uppercase tracking-widest">
+            <h3 className="text-xs font-black text-foreground uppercase tracking-widest">
               Estado del Pago
             </h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-dark-100/30 p-4 rounded-[2rem] border border-white/5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-dark-100/30 p-4 rounded-[2rem] border border-black/5 dark:border-white/5">
             <Button
               type="button"
               className={`h-14 rounded-2xl font-bold transition-all ${
                 paymentStatus === "pagado"
                   ? "bg-primary text-black shadow-lg shadow-primary/20"
-                  : "bg-dark-100/50 text-gray-500 border border-white/5"
+                  : "bg-dark-100/50 text-gray-500 border border-black/5 dark:border-white/5"
               }`}
               onClick={() => setPaymentStatus("pagado")}
             >
@@ -394,7 +394,7 @@ export const BookingForm = ({
               className={`h-14 rounded-2xl font-bold transition-all ${
                 paymentStatus === "pendiente"
                   ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
-                  : "bg-dark-100/50 text-gray-500 border border-white/5"
+                  : "bg-dark-100/50 text-gray-500 border border-black/5 dark:border-white/5"
               }`}
               onClick={() => setPaymentStatus("pendiente")}
             >

@@ -108,7 +108,7 @@ export const PwaManager = () => {
           <Card className="bg-dark-100 border border-primary/30 rounded-3xl shadow-2xl">
             <CardBody className="p-4 flex flex-col gap-3">
               <div>
-                <p className="text-white font-black text-sm">Nueva versión disponible</p>
+                <p className="text-foreground font-black text-sm">Nueva versión disponible</p>
                 <p className="text-gray-400 text-xs">
                   Actualizá para tener mejoras y correcciones recientes.
                 </p>
@@ -137,9 +137,9 @@ export const PwaManager = () => {
 
       {offlineReady && (
         <div className="fixed left-4 right-4 bottom-[calc(env(safe-area-inset-bottom)+5.2rem)] z-[110] pointer-events-none">
-          <Card className="bg-dark-100/95 border border-white/10 rounded-3xl">
+          <Card className="bg-dark-100/95 border border-black/10 dark:border-white/10 rounded-3xl">
             <CardBody className="p-3">
-              <p className="text-xs text-white font-bold text-center">
+              <p className="text-xs text-foreground font-bold text-center">
                 App lista para funcionar sin conexión
               </p>
             </CardBody>

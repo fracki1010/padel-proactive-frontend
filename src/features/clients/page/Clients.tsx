@@ -39,6 +39,7 @@ import { getInitials, getAvatarColor } from "../../../utils/avatarUtils";
 import type { User, Booking } from "../../../types";
 import { HistoryModal } from "../components/HistoryModal";
 import { UserModal } from "../components/UserModal";
+import { ClientsDesktopView } from "../components/ClientsDesktopView";
 
 interface ClientsProps {
   filterValue: string;
@@ -141,206 +142,221 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
 
   return (
     <div className="space-y-6 animate-in slide-in-from-right-10 duration-500">
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white">
-            Gestión de Socios
-          </h1>
-          <p className="text-gray-500 text-sm sm:text-base">
-            Administra tus clientes, historial y turnos fijos
-          </p>
-        </div>
-        <Button
-          color="primary"
-          className="rounded-2xl font-bold px-6 shadow-lg shadow-primary/20 w-full sm:w-auto"
-          startContent={<Plus size={20} />}
-          onClick={handleCreate}
-        >
-          Nuevo Socio
-        </Button>
-      </div>
+      <ClientsDesktopView
+        users={users}
+        isLoading={isLoadingUsers}
+        filterValue={filterValue}
+        onFilterChange={onFilterChange}
+        penaltyLimit={penaltyLimit}
+        onCreate={handleCreate}
+        onEdit={handleEdit}
+        onHistory={handleHistory}
+        onDelete={handleDelete}
+        onClearPenalties={handleClearPenalties}
+      />
 
-      <div className="bg-dark-200 p-2 rounded-3xl border border-white/5 shadow-2xl">
-        <Input
-          isClearable
-          className="w-full"
-          placeholder="Buscar por nombre o teléfono..."
-          startContent={<UserIcon className="text-gray-400" size={18} />}
-          value={filterValue}
-          onValueChange={onFilterChange}
-          variant="flat"
-          classNames={{
-            inputWrapper: "bg-transparent border-none",
-            input: "text-white",
-          }}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {isLoadingUsers ? (
-          <div className="col-span-full flex justify-center p-12">
-            <Spinner color="primary" size="lg" />
-          </div>
-        ) : filteredUsers.length === 0 ? (
-          <div className="col-span-full bg-dark-200/50 rounded-3xl p-12 text-center border border-dashed border-white/10">
-            <UserIcon size={48} className="mx-auto text-gray-600 mb-4" />
-            <p className="text-gray-400 font-medium">
-              No se encontraron socios que coincidan con la búsqueda.
+      <div className="lg:hidden space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-foreground">
+              Gestión de Socios
+            </h1>
+            <p className="text-gray-500 text-sm sm:text-base">
+              Administra tus clientes, historial y turnos fijos
             </p>
           </div>
-        ) : (
-          <>
-            {visibleUsers.map((client: User) => (
-              <Card
-                key={client._id}
-                className="bg-dark-200 border-white/5 hover:border-primary/30 transition-all duration-300 rounded-3xl group"
-                shadow="sm"
-              >
-                <CardBody className="p-5 flex flex-row items-center gap-4">
-                  <Avatar
-                    name={getInitials(client.name)}
-                    className="w-16 h-16 rounded-2xl text-white font-black text-xl shrink-0"
-                    style={{ backgroundColor: getAvatarColor(client.name) }}
-                  />
+          <Button
+            color="primary"
+            className="rounded-2xl font-bold px-6 shadow-lg shadow-primary/20 w-full sm:w-auto"
+            startContent={<Plus size={20} />}
+            onClick={handleCreate}
+          >
+            Nuevo Socio
+          </Button>
+        </div>
 
-                  <div className="flex-grow min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-lg text-white truncate">
-                        {client.name}
-                      </h4>
-                      {client.fixedTurns && client.fixedTurns.length > 0 && (
+        <div className="bg-dark-200 p-2 rounded-3xl border border-black/5 dark:border-white/5 shadow-2xl">
+          <Input
+            isClearable
+            className="w-full"
+            placeholder="Buscar por nombre o teléfono..."
+            startContent={<UserIcon className="text-gray-400" size={18} />}
+            value={filterValue}
+            onValueChange={onFilterChange}
+            variant="flat"
+            classNames={{
+              inputWrapper: "bg-transparent border-none",
+              input: "text-foreground",
+            }}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {isLoadingUsers ? (
+            <div className="col-span-full flex justify-center p-12">
+              <Spinner color="primary" size="lg" />
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="col-span-full bg-dark-200/50 rounded-3xl p-12 text-center border border-dashed border-black/10 dark:border-white/10">
+              <UserIcon size={48} className="mx-auto text-gray-600 mb-4" />
+              <p className="text-gray-400 font-medium">
+                No se encontraron socios que coincidan con la búsqueda.
+              </p>
+            </div>
+          ) : (
+            <>
+              {visibleUsers.map((client: User) => (
+                <Card
+                  key={client._id}
+                  className="bg-dark-200 border-black/5 dark:border-white/5 hover:border-primary/30 transition-all duration-300 rounded-3xl group"
+                  shadow="sm"
+                >
+                  <CardBody className="p-5 flex flex-row items-center gap-4">
+                    <Avatar
+                      name={getInitials(client.name)}
+                      className="w-16 h-16 rounded-2xl text-foreground font-black text-xl shrink-0"
+                      style={{ backgroundColor: getAvatarColor(client.name) }}
+                    />
+
+                    <div className="flex-grow min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-lg text-foreground truncate">
+                          {client.name}
+                        </h4>
+                        {client.fixedTurns && client.fixedTurns.length > 0 && (
+                          <Chip
+                            size="sm"
+                            color="success"
+                            variant="flat"
+                            className="h-5 px-1 bg-success/10 text-[10px] font-black uppercase"
+                          >
+                            Fijo
+                          </Chip>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-gray-500 text-sm mt-0.5">
+                        <Smartphone size={14} />
+                        <span>{formatPhoneNumber(client.phoneNumber)}</span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mt-2.5">
                         <Chip
                           size="sm"
-                          color="success"
-                          variant="flat"
-                          className="h-5 px-1 bg-success/10 text-[10px] font-black uppercase"
-                        >
-                          Fijo
-                        </Chip>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-gray-500 text-sm mt-0.5">
-                      <Smartphone size={14} />
-                      <span>{formatPhoneNumber(client.phoneNumber)}</span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mt-2.5">
-                      <Chip
-                        size="sm"
-                        color={
-                          client.isSuspended
-                            ? "danger"
-                            : (client.penalties || 0) > 0
-                              ? "warning"
-                              : "default"
-                        }
-                        variant="flat"
-                        className="h-5 px-1 text-[10px] font-black uppercase"
-                        startContent={<AlertTriangle size={9} className="ml-1" />}
-                      >
-                        PENAL. {client.penalties || 0}/{penaltyLimit}
-                      </Chip>
-                      {client.isSuspended && (
-                        <Chip
-                          size="sm"
-                          color="danger"
+                          color={
+                            client.isSuspended
+                              ? "danger"
+                              : (client.penalties || 0) > 0
+                                ? "warning"
+                                : "default"
+                          }
                           variant="flat"
                           className="h-5 px-1 text-[10px] font-black uppercase"
-                          startContent={<ShieldOff size={9} className="ml-1" />}
+                          startContent={<AlertTriangle size={9} className="ml-1" />}
                         >
-                          SUSPENDIDO
+                          PENAL. {client.penalties || 0}/{penaltyLimit}
                         </Chip>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <Dropdown
-                      placement="bottom-end"
-                      className="bg-dark-300 border border-white/10"
-                    >
-                      <DropdownTrigger>
-                        <Button
-                          isIconOnly
-                          variant="light"
-                          className="text-gray-400 hover:text-white"
-                        >
-                          <MoreVertical size={20} />
-                        </Button>
-                      </DropdownTrigger>
-                      <DropdownMenu
-                        aria-label="Acciones de socio"
-                        color="primary"
-                      >
-                        <DropdownItem
-                          key="history"
-                          startContent={<History size={16} />}
-                          onClick={() => handleHistory(client)}
-                        >
-                          Ver Historial
-                        </DropdownItem>
-                        <DropdownItem
-                          key="edit"
-                          startContent={<Edit2 size={16} />}
-                          onClick={() => handleEdit(client)}
-                        >
-                          Editar Perfil
-                        </DropdownItem>
-                        <DropdownItem
-                          key="whatsapp"
-                          startContent={<MessageSquare size={16} />}
-                          onClick={() =>
-                            window.open(
-                              `https://wa.me/${client.phoneNumber.replace(/\D/g, "")}`,
-                              "_blank",
-                            )
-                          }
-                        >
-                          Enviar WhatsApp
-                        </DropdownItem>
-                        <DropdownItem
-                          key="delete"
-                          className="text-danger"
-                          color="danger"
-                          startContent={<Trash2 size={16} />}
-                          onClick={() => handleDelete(client._id)}
-                        >
-                          Eliminar Socio
-                        </DropdownItem>
-                        {client.isSuspended || (client.penalties || 0) > 0 ? (
-                          <DropdownItem
-                            key="clear-penalties"
-                            color="success"
-                            className="text-success"
-                            startContent={<ShieldOff size={16} />}
-                            onClick={() => handleClearPenalties(client._id)}
+                        {client.isSuspended && (
+                          <Chip
+                            size="sm"
+                            color="danger"
+                            variant="flat"
+                            className="h-5 px-1 text-[10px] font-black uppercase"
+                            startContent={<ShieldOff size={9} className="ml-1" />}
                           >
-                            Despenalizar Socio
-                          </DropdownItem>
-                        ) : (
-                          <DropdownItem key="no-penalty" className="hidden" />
+                            SUSPENDIDO
+                          </Chip>
                         )}
-                      </DropdownMenu>
-                    </Dropdown>
-                  </div>
-                </CardBody>
-              </Card>
-            ))}
+                      </div>
+                    </div>
 
-            <div ref={sentinelRef} className="col-span-full">
-              {hasMore && (
-                <div className="flex justify-center py-6">
-                  <Spinner color="primary" size="sm" />
-                </div>
-              )}
-              {!hasMore && filteredUsers.length > 12 && (
-                <p className="text-center text-gray-600 text-xs font-bold uppercase tracking-widest py-4">
-                  {filteredUsers.length} socios cargados
-                </p>
-              )}
-            </div>
-          </>
-        )}
+                    <div className="flex flex-col gap-2">
+                      <Dropdown
+                        placement="bottom-end"
+                        className="bg-dark-300 border border-black/10 dark:border-white/10"
+                      >
+                        <DropdownTrigger>
+                          <Button
+                            isIconOnly
+                            variant="light"
+                            className="text-gray-400 hover:text-foreground"
+                          >
+                            <MoreVertical size={20} />
+                          </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu
+                          aria-label="Acciones de socio"
+                          color="primary"
+                        >
+                          <DropdownItem
+                            key="history"
+                            startContent={<History size={16} />}
+                            onClick={() => handleHistory(client)}
+                          >
+                            Ver Historial
+                          </DropdownItem>
+                          <DropdownItem
+                            key="edit"
+                            startContent={<Edit2 size={16} />}
+                            onClick={() => handleEdit(client)}
+                          >
+                            Editar Perfil
+                          </DropdownItem>
+                          <DropdownItem
+                            key="whatsapp"
+                            startContent={<MessageSquare size={16} />}
+                            onClick={() =>
+                              window.open(
+                                `https://wa.me/${client.phoneNumber.replace(/\D/g, "")}`,
+                                "_blank",
+                              )
+                            }
+                          >
+                            Enviar WhatsApp
+                          </DropdownItem>
+                          <DropdownItem
+                            key="delete"
+                            className="text-danger"
+                            color="danger"
+                            startContent={<Trash2 size={16} />}
+                            onClick={() => handleDelete(client._id)}
+                          >
+                            Eliminar Socio
+                          </DropdownItem>
+                          {client.isSuspended || (client.penalties || 0) > 0 ? (
+                            <DropdownItem
+                              key="clear-penalties"
+                              color="success"
+                              className="text-success"
+                              startContent={<ShieldOff size={16} />}
+                              onClick={() => handleClearPenalties(client._id)}
+                            >
+                              Despenalizar Socio
+                            </DropdownItem>
+                          ) : (
+                            <DropdownItem key="no-penalty" className="hidden" />
+                          )}
+                        </DropdownMenu>
+                      </Dropdown>
+                    </div>
+                  </CardBody>
+                </Card>
+              ))}
+
+              <div ref={sentinelRef} className="col-span-full">
+                {hasMore && (
+                  <div className="flex justify-center py-6">
+                    <Spinner color="primary" size="sm" />
+                  </div>
+                )}
+                {!hasMore && filteredUsers.length > 12 && (
+                  <p className="text-center text-gray-600 text-xs font-bold uppercase tracking-widest py-4">
+                    {filteredUsers.length} socios cargados
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <UserModal
