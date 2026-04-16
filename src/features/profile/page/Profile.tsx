@@ -20,7 +20,6 @@ import {
   useWhatsappCancellationGroupSettings,
   useUpdateWhatsappCancellationGroupSettings,
   useWhatsappGroups,
-  useWhatsappCommands,
   useCompanies,
   useCreateCompany,
   useUpdateCompanyStatus,
@@ -59,16 +58,11 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const { data: whatsappData, isLoading: isLoadingWhatsapp } = useWhatsappStatus();
   const { data: whatsappCancellationGroupSettingsData } =
     useWhatsappCancellationGroupSettings();
-  const { data: whatsappGroupsData, isLoading: isLoadingWhatsappGroups } =
-    useWhatsappGroups();
-  const [commandStatusFilter, setCommandStatusFilter] = useState("");
-  const [commandTypeFilter, setCommandTypeFilter] = useState("");
-  const { data: whatsappCommandsData, isLoading: isLoadingWhatsappCommands } =
-    useWhatsappCommands({
-      limit: 20,
-      status: commandStatusFilter,
-      type: commandTypeFilter,
-    });
+  const {
+    data: whatsappGroupsData,
+    isLoading: isLoadingWhatsappGroups,
+    refetch: refetchWhatsappGroups,
+  } = useWhatsappGroups();
   const { data: botAutomationSettingsData } = useBotAutomationSettings();
   const { data: companiesData } = useCompanies(isSuperAdmin);
   const { data: adminsData } = useAdmins(isSuperAdmin);
@@ -221,9 +215,6 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         }))
         .filter((group: { id: string }) => group.id.endsWith("@g.us"))
     : [];
-  const whatsappCommands = Array.isArray(whatsappCommandsData?.data)
-    ? whatsappCommandsData.data
-    : [];
   const userCompany =
     user?.companyId && typeof user.companyId === "object"
       ? {
@@ -289,7 +280,6 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const [isSavingDailyAvailabilityDigestSettings, setIsSavingDailyAvailabilityDigestSettings] =
     useState(false);
   const [isWaitingWhatsappCommand, setIsWaitingWhatsappCommand] = useState(false);
-  const [retryingCommandId, setRetryingCommandId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.phone) {
@@ -361,6 +351,19 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     const profileScrollContainer = document.getElementById("profile-drawer-body");
     profileScrollContainer?.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [view]);
+
+  useEffect(() => {
+    if (view !== "whatsapp") return;
+
+    void refetchWhatsappGroups();
+
+    if (!whatsappEnabled || !workerOnline) return;
+    const retryTimer = window.setTimeout(() => {
+      void refetchWhatsappGroups();
+    }, 3500);
+
+    return () => window.clearTimeout(retryTimer);
+  }, [view, whatsappEnabled, workerOnline, refetchWhatsappGroups]);
 
   useEffect(() => {
     if (!newAdminCompanyId && companies.length > 0) {
@@ -714,75 +717,6 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     }
   };
 
-  const handleRetryWhatsappCommand = async (commandId: string) => {
-    if (!ensureWhatsappWorkerOnline()) return;
-
-    const normalizedId = String(commandId || "").trim();
-    if (!normalizedId) return;
-
-    setRetryingCommandId(normalizedId);
-    try {
-      const response = await configService.retryWhatsappCommand(normalizedId);
-      const newCommandId = String(response?.data?.commandId || "").trim();
-      const commandIdToTrack = newCommandId || normalizedId;
-
-      addToast({
-        title: "Reintento encolado",
-        description: `Comando: ${commandIdToTrack.slice(0, 8)}...`,
-        color: "success",
-      });
-
-      setIsWaitingWhatsappCommand(true);
-      try {
-        const maxAttempts = 45;
-        const delayMs = 2000;
-
-        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-          const statusResponse =
-            await configService.getWhatsappCommandStatus(commandIdToTrack);
-          const status = String(statusResponse?.data?.status || "").toLowerCase();
-          const errorMessage = String(statusResponse?.data?.lastError || "").trim();
-
-          if (status === "done") {
-            queryClient.invalidateQueries({ queryKey: ["whatsapp-commands"] });
-            queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
-            addToast({
-              title: "Comando reintentado con éxito",
-              color: "success",
-            });
-            return;
-          }
-
-          if (status === "failed") {
-            queryClient.invalidateQueries({ queryKey: ["whatsapp-commands"] });
-            throw new Error(errorMessage || "El reintento volvió a fallar.");
-          }
-
-          await new Promise((resolve) => setTimeout(resolve, delayMs));
-        }
-
-        queryClient.invalidateQueries({ queryKey: ["whatsapp-commands"] });
-        addToast({
-          title: "El reintento sigue en proceso",
-          description: "El estado se actualizará automáticamente en el historial.",
-          color: "warning",
-        });
-      } finally {
-        setIsWaitingWhatsappCommand(false);
-      }
-    } catch (err: any) {
-      addToast({
-        title:
-          err?.response?.data?.error ||
-          err?.message ||
-          "No se pudo reintentar el comando",
-        color: "danger",
-      });
-    } finally {
-      setRetryingCommandId(null);
-    }
-  };
-
   const persistWhatsappCancellationGroupSettings = async (
     nextEnabled: boolean,
     nextGroupIdRaw: string,
@@ -796,7 +730,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     const nextDailyAvailabilityDigestHour = nextDailyAvailabilityDigestHourRaw.trim();
     if (nextEnabled && !nextGroupId) {
       addToast({
-        title: "Ingresá el ID del grupo antes de activar avisos de cancelación",
+        title: "Seleccioná un grupo antes de activar avisos de cancelación",
         color: "warning",
       });
       return;
@@ -857,17 +791,6 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const handleToggleCancellationGroup = (enabled: boolean) => {
     persistWhatsappCancellationGroupSettings(
       enabled,
-      cancellationGroupIdInput,
-      cancellationGroupNameInput,
-      dailyAvailabilityDigestEnabledInput,
-      dailyAvailabilityDigestHourInput,
-      dailyAvailabilityDigestNextDayEnabledInput,
-    );
-  };
-
-  const handleSaveCancellationGroupId = () => {
-    persistWhatsappCancellationGroupSettings(
-      whatsappCancellationGroupEnabled,
       cancellationGroupIdInput,
       cancellationGroupNameInput,
       dailyAvailabilityDigestEnabledInput,
@@ -939,8 +862,16 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
 
     setCancellationGroupIdInput(selected.id);
     setCancellationGroupNameInput(selected.name || "");
-    setIsEditingCancellationGroupId(true);
-    setIsEditingCancellationGroupName(true);
+    setIsEditingCancellationGroupId(false);
+    setIsEditingCancellationGroupName(false);
+    persistWhatsappCancellationGroupSettings(
+      whatsappCancellationGroupEnabled,
+      selected.id,
+      selected.name || "",
+      dailyAvailabilityDigestEnabledInput,
+      dailyAvailabilityDigestHourInput,
+      dailyAvailabilityDigestNextDayEnabledInput,
+    );
   };
 
   const getServerBotAutomationSnapshot = () => {
@@ -1384,11 +1315,6 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         cancellationGroupIdInput={cancellationGroupIdInput}
         cancellationGroupNameInput={cancellationGroupNameInput}
         whatsappGroups={whatsappGroups}
-        whatsappCommands={whatsappCommands}
-        isLoadingWhatsappCommands={isLoadingWhatsappCommands}
-        commandStatusFilter={commandStatusFilter}
-        commandTypeFilter={commandTypeFilter}
-        retryingCommandId={retryingCommandId}
         isLoadingWhatsappGroups={isLoadingWhatsappGroups}
         updateCancellationGroupPending={
           updateWhatsappCancellationGroupSettings.isPending
@@ -1398,19 +1324,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         onCloseWhatsappSession={handleCloseWhatsappSession}
         onSwitchWhatsappDevice={handleSwitchWhatsappDevice}
         onCancellationGroupEnabledChange={handleToggleCancellationGroup}
-        onCancellationGroupIdChange={(value) => {
-          setCancellationGroupIdInput(value);
-          setIsEditingCancellationGroupId(true);
-        }}
-        onCancellationGroupNameChange={(value) => {
-          setCancellationGroupNameInput(value);
-          setIsEditingCancellationGroupName(true);
-        }}
         onSelectWhatsappGroup={handleSelectWhatsappGroup}
-        onSaveCancellationGroup={handleSaveCancellationGroupId}
-        onChangeCommandStatusFilter={setCommandStatusFilter}
-        onChangeCommandTypeFilter={setCommandTypeFilter}
-        onRetryWhatsappCommand={handleRetryWhatsappCommand}
       />
     );
   }

@@ -181,6 +181,50 @@ const parseWhatsappGroups = (responseData: any): Array<{ id: string; name: strin
   return Array.from(uniqueById.values());
 };
 
+const parseWhatsappCommandId = (responseData: any): string => {
+  const commandIdCandidates = [
+    responseData?.commandId,
+    responseData?.data?.commandId,
+    responseData?.data?.meta?.commandId,
+    responseData?.meta?.commandId,
+  ];
+
+  const commandId = commandIdCandidates.find(
+    (value) => typeof value === "string" && value.trim().length > 0,
+  );
+  return typeof commandId === "string" ? commandId.trim() : "";
+};
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const waitForWhatsappCommandCompletion = async (
+  commandId: string,
+  {
+    maxAttempts = 15,
+    delayMs = 1200,
+  }: { maxAttempts?: number; delayMs?: number } = {},
+): Promise<boolean> => {
+  const normalizedCommandId = String(commandId || "").trim();
+  if (!normalizedCommandId) return false;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const statusResponse = await api.get(`/whatsapp/commands/${normalizedCommandId}`);
+      const status = String(statusResponse?.data?.data?.status || "").toLowerCase();
+      if (status === "done" || status === "failed") return true;
+    } catch {
+      // If status endpoint fails, avoid blocking and fallback to other routes/cache.
+      return false;
+    }
+
+    if (attempt < maxAttempts) {
+      await sleep(delayMs);
+    }
+  }
+
+  return false;
+};
+
 const parsePenaltySystemEnabled = (responseData: any): boolean | null => {
   const data = responseData?.data ?? responseData;
   const candidates = [
@@ -846,8 +890,18 @@ export const configService = {
 
     for (const url of attempts) {
       try {
-        const response = await api.get(url);
-        const groups = parseWhatsappGroups(response.data);
+        let response = await api.get(url);
+        let groups = parseWhatsappGroups(response.data);
+
+        const commandId = parseWhatsappCommandId(response.data);
+        if (!groups.length && commandId) {
+          const completed = await waitForWhatsappCommandCompletion(commandId);
+          if (completed) {
+            response = await api.get(url);
+            groups = parseWhatsappGroups(response.data);
+          }
+        }
+
         if (groups.length > 0) {
           localStorage.setItem(WHATSAPP_GROUPS_CACHE_KEY, JSON.stringify(groups));
           return { data: groups };
