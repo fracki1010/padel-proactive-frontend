@@ -24,6 +24,10 @@ export interface User {
   whatsappId?: string;
   penalties?: number;
   isSuspended?: boolean;
+  attendanceConfirmedCount?: number;
+  trustedClientConfirmationCount?: number;
+  confirmationsToBeTrusted?: number;
+  isTrustedClient?: boolean;
 }
 
 export interface Booking {

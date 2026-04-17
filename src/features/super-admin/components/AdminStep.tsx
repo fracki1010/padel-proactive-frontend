@@ -1,4 +1,10 @@
-import { Button, Card, CardBody, Input } from "@heroui/react";
+import { Button, Card, CardBody, Input, Select, SelectItem } from "@heroui/react";
+import {
+  composePhoneForStorage,
+  parseStoredPhone,
+  PHONE_COUNTRY_OPTIONS,
+  type PhoneCountryId,
+} from "../../../utils/phone";
 
 type AdminStepProps = {
   companies: any[];
@@ -37,6 +43,8 @@ export const AdminStep = ({
   onBack,
   onCreateAdmin,
 }: AdminStepProps) => {
+  const { countryId: phoneCountryId, localNumber: phoneLocalNumber } = parseStoredPhone(adminPhone);
+
   return (
     <Card className="bg-dark-100/70 border border-black/10 dark:border-white/10 rounded-[2rem]">
       <CardBody className="p-5 sm:p-6 space-y-4">
@@ -90,20 +98,45 @@ export const AdminStep = ({
           }}
         />
 
-        <Input
-          label="Teléfono (opcional)"
-          labelPlacement="outside"
-          placeholder="54911..."
-          value={adminPhone}
-          onValueChange={onPhoneChange}
-          isInvalid={Boolean(phoneError)}
-          errorMessage={phoneError}
-          classNames={{
-            inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-2xl",
-            input: "text-foreground font-bold",
-            label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
-          }}
-        />
+        <div className="flex gap-2">
+          <Select
+            label="País"
+            labelPlacement="outside"
+            selectedKeys={[phoneCountryId]}
+            onSelectionChange={(keys) => {
+              const nextCountryId = Array.from(keys)[0] as PhoneCountryId;
+              if (!nextCountryId) return;
+              onPhoneChange(composePhoneForStorage(nextCountryId, phoneLocalNumber));
+            }}
+            className="w-44 shrink-0"
+            classNames={{
+              trigger: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-2xl",
+              value: "text-foreground font-bold",
+              label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
+            }}
+          >
+            {PHONE_COUNTRY_OPTIONS.map((country) => (
+              <SelectItem key={country.id}>
+                {country.label} ({country.dialCode})
+              </SelectItem>
+            ))}
+          </Select>
+          <Input
+            label="Teléfono (opcional)"
+            labelPlacement="outside"
+            placeholder="Número (sin prefijo)"
+            value={phoneLocalNumber}
+            onValueChange={(value) => onPhoneChange(composePhoneForStorage(phoneCountryId, value))}
+            isInvalid={Boolean(phoneError)}
+            errorMessage={phoneError}
+            className="flex-grow"
+            classNames={{
+              inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-2xl",
+              input: "text-foreground font-bold",
+              label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
+            }}
+          />
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <Button

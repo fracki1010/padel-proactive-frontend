@@ -1,6 +1,7 @@
 import { Card, CardBody, Chip } from "@heroui/react";
 import type { Booking } from "../types";
 import { Clock3, MapPin, UserRound } from "lucide-react";
+import { formatPhoneForDisplay } from "../utils/formatters";
 
 interface BookingCardProps {
   booking: Booking;
@@ -96,7 +97,7 @@ export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs">
             <span className="inline-flex items-center gap-1.5 text-foreground/60 font-semibold min-w-0">
               <UserRound size={13} className="text-foreground/35 shrink-0" />
-              <span className="truncate">{booking.clientPhone}</span>
+              <span className="truncate">{formatPhoneForDisplay(booking.clientPhone)}</span>
             </span>
             <span className="hidden sm:block h-3 w-px bg-black/10 dark:bg-white/10" />
             <span className="inline-flex items-center gap-1.5 text-foreground/60 font-semibold min-w-0">

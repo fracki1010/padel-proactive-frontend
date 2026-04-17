@@ -42,3 +42,11 @@ export const formatCurrency = (amount: number) => {
     maximumFractionDigits: 0,
   }).format(amount);
 };
+
+export const formatPhoneForDisplay = (value: string) => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  const withoutArgentinaMobilePrefix = raw.replace(/^\+?\s*54[\s-]*9[\s-]*/, "");
+  return withoutArgentinaMobilePrefix || raw;
+};

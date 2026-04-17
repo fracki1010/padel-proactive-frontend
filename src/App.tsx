@@ -54,6 +54,13 @@ const getBookingIdFromPathname = (pathname: string): string | null => {
   return secondSegment;
 };
 
+const getClientIdFromPathname = (pathname: string): string | null => {
+  const [firstSegment = "", secondSegment = ""] = pathname.split("/").filter(Boolean);
+  if (firstSegment !== "socios") return null;
+  if (!secondSegment) return null;
+  return secondSegment;
+};
+
 const getSafeReturnPath = (candidate?: string): string => {
   if (!candidate) return "/reservas";
 
@@ -106,6 +113,10 @@ export default function App() {
   const isCreating = isCreateBookingPath(location.pathname);
   const bookingIdFromPath = useMemo(
     () => getBookingIdFromPathname(location.pathname),
+    [location.pathname],
+  );
+  const clientIdFromPath = useMemo(
+    () => getClientIdFromPathname(location.pathname),
     [location.pathname],
   );
   const returnPathFromLocationState = useMemo(() => {
@@ -367,7 +378,11 @@ export default function App() {
 
                 <div className="flex flex-col min-h-[100dvh] bg-[radial-gradient(circle_at_top_right,rgba(13,181,219,0.08),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(13,181,219,0.05),transparent_40%)]">
                   <Navbar
-                    title={getScreenTitle(activeTab, isCreating)}
+                    title={
+                      activeTab === "socios" && clientIdFromPath
+                        ? "Detalle Socio"
+                        : getScreenTitle(activeTab, isCreating)
+                    }
                     onAvatarClick={() => navigate("/configuracion")}
                     onBellClick={onNotifOpen}
                     notificationCount={unreadCount}
@@ -380,6 +395,7 @@ export default function App() {
                   >
                     <AppMainContent
                       activeTab={activeTab}
+                      clientIdFromPath={clientIdFromPath}
                       isCreating={isCreating}
                       selectedBooking={selectedBooking}
                       bookings={bookings}

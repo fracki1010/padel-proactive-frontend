@@ -1,5 +1,6 @@
 import { BookingForm } from "../../../components/BookingForm";
 import { Bookings } from "../../bookings/page/Bookings";
+import { ClientDetailPage } from "../../clients/page/ClientDetailPage";
 import { Clients } from "../../clients/page/Clients";
 import { Dashboard } from "../../dashboard/page/Dashboard";
 import { Finance } from "../../finance/page/Finance";
@@ -7,6 +8,7 @@ import { Profile } from "../../profile/page/Profile";
 
 type AppMainContentProps = {
   activeTab: string;
+  clientIdFromPath: string | null;
   isCreating: boolean;
   selectedBooking: any;
   bookings: any[];
@@ -22,6 +24,7 @@ type AppMainContentProps = {
 
 export const AppMainContent = ({
   activeTab,
+  clientIdFromPath,
   isCreating,
   selectedBooking,
   bookings,
@@ -47,7 +50,9 @@ export const AppMainContent = ({
     case "panel":
       return <Dashboard courts={courts} onBookingClick={onBookingClick} />;
     case "socios":
-      return (
+      return clientIdFromPath ? (
+        <ClientDetailPage clientId={clientIdFromPath} />
+      ) : (
         <Clients filterValue={filterValue} onFilterChange={onFilterChange} />
       );
     case "reservas":

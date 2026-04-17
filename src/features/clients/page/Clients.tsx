@@ -7,25 +7,18 @@ import {
   useDisclosure,
   Card,
   CardBody,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
   addToast,
 } from "@heroui/react";
 import {
-  MessageSquare,
-  MoreVertical,
-  History,
-  Edit2,
-  Trash2,
   Plus,
   Smartphone,
   User as UserIcon,
   AlertTriangle,
+  CheckCircle2,
   ShieldOff,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
 import {
@@ -36,6 +29,7 @@ import {
   usePenaltySettings,
 } from "../../../hooks/useData";
 import { getInitials, getAvatarColor } from "../../../utils/avatarUtils";
+import { formatPhoneForDisplay } from "../../../utils/formatters";
 import type { User, Booking } from "../../../types";
 import { HistoryModal } from "../components/HistoryModal";
 import { UserModal } from "../components/UserModal";
@@ -46,17 +40,8 @@ interface ClientsProps {
   onFilterChange: (val: string) => void;
 }
 
-const formatPhoneNumber = (phoneNumber: string) => {
-  return (
-    "+" +
-    phoneNumber
-      .replace(" ", "")
-      .replace("549", "54 9 ")
-      .replace("2622", "2622 ")
-  );
-};
-
 export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
+  const navigate = useNavigate();
   const { data: usersData, isLoading: isLoadingUsers } = useUsers();
   const { data: penaltySettingsData } = usePenaltySettings();
   const users = usersData?.data || [];
@@ -76,6 +61,9 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
+  const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
+  const longPressTimerRef = useRef<number | null>(null);
+  const suppressClickRef = useRef(false);
 
   const deleteUser = useDeleteUser();
   const clearPenalties = useClearPenalties();
@@ -84,6 +72,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
     selectedUser?._id || null,
   );
   const history: Booking[] = historyData?.data || [];
+  const isSelectionMode = selectedClientIds.length > 0;
 
   const filteredUsers = useMemo(() => {
     return users.filter(
@@ -118,6 +107,10 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
     onHistoryOpen();
   };
 
+  const handleDetails = (user: User) => {
+    navigate(`/socios/${user._id}`);
+  };
+
   const handleDelete = async (id: string) => {
     if (confirm("¿Estás seguro de eliminar este socio?")) {
       try {
@@ -140,6 +133,108 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
     }
   };
 
+  const toggleClientSelection = (clientId: string) => {
+    setSelectedClientIds((prev) =>
+      prev.includes(clientId) ? prev.filter((id) => id !== clientId) : [...prev, clientId],
+    );
+  };
+
+  const clearSelection = () => {
+    setSelectedClientIds([]);
+  };
+
+  const startLongPress = (clientId: string) => {
+    if (longPressTimerRef.current) {
+      window.clearTimeout(longPressTimerRef.current);
+    }
+
+    longPressTimerRef.current = window.setTimeout(() => {
+      suppressClickRef.current = true;
+      toggleClientSelection(clientId);
+    }, 450);
+  };
+
+  const endLongPress = () => {
+    if (!longPressTimerRef.current) return;
+    window.clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = null;
+  };
+
+  const handleClientTap = (client: User) => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
+
+    if (isSelectionMode) {
+      toggleClientSelection(client._id);
+      return;
+    }
+
+    handleDetails(client);
+  };
+
+  const selectedUsers = users.filter((user: User) => selectedClientIds.includes(user._id));
+
+  const handleSelectionOpenDetails = () => {
+    if (selectedUsers.length !== 1) return;
+    handleDetails(selectedUsers[0]);
+  };
+
+  const handleSelectionEdit = () => {
+    if (selectedUsers.length !== 1) return;
+    handleEdit(selectedUsers[0]);
+  };
+
+  const handleSelectionHistory = () => {
+    if (selectedUsers.length !== 1) return;
+    handleHistory(selectedUsers[0]);
+  };
+
+  const handleSelectionWhatsapp = () => {
+    if (selectedUsers.length !== 1) return;
+    window.open(
+      `https://wa.me/${selectedUsers[0].phoneNumber.replace(/\D/g, "")}`,
+      "_blank",
+    );
+  };
+
+  const handleSelectionClearPenalties = async () => {
+    if (selectedUsers.length === 0) return;
+
+    if (!confirm("¿Deseas despenalizar los socios seleccionados?")) return;
+
+    try {
+      await Promise.all(
+        selectedUsers.map((selectedUser: User) =>
+          clearPenalties.mutateAsync(selectedUser._id),
+        ),
+      );
+      addToast({ title: "Penalizaciones limpiadas", color: "success" });
+      clearSelection();
+    } catch (_error) {
+      addToast({ title: "Error al limpiar penalizaciones", color: "danger" });
+    }
+  };
+
+  const handleSelectionDelete = async () => {
+    if (selectedUsers.length === 0) return;
+
+    if (!confirm("¿Estás seguro de eliminar los socios seleccionados?")) return;
+
+    try {
+      await Promise.all(
+        selectedUsers.map((selectedUser: User) =>
+          deleteUser.mutateAsync(selectedUser._id),
+        ),
+      );
+      addToast({ title: "Socios eliminados", color: "success" });
+      clearSelection();
+    } catch (_error) {
+      addToast({ title: "Error al eliminar socios", color: "danger" });
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in slide-in-from-right-10 duration-500">
       <ClientsDesktopView
@@ -151,6 +246,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
         onCreate={handleCreate}
         onEdit={handleEdit}
         onHistory={handleHistory}
+        onDetails={handleDetails}
         onDelete={handleDelete}
         onClearPenalties={handleClearPenalties}
       />
@@ -191,6 +287,78 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
           />
         </div>
 
+        {isSelectionMode && (
+          <div className="rounded-3xl bg-primary/10 border border-primary/30 p-3 space-y-3">
+            <p className="text-xs font-black uppercase tracking-wider text-primary">
+              {selectedClientIds.length} socio(s) seleccionado(s)
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="flat"
+                className="font-black"
+                isDisabled={selectedUsers.length !== 1}
+                onPress={handleSelectionOpenDetails}
+              >
+                Ver detalle
+              </Button>
+              <Button
+                size="sm"
+                variant="flat"
+                className="font-black"
+                isDisabled={selectedUsers.length !== 1}
+                onPress={handleSelectionEdit}
+              >
+                Editar
+              </Button>
+              <Button
+                size="sm"
+                variant="flat"
+                className="font-black"
+                isDisabled={selectedUsers.length !== 1}
+                onPress={handleSelectionHistory}
+              >
+                Historial
+              </Button>
+              <Button
+                size="sm"
+                variant="flat"
+                className="font-black"
+                isDisabled={selectedUsers.length !== 1}
+                onPress={handleSelectionWhatsapp}
+              >
+                WhatsApp
+              </Button>
+              <Button
+                size="sm"
+                color="success"
+                variant="flat"
+                className="font-black"
+                onPress={handleSelectionClearPenalties}
+              >
+                Despenalizar
+              </Button>
+              <Button
+                size="sm"
+                color="danger"
+                variant="flat"
+                className="font-black"
+                onPress={handleSelectionDelete}
+              >
+                Eliminar
+              </Button>
+              <Button
+                size="sm"
+                variant="light"
+                className="font-black"
+                onPress={clearSelection}
+              >
+                Cancelar selección
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {isLoadingUsers ? (
             <div className="col-span-full flex justify-center p-12">
@@ -208,8 +376,20 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
               {visibleUsers.map((client: User) => (
                 <Card
                   key={client._id}
-                  className="bg-dark-200 border-black/5 dark:border-white/5 hover:border-primary/30 transition-all duration-300 rounded-3xl group"
+                  className={`bg-dark-200 border-black/5 dark:border-white/5 hover:border-primary/30 transition-all duration-300 rounded-3xl group ${
+                    selectedClientIds.includes(client._id)
+                      ? "ring-2 ring-primary/70 border-primary/40"
+                      : ""
+                  }`}
                   shadow="sm"
+                  isPressable
+                  onPress={() => handleClientTap(client)}
+                  onMouseDown={() => startLongPress(client._id)}
+                  onMouseUp={endLongPress}
+                  onMouseLeave={endLongPress}
+                  onTouchStart={() => startLongPress(client._id)}
+                  onTouchEnd={endLongPress}
+                  onTouchCancel={endLongPress}
                 >
                   <CardBody className="p-5 flex flex-row items-center gap-4">
                     <Avatar
@@ -236,10 +416,41 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                       </div>
                       <div className="flex items-center gap-1.5 text-gray-500 text-sm mt-0.5">
                         <Smartphone size={14} />
-                        <span>{formatPhoneNumber(client.phoneNumber)}</span>
+                        <span>{formatPhoneForDisplay(client.phoneNumber)}</span>
                       </div>
 
                       <div className="flex flex-wrap gap-2 mt-2.5">
+                        {(() => {
+                          const attendanceCount = Number(
+                            client.attendanceConfirmedCount || 0,
+                          );
+                          const trustedThreshold = Number(
+                            client.trustedClientConfirmationCount || 3,
+                          );
+                          const isTrustedClient =
+                            typeof client.isTrustedClient === "boolean"
+                              ? client.isTrustedClient
+                              : attendanceCount >= trustedThreshold;
+
+                          return (
+                            <Chip
+                              size="sm"
+                              color={isTrustedClient ? "success" : "warning"}
+                              variant="flat"
+                              className="h-5 px-1 text-[10px] font-black uppercase"
+                              startContent={
+                                isTrustedClient ? (
+                                  <CheckCircle2 size={9} className="ml-1" />
+                                ) : (
+                                  <AlertTriangle size={9} className="ml-1" />
+                                )
+                              }
+                            >
+                              {isTrustedClient ? "CONFIABLE" : "SEGUIMIENTO"}{" "}
+                              {attendanceCount}/{trustedThreshold}
+                            </Chip>
+                          );
+                        })()}
                         <Chip
                           size="sm"
                           color={
@@ -269,75 +480,11 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                      <Dropdown
-                        placement="bottom-end"
-                        className="bg-dark-300 border border-black/10 dark:border-white/10"
-                      >
-                        <DropdownTrigger>
-                          <Button
-                            isIconOnly
-                            variant="light"
-                            className="text-gray-400 hover:text-foreground"
-                          >
-                            <MoreVertical size={20} />
-                          </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
-                          aria-label="Acciones de socio"
-                          color="primary"
-                        >
-                          <DropdownItem
-                            key="history"
-                            startContent={<History size={16} />}
-                            onClick={() => handleHistory(client)}
-                          >
-                            Ver Historial
-                          </DropdownItem>
-                          <DropdownItem
-                            key="edit"
-                            startContent={<Edit2 size={16} />}
-                            onClick={() => handleEdit(client)}
-                          >
-                            Editar Perfil
-                          </DropdownItem>
-                          <DropdownItem
-                            key="whatsapp"
-                            startContent={<MessageSquare size={16} />}
-                            onClick={() =>
-                              window.open(
-                                `https://wa.me/${client.phoneNumber.replace(/\D/g, "")}`,
-                                "_blank",
-                              )
-                            }
-                          >
-                            Enviar WhatsApp
-                          </DropdownItem>
-                          <DropdownItem
-                            key="delete"
-                            className="text-danger"
-                            color="danger"
-                            startContent={<Trash2 size={16} />}
-                            onClick={() => handleDelete(client._id)}
-                          >
-                            Eliminar Socio
-                          </DropdownItem>
-                          {client.isSuspended || (client.penalties || 0) > 0 ? (
-                            <DropdownItem
-                              key="clear-penalties"
-                              color="success"
-                              className="text-success"
-                              startContent={<ShieldOff size={16} />}
-                              onClick={() => handleClearPenalties(client._id)}
-                            >
-                              Despenalizar Socio
-                            </DropdownItem>
-                          ) : (
-                            <DropdownItem key="no-penalty" className="hidden" />
-                          )}
-                        </DropdownMenu>
-                      </Dropdown>
-                    </div>
+                    {selectedClientIds.includes(client._id) && (
+                      <Chip color="primary" variant="flat" className="font-black uppercase">
+                        Seleccionado
+                      </Chip>
+                    )}
                   </CardBody>
                 </Card>
               ))}

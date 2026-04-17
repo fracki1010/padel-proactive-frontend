@@ -61,3 +61,24 @@ export const useUserHistory = (userId: string | null) => {
     enabled: !!userId,
   });
 };
+
+export const useUserById = (userId: string | null) => {
+  return useQuery({
+    queryKey: ["user", userId],
+    queryFn: () => (userId ? userService.getUserById(userId) : null),
+    enabled: !!userId,
+  });
+};
+
+export const useAdjustAttendanceCount = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, delta }: { id: string; delta: number }) =>
+      userService.adjustAttendanceCount(id, delta),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
+    },
+  });
+};

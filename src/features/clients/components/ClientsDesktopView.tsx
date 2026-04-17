@@ -11,7 +11,9 @@ import {
 } from "@heroui/react";
 import {
   AlertTriangle,
+  CheckCircle2,
   Edit2,
+  Eye,
   History,
   MessageSquare,
   MoreVertical,
@@ -24,6 +26,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { getAvatarColor, getInitials } from "../../../utils/avatarUtils";
+import { formatPhoneForDisplay } from "../../../utils/formatters";
 import type { User } from "../../../types";
 
 type DesktopFilter = "all" | "fixed" | "debtors" | "inactive";
@@ -37,18 +40,9 @@ type ClientsDesktopViewProps = {
   onCreate: () => void;
   onEdit: (user: User) => void;
   onHistory: (user: User) => void;
+  onDetails: (user: User) => void;
   onDelete: (id: string) => void;
   onClearPenalties: (id: string) => void;
-};
-
-const formatPhoneNumber = (phoneNumber: string) => {
-  return (
-    "+" +
-    phoneNumber
-      .replace(" ", "")
-      .replace("549", "54 9 ")
-      .replace("2622", "2622 ")
-  );
 };
 
 export const ClientsDesktopView = ({
@@ -60,6 +54,7 @@ export const ClientsDesktopView = ({
   onCreate,
   onEdit,
   onHistory,
+  onDetails,
   onDelete,
   onClearPenalties,
 }: ClientsDesktopViewProps) => {
@@ -213,6 +208,12 @@ export const ClientsDesktopView = ({
           <>
             {paginatedUsers.map((client) => {
             const penalties = Math.max(0, client.penalties || 0);
+            const attendanceCount = Number(client.attendanceConfirmedCount || 0);
+            const trustedThreshold = Number(client.trustedClientConfirmationCount || 3);
+            const isTrustedClient =
+              typeof client.isTrustedClient === "boolean"
+                ? client.isTrustedClient
+                : attendanceCount >= trustedThreshold;
             const penaltyDots = Array.from({ length: penaltyLimit }).map((_, index) => (
               <span
                 key={`${client._id}-penalty-${index}`}
@@ -243,7 +244,7 @@ export const ClientsDesktopView = ({
                   </p>
                   <p className="text-gray-400 font-semibold flex items-center gap-2 mt-1">
                     <Smartphone size={14} />
-                    {formatPhoneNumber(client.phoneNumber)}
+                    {formatPhoneForDisplay(client.phoneNumber)}
                   </p>
                 </div>
 
@@ -272,6 +273,17 @@ export const ClientsDesktopView = ({
                       Inactivo
                     </Chip>
                   )}
+                  <Chip
+                    size="sm"
+                    color={isTrustedClient ? "success" : "warning"}
+                    variant="flat"
+                    className="font-black uppercase"
+                    startContent={
+                      isTrustedClient ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />
+                    }
+                  >
+                    {isTrustedClient ? "Confiable" : "En seguimiento"}
+                  </Chip>
                 </div>
 
                 <div className="min-w-[190px]">
@@ -284,6 +296,9 @@ export const ClientsDesktopView = ({
                       {penalties}/{penaltyLimit}
                     </span>
                   </div>
+                  <p className="mt-1 text-xs text-gray-500 font-bold">
+                    Asistencia: {attendanceCount}/{trustedThreshold}
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -309,6 +324,13 @@ export const ClientsDesktopView = ({
                       </Button>
                     </DropdownTrigger>
                     <DropdownMenu aria-label="Acciones de socio" color="primary">
+                      <DropdownItem
+                        key="details"
+                        startContent={<Eye size={16} />}
+                        onClick={() => onDetails(client)}
+                      >
+                        Ver detalles
+                      </DropdownItem>
                       <DropdownItem
                         key="edit"
                         startContent={<Edit2 size={16} />}

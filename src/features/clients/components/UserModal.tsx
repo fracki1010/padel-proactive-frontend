@@ -15,6 +15,13 @@ import { useMemo, useState } from "react";
 
 import { useCourts, useCreateUser, useSlots, useUpdateUser } from "../../../hooks/useData";
 import type { User } from "../../../types";
+import {
+  composePhoneForStorage,
+  DEFAULT_PHONE_COUNTRY_ID,
+  parseStoredPhone,
+  PHONE_COUNTRY_OPTIONS,
+  type PhoneCountryId,
+} from "../../../utils/phone";
 
 type UserModalProps = {
   isOpen: boolean;
@@ -25,7 +32,8 @@ type UserModalProps = {
 
 export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phoneLocal, setPhoneLocal] = useState("");
+  const [phoneCountry, setPhoneCountry] = useState<PhoneCountryId>(DEFAULT_PHONE_COUNTRY_ID);
   const [fixedTurns, setFixedTurns] = useState<any[]>([]);
 
   const createUser = useCreateUser();
@@ -39,13 +47,16 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
   useMemo(() => {
     if (user && mode === "edit") {
       setName(user.name);
-      setPhone(user.phoneNumber);
+      const parsedPhone = parseStoredPhone(user.phoneNumber);
+      setPhoneLocal(parsedPhone.localNumber);
+      setPhoneCountry(parsedPhone.countryId);
       setFixedTurns(user.fixedTurns || []);
       return;
     }
 
     setName("");
-    setPhone("");
+    setPhoneLocal("");
+    setPhoneCountry(DEFAULT_PHONE_COUNTRY_ID);
     setFixedTurns([]);
   }, [user, mode, isOpen]);
 
@@ -61,7 +72,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
     try {
       const data = {
         name,
-        phoneNumber: phone,
+        phoneNumber: composePhoneForStorage(phoneCountry, phoneLocal),
         fixedTurns: fixedTurns.filter((fixedTurn) => fixedTurn.court && fixedTurn.timeSlot),
       };
 
@@ -107,13 +118,32 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
               variant="bordered"
               className="dark"
             />
-            <Input
-              label="Teléfono"
-              placeholder="Ej: 549..."
-              value={phone}
-              onValueChange={setPhone}
-              variant="bordered"
-            />
+            <div className="flex gap-2">
+              <Select
+                label="País"
+                selectedKeys={[phoneCountry]}
+                onSelectionChange={(keys) => {
+                  const nextCountry = Array.from(keys)[0] as PhoneCountryId;
+                  if (nextCountry) setPhoneCountry(nextCountry);
+                }}
+                variant="bordered"
+                className="w-44"
+              >
+                {PHONE_COUNTRY_OPTIONS.map((country) => (
+                  <SelectItem key={country.id}>
+                    {country.label} ({country.dialCode})
+                  </SelectItem>
+                ))}
+              </Select>
+              <Input
+                label="Teléfono"
+                placeholder="Ej: 351..."
+                value={phoneLocal}
+                onValueChange={(value) => setPhoneLocal(value.replace(/\D/g, ""))}
+                variant="bordered"
+                className="flex-grow"
+              />
+            </div>
           </div>
 
           <div className="space-y-4">

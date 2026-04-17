@@ -29,6 +29,14 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import { getInitials, getAvatarColor } from "../utils/avatarUtils";
+import { formatPhoneForDisplay } from "../utils/formatters";
+import {
+  composePhoneForStorage,
+  DEFAULT_PHONE_COUNTRY_ID,
+  parseStoredPhone,
+  PHONE_COUNTRY_OPTIONS,
+  type PhoneCountryId,
+} from "../utils/phone";
 
 const normalizePhone = (phone: string) => phone.replace(/\D/g, "");
 
@@ -65,7 +73,10 @@ export const BookingForm = ({
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [clientName, setClientName] = useState("");
-  const [clientPhone, setClientPhone] = useState("");
+  const [clientPhoneLocal, setClientPhoneLocal] = useState("");
+  const [clientPhoneCountry, setClientPhoneCountry] = useState<PhoneCountryId>(
+    DEFAULT_PHONE_COUNTRY_ID,
+  );
   const [paymentStatus, setPaymentStatus] = useState("pagado");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -81,7 +92,11 @@ export const BookingForm = ({
       if (initialData.timeSlot?.startTime)
         setTime(initialData.timeSlot.startTime);
       if (initialData.clientName) setClientName(initialData.clientName);
-      if (initialData.clientPhone) setClientPhone(initialData.clientPhone);
+      if (initialData.clientPhone) {
+        const parsedPhone = parseStoredPhone(initialData.clientPhone);
+        setClientPhoneLocal(parsedPhone.localNumber);
+        setClientPhoneCountry(parsedPhone.countryId);
+      }
       if (initialData.paymentStatus)
         setPaymentStatus(initialData.paymentStatus);
     }
@@ -91,7 +106,9 @@ export const BookingForm = ({
     setClientName(name);
     const existingUser = users.find((u: any) => u.name === name);
     if (existingUser) {
-      setClientPhone(existingUser.phoneNumber);
+      const parsedPhone = parseStoredPhone(existingUser.phoneNumber);
+      setClientPhoneLocal(parsedPhone.localNumber);
+      setClientPhoneCountry(parsedPhone.countryId);
     }
   };
 
@@ -100,7 +117,10 @@ export const BookingForm = ({
     setError("");
     setSuccess("");
 
-    const trimmedClientPhone = clientPhone.trim();
+    const trimmedClientPhone = composePhoneForStorage(
+      clientPhoneCountry,
+      clientPhoneLocal,
+    ).trim();
     const trimmedClientName = clientName.trim();
     const normalizedClientPhone = normalizePhone(trimmedClientPhone);
     const normalizedClientName = normalizeName(trimmedClientName);
@@ -246,7 +266,7 @@ export const BookingForm = ({
                     <div className="flex flex-col">
                       <span className="text-sm font-bold">{u.name}</span>
                       <span className="text-xs text-gray-500">
-                        {u.phoneNumber}
+                        {formatPhoneForDisplay(u.phoneNumber)}
                       </span>
                     </div>
                   </div>
@@ -255,13 +275,38 @@ export const BookingForm = ({
             </Autocomplete>
 
             <div className="flex gap-2">
+              <Select
+                label="País"
+                labelPlacement="outside"
+                selectedKeys={[clientPhoneCountry]}
+                onSelectionChange={(keys) => {
+                  const nextCountry = Array.from(keys)[0] as PhoneCountryId;
+                  if (nextCountry) setClientPhoneCountry(nextCountry);
+                }}
+                className="w-40 shrink-0"
+                classNames={{
+                  trigger:
+                    "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
+                  label: "text-gray-400 font-bold mb-2",
+                  value: "text-foreground font-bold",
+                  popoverContent:
+                    "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                  listbox: "text-foreground",
+                }}
+              >
+                {PHONE_COUNTRY_OPTIONS.map((country) => (
+                  <SelectItem key={country.id} textValue={`${country.label} ${country.dialCode}`}>
+                    {country.label} ({country.dialCode})
+                  </SelectItem>
+                ))}
+              </Select>
               <Input
                 label="Teléfono (WhatsApp)"
-                placeholder="+54..."
+                placeholder="Número (sin prefijo)"
                 labelPlacement="outside"
-                value={clientPhone}
+                value={clientPhoneLocal}
                 onValueChange={(value) => {
-                  setClientPhone(value);
+                  setClientPhoneLocal(value.replace(/\D/g, ""));
                   if (error) setError("");
                 }}
                 className="flex-grow"

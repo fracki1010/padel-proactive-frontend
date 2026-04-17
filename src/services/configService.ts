@@ -7,6 +7,7 @@ const CANCELLATION_GROUP_SETTINGS_KEY = "whatsapp-cancellation-group-settings";
 const WHATSAPP_GROUPS_CACHE_KEY = "whatsapp-groups-cache";
 let isBotAutomationEndpointAvailable: boolean | null = null;
 const DEFAULT_ATTENDANCE_REMINDER_LEAD_MINUTES = 60;
+const DEFAULT_ATTENDANCE_RESPONSE_TIMEOUT_MINUTES = 15;
 const DEFAULT_TRUSTED_CLIENT_CONFIRMATION_COUNT = 3;
 const DEFAULT_PENALTY_LIMIT = 2;
 const DEFAULT_PENALTY_ENABLED = true;
@@ -263,6 +264,11 @@ export const configService = {
     return response.data;
   },
 
+  deleteCourt: async (id: string): Promise<any> => {
+    const response = await api.delete(`/config/courts/${id}`);
+    return response.data;
+  },
+
   getSlots: async (all = false): Promise<ConfigResponse<TimeSlot>> => {
     const response = await api.get(`/config/slots${all ? "?all=true" : ""}`);
     return response.data;
@@ -329,6 +335,8 @@ export const configService = {
       data: {
         oneHourReminderEnabled,
         attendanceReminderLeadMinutes: DEFAULT_ATTENDANCE_REMINDER_LEAD_MINUTES,
+        attendanceResponseTimeoutMinutes:
+          DEFAULT_ATTENDANCE_RESPONSE_TIMEOUT_MINUTES,
         cancellationLockHours: DEFAULT_CANCELLATION_LOCK_HOURS,
         trustedClientConfirmationCount:
           DEFAULT_TRUSTED_CLIENT_CONFIRMATION_COUNT,
@@ -349,6 +357,7 @@ export const configService = {
   updateBotAutomationSettings: async (payload: {
     oneHourReminderEnabled?: boolean;
     attendanceReminderLeadMinutes?: number;
+    attendanceResponseTimeoutMinutes?: number;
     cancellationLockHours?: number;
     trustedClientConfirmationCount?: number;
     penaltyEnabled?: boolean;
@@ -372,6 +381,7 @@ export const configService = {
     // Compatibilidad con backends viejos sin /config/bot-automation
     const hasUnsupportedFields =
       payload.attendanceReminderLeadMinutes !== undefined ||
+      payload.attendanceResponseTimeoutMinutes !== undefined ||
       payload.cancellationLockHours !== undefined ||
       payload.trustedClientConfirmationCount !== undefined ||
       payload.penaltyEnabled !== undefined ||

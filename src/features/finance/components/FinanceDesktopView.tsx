@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { formatCurrency, toIsoDateKey } from "../../../utils/formatters";
+import { formatCurrency, formatPhoneForDisplay, toIsoDateKey } from "../../../utils/formatters";
 
 type FinanceDesktopViewProps = {
   months: string[];
@@ -237,7 +237,7 @@ export const FinanceDesktopView = ({
                   {movement.clientName}
                 </p>
                 <p className="text-xs font-semibold text-gray-500">
-                  {movement.clientPhone}
+                  {formatPhoneForDisplay(movement.clientPhone)}
                 </p>
               </div>
               <p className="text-sm font-semibold text-gray-300">

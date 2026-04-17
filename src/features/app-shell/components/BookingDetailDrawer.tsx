@@ -25,7 +25,7 @@ import {
 import { useState } from "react";
 
 import { getInitials, getAvatarColor } from "../../../utils/avatarUtils";
-import { formatDate } from "../../../utils/formatters";
+import { formatDate, formatPhoneForDisplay } from "../../../utils/formatters";
 
 type BookingDetailDrawerProps = {
   isOpen: boolean;
@@ -87,7 +87,7 @@ export const BookingDetailDrawer = ({
                       {selectedBooking?.clientName}
                     </h3>
                     <p className="text-primary font-bold flex items-center gap-2 mt-1">
-                      <Phone size={14} /> {selectedBooking?.clientPhone}
+                      <Phone size={14} /> {formatPhoneForDisplay(selectedBooking?.clientPhone)}
                     </p>
                   </div>
                 </div>

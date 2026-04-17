@@ -2,7 +2,7 @@ import { Button, Chip, Input } from "@heroui/react";
 import { Calendar, ChevronDown, Filter, MoreVertical, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { formatCurrency, toIsoDateKey } from "../../../utils/formatters";
+import { formatCurrency, formatPhoneForDisplay, toIsoDateKey } from "../../../utils/formatters";
 
 type BookingsDesktopViewProps = {
   bookings: any[];
@@ -28,6 +28,16 @@ export const BookingsDesktopView = ({
   const PAGE_SIZE = 14;
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(bookings.length / PAGE_SIZE));
+
+  const paidCount = useMemo(
+    () => bookings.filter((booking) => booking.paymentStatus === "pagado").length,
+    [bookings],
+  );
+  const pendingCount = Math.max(0, bookings.length - paidCount);
+  const selectedCourtLabel = useMemo(() => {
+    if (selectedCourt === "all") return "Todas las canchas";
+    return courts.find((court) => court._id === selectedCourt)?.name || "Cancha filtrada";
+  }, [courts, selectedCourt]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -103,6 +113,25 @@ export const BookingsDesktopView = ({
             Limpiar
           </Button>
         </div>
+
+        <div className="mt-4 grid grid-cols-2 xl:grid-cols-4 gap-2">
+          <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-4 py-3">
+            <p className="text-[10px] uppercase tracking-widest font-black text-gray-500">Total</p>
+            <p className="text-xl font-black text-foreground leading-tight">{bookings.length}</p>
+          </div>
+          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
+            <p className="text-[10px] uppercase tracking-widest font-black text-emerald-300">Pagadas</p>
+            <p className="text-xl font-black text-emerald-200 leading-tight">{paidCount}</p>
+          </div>
+          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3">
+            <p className="text-[10px] uppercase tracking-widest font-black text-rose-300">Pendientes</p>
+            <p className="text-xl font-black text-rose-200 leading-tight">{pendingCount}</p>
+          </div>
+          <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-4 py-3">
+            <p className="text-[10px] uppercase tracking-widest font-black text-gray-500">Filtro actual</p>
+            <p className="text-sm font-black text-foreground truncate">{selectedCourtLabel}</p>
+          </div>
+        </div>
       </div>
 
       <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-dark-200 overflow-hidden">
@@ -115,17 +144,17 @@ export const BookingsDesktopView = ({
           <p className="text-right">Acción</p>
         </div>
 
-        <div className="max-h-[680px] overflow-y-auto">
+        <div className="max-h-[680px] overflow-y-auto p-2 space-y-2">
           {paginatedBookings.map((booking: any) => (
             <button
               key={booking._id}
               type="button"
-              className="w-full grid grid-cols-[1.4fr_1fr_1fr_1fr_0.9fr_60px] items-center px-6 py-4 border-b border-black/10 dark:border-white/5 last:border-b-0 text-left hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              className="w-full rounded-2xl grid grid-cols-[1.4fr_1fr_1fr_1fr_0.9fr_60px] items-center px-4 py-4 border border-black/10 dark:border-white/10 bg-black/[0.04] dark:bg-white/[0.03] text-left hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
               onClick={() => onBookingClick(booking)}
             >
               <div className="min-w-0">
                 <p className="font-black text-foreground text-base truncate">{booking.clientName}</p>
-                <p className="text-[11px] text-gray-500">{booking.clientPhone}</p>
+                <p className="text-[11px] text-gray-500">{formatPhoneForDisplay(booking.clientPhone)}</p>
               </div>
               <p className="font-semibold text-gray-300">{booking.court?.name || "-"}</p>
               <p className="font-semibold text-foreground">{toIsoDateKey(booking.date)}</p>

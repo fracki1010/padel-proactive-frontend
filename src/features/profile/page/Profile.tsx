@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   useCourts,
   useCreateCourt,
+  useDeleteCourt,
   useUpdateCourt,
   useSlots,
   useCreateSlot,
@@ -69,6 +70,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
 
   const updateCourt = useUpdateCourt();
   const createCourt = useCreateCourt();
+  const deleteCourt = useDeleteCourt();
   const updateSlot = useUpdateSlot();
   const createSlot = useCreateSlot();
   const updateBasePrice = useUpdateBasePrice();
@@ -242,6 +244,10 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const [penaltyEnabledInput, setPenaltyEnabledInput] = useState(true);
   const [attendanceReminderLeadMinutesInput, setAttendanceReminderLeadMinutesInput] =
     useState("");
+  const [
+    attendanceResponseTimeoutMinutesInput,
+    setAttendanceResponseTimeoutMinutesInput,
+  ] = useState("");
   const [cancellationLockHoursInput, setCancellationLockHoursInput] = useState("");
   const [trustedClientConfirmationCountInput, setTrustedClientConfirmationCountInput] =
     useState("");
@@ -256,6 +262,8 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const [newSlotStartTime, setNewSlotStartTime] = useState("");
   const [newSlotEndTime, setNewSlotEndTime] = useState("");
   const [newSlotPrice, setNewSlotPrice] = useState("");
+  const [slotTogglePendingId, setSlotTogglePendingId] = useState<string | null>(null);
+  const [deleteCourtPendingId, setDeleteCourtPendingId] = useState<string | null>(null);
   const [cancellationGroupIdInput, setCancellationGroupIdInput] = useState("");
   const [cancellationGroupNameInput, setCancellationGroupNameInput] = useState("");
   const [dailyAvailabilityDigestEnabledInput, setDailyAvailabilityDigestEnabledInput] =
@@ -273,6 +281,8 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const [isSavingReminderToggle, setIsSavingReminderToggle] = useState(false);
   const [isSavingPenaltyToggle, setIsSavingPenaltyToggle] = useState(false);
   const [isSavingReminderMinutes, setIsSavingReminderMinutes] = useState(false);
+  const [isSavingResponseTimeoutMinutes, setIsSavingResponseTimeoutMinutes] =
+    useState(false);
   const [isSavingCancellationLockHours, setIsSavingCancellationLockHours] =
     useState(false);
   const [isSavingTrustedCount, setIsSavingTrustedCount] = useState(false);
@@ -308,6 +318,13 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     const leadMinutes = botAutomationSettings?.attendanceReminderLeadMinutes;
     if (!leadMinutes) return;
     setAttendanceReminderLeadMinutesInput(String(leadMinutes));
+  }, [botAutomationSettings]);
+
+  useEffect(() => {
+    const timeoutMinutes = botAutomationSettings?.attendanceResponseTimeoutMinutes;
+    if (timeoutMinutes === undefined || timeoutMinutes === null) return;
+    if (!Number.isInteger(Number(timeoutMinutes))) return;
+    setAttendanceResponseTimeoutMinutesInput(String(Number(timeoutMinutes)));
   }, [botAutomationSettings]);
 
   useEffect(() => {
@@ -889,6 +906,11 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         typeof rawPenaltyEnabled === "boolean" ? rawPenaltyEnabled : true,
       attendanceReminderLeadMinutes:
         Number(botAutomationSettings?.attendanceReminderLeadMinutes) || 60,
+      attendanceResponseTimeoutMinutes: Number.isInteger(
+        Number(botAutomationSettings?.attendanceResponseTimeoutMinutes),
+      )
+        ? Number(botAutomationSettings?.attendanceResponseTimeoutMinutes)
+        : 15,
       cancellationLockHours:
         Number.isInteger(Number(botAutomationSettings?.cancellationLockHours))
           ? Number(botAutomationSettings?.cancellationLockHours)
@@ -903,6 +925,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     oneHourReminderEnabled: boolean;
     penaltyEnabled: boolean;
     attendanceReminderLeadMinutes: number;
+    attendanceResponseTimeoutMinutes: number;
     cancellationLockHours: number;
     trustedClientConfirmationCount: number;
     penaltyLimit: number;
@@ -911,6 +934,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     setPenaltyEnabledInput(Boolean(snapshot.penaltyEnabled));
     setAttendanceReminderLeadMinutesInput(
       String(snapshot.attendanceReminderLeadMinutes),
+    );
+    setAttendanceResponseTimeoutMinutesInput(
+      String(snapshot.attendanceResponseTimeoutMinutes),
     );
     setCancellationLockHoursInput(String(snapshot.cancellationLockHours));
     setTrustedClientConfirmationCountInput(
@@ -934,6 +960,11 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     if (Number.isInteger(Number(data?.attendanceReminderLeadMinutes))) {
       setAttendanceReminderLeadMinutesInput(
         String(Number(data.attendanceReminderLeadMinutes)),
+      );
+    }
+    if (Number.isInteger(Number(data?.attendanceResponseTimeoutMinutes))) {
+      setAttendanceResponseTimeoutMinutesInput(
+        String(Number(data.attendanceResponseTimeoutMinutes)),
       );
     }
     if (Number.isInteger(Number(data?.cancellationLockHours))) {
@@ -1032,6 +1063,45 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       });
     } finally {
       setIsSavingReminderMinutes(false);
+    }
+  };
+
+  const handleSaveAttendanceResponseTimeoutMinutes = async () => {
+    const parsedTimeoutMinutes = Number(attendanceResponseTimeoutMinutesInput);
+    if (
+      !Number.isInteger(parsedTimeoutMinutes) ||
+      parsedTimeoutMinutes < 1 ||
+      parsedTimeoutMinutes > 240
+    ) {
+      addToast({
+        title: "Tiempo máximo de espera inválido (usar entero entre 1 y 240).",
+        color: "danger",
+      });
+      return;
+    }
+
+    const previousSnapshot = getServerBotAutomationSnapshot();
+    setIsSavingResponseTimeoutMinutes(true);
+    try {
+      const response = await updateBotAutomationSettings.mutateAsync({
+        attendanceResponseTimeoutMinutes: parsedTimeoutMinutes,
+      });
+      syncBotAutomationFromResponse(response);
+      addToast({
+        title: "Tiempo máximo de espera actualizado",
+        color: "success",
+      });
+    } catch (err: any) {
+      restoreBotAutomationSnapshot(previousSnapshot);
+      addToast({
+        title:
+          err?.response?.data?.error ||
+          err?.message ||
+          "No se pudo actualizar el tiempo máximo de espera",
+        color: "danger",
+      });
+    } finally {
+      setIsSavingResponseTimeoutMinutes(false);
     }
   };
 
@@ -1253,6 +1323,67 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     );
   };
 
+  const handleToggleCourt = (id: string, isActive: boolean) => {
+    updateCourt.mutate(
+      { id, data: { isActive } },
+      {
+        onError: (err: any) => {
+          addToast({
+            title: err?.response?.data?.error || "No se pudo actualizar la cancha",
+            color: "danger",
+          });
+        },
+      },
+    );
+  };
+
+  const handleSaveCourtName = (id: string, rawName: string) => {
+    const name = rawName.trim();
+    if (!name) {
+      addToast({ title: "Ingresá un nombre de cancha", color: "danger" });
+      return;
+    }
+
+    updateCourt.mutate(
+      { id, data: { name } },
+      {
+        onSuccess: () => {
+          addToast({ title: "Cancha actualizada", color: "success" });
+        },
+        onError: (err: any) => {
+          addToast({
+            title: err?.response?.data?.error || "No se pudo actualizar la cancha",
+            color: "danger",
+          });
+        },
+      },
+    );
+  };
+
+  const handleDeleteCourt = (id: string, courtName: string) => {
+    const normalizedName = courtName.trim() || "esta cancha";
+    const shouldDelete = window.confirm(
+      `¿Seguro que querés eliminar ${normalizedName}? Esta acción no se puede deshacer.`,
+    );
+    if (!shouldDelete) return;
+
+    setDeleteCourtPendingId(id);
+    deleteCourt.mutate(id, {
+      onSuccess: () => {
+        addToast({ title: "Cancha eliminada", color: "success" });
+      },
+      onError: (err: any) => {
+        addToast({
+          title: err?.response?.data?.error || "No se pudo eliminar la cancha",
+          color: "danger",
+        });
+      },
+      onSettled: () => {
+        setDeleteCourtPendingId(null);
+      },
+    });
+  };
+
   const handleCreateSlot = () => {
     if (!newSlotStartTime || !newSlotEndTime) {
       addToast({
@@ -1289,6 +1420,24 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
             title: err?.response?.data?.error || "No se pudo crear el turno",
             color: "danger",
           });
+        },
+      },
+    );
+  };
+
+  const handleToggleSlot = (id: string, isActive: boolean) => {
+    setSlotTogglePendingId(id);
+    updateSlot.mutate(
+      { id, data: { isActive } },
+      {
+        onError: (err: any) => {
+          addToast({
+            title: err?.response?.data?.error || "No se pudo actualizar el turno",
+            color: "danger",
+          });
+        },
+        onSettled: () => {
+          setSlotTogglePendingId((previousId) => (previousId === id ? null : previousId));
         },
       },
     );
@@ -1407,6 +1556,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         oneHourReminderEnabled={botOneHourReminderEnabledInput}
         penaltyEnabled={penaltyEnabledInput}
         attendanceReminderLeadMinutesInput={attendanceReminderLeadMinutesInput}
+        attendanceResponseTimeoutMinutesInput={
+          attendanceResponseTimeoutMinutesInput
+        }
         cancellationLockHoursInput={cancellationLockHoursInput}
         trustedClientConfirmationCountInput={trustedClientConfirmationCountInput}
         penaltyLimitInput={penaltyLimitInput}
@@ -1419,6 +1571,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         isSavingReminderToggle={isSavingReminderToggle}
         isSavingPenaltyToggle={isSavingPenaltyToggle}
         isSavingReminderMinutes={isSavingReminderMinutes}
+        isSavingResponseTimeoutMinutes={isSavingResponseTimeoutMinutes}
         isSavingCancellationLockHours={isSavingCancellationLockHours}
         isSavingTrustedCount={isSavingTrustedCount}
         isSavingPenaltyLimit={isSavingPenaltyLimit}
@@ -1429,6 +1582,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         onToggleOneHourReminder={handleToggleBotOneHourReminderRealtime}
         onTogglePenaltyEnabled={handleTogglePenaltyEnabledRealtime}
         onAttendanceReminderLeadMinutesChange={setAttendanceReminderLeadMinutesInput}
+        onAttendanceResponseTimeoutMinutesChange={
+          setAttendanceResponseTimeoutMinutesInput
+        }
         onCancellationLockHoursChange={setCancellationLockHoursInput}
         onTrustedClientConfirmationCountChange={
           setTrustedClientConfirmationCountInput
@@ -1440,6 +1596,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           handleToggleDailyAvailabilityDigestNextDayFromBot
         }
         onSaveReminderMinutes={handleSaveReminderMinutes}
+        onSaveAttendanceResponseTimeoutMinutes={
+          handleSaveAttendanceResponseTimeoutMinutes
+        }
         onSaveCancellationLockHours={handleSaveCancellationLockHours}
         onSaveTrustedCount={handleSaveTrustedConfirmationCount}
         onSavePenaltyLimit={handleSavePenaltyLimit}
@@ -1456,12 +1615,14 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         courts={courts}
         newCourtName={newCourtName}
         createCourtPending={createCourt.isPending}
+        updateCourtPending={updateCourt.isPending}
+        deleteCourtPendingId={deleteCourtPendingId}
         onBack={() => setView("menu")}
         onCourtNameChange={setNewCourtName}
         onCreateCourt={handleCreateCourt}
-        onToggleCourt={(id, isActive) =>
-          updateCourt.mutate({ id, data: { isActive } })
-        }
+        onToggleCourt={handleToggleCourt}
+        onSaveCourtName={handleSaveCourtName}
+        onDeleteCourt={handleDeleteCourt}
       />
     );
   }
@@ -1476,6 +1637,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         basePriceInput={basePriceInput}
         createSlotPending={createSlot.isPending}
         updateBasePricePending={updateBasePrice.isPending}
+        slotTogglePendingId={slotTogglePendingId}
         onBack={() => setView("menu")}
         onSlotStartTimeChange={setNewSlotStartTime}
         onSlotEndTimeChange={setNewSlotEndTime}
@@ -1483,9 +1645,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         onBasePriceChange={setBasePriceInput}
         onCreateSlot={handleCreateSlot}
         onSaveBasePrice={handleSaveBasePrice}
-        onToggleSlot={(id, isActive) =>
-          updateSlot.mutate({ id, data: { isActive } })
-        }
+        onToggleSlot={handleToggleSlot}
       />
     );
   }

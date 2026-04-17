@@ -12,6 +12,7 @@ type BotAutomationSettingsViewProps = {
   oneHourReminderEnabled: boolean;
   penaltyEnabled: boolean;
   attendanceReminderLeadMinutesInput: string;
+  attendanceResponseTimeoutMinutesInput: string;
   cancellationLockHoursInput: string;
   trustedClientConfirmationCountInput: string;
   penaltyLimitInput: string;
@@ -22,6 +23,7 @@ type BotAutomationSettingsViewProps = {
   isSavingReminderToggle: boolean;
   isSavingPenaltyToggle: boolean;
   isSavingReminderMinutes: boolean;
+  isSavingResponseTimeoutMinutes: boolean;
   isSavingCancellationLockHours: boolean;
   isSavingTrustedCount: boolean;
   isSavingPenaltyLimit: boolean;
@@ -30,6 +32,7 @@ type BotAutomationSettingsViewProps = {
   onToggleOneHourReminder: (enabled: boolean) => void;
   onTogglePenaltyEnabled: (enabled: boolean) => void;
   onAttendanceReminderLeadMinutesChange: (value: string) => void;
+  onAttendanceResponseTimeoutMinutesChange: (value: string) => void;
   onCancellationLockHoursChange: (value: string) => void;
   onTrustedClientConfirmationCountChange: (value: string) => void;
   onPenaltyLimitChange: (value: string) => void;
@@ -37,6 +40,7 @@ type BotAutomationSettingsViewProps = {
   onDailyAvailabilityDigestHourChange: (value: string) => void;
   onToggleDailyAvailabilityDigestNextDay: (enabled: boolean) => void;
   onSaveReminderMinutes: () => void;
+  onSaveAttendanceResponseTimeoutMinutes: () => void;
   onSaveCancellationLockHours: () => void;
   onSaveTrustedCount: () => void;
   onSavePenaltyLimit: () => void;
@@ -47,6 +51,7 @@ export const BotAutomationSettingsView = ({
   oneHourReminderEnabled,
   penaltyEnabled,
   attendanceReminderLeadMinutesInput,
+  attendanceResponseTimeoutMinutesInput,
   cancellationLockHoursInput,
   trustedClientConfirmationCountInput,
   penaltyLimitInput,
@@ -57,6 +62,7 @@ export const BotAutomationSettingsView = ({
   isSavingReminderToggle,
   isSavingPenaltyToggle,
   isSavingReminderMinutes,
+  isSavingResponseTimeoutMinutes,
   isSavingCancellationLockHours,
   isSavingTrustedCount,
   isSavingPenaltyLimit,
@@ -65,6 +71,7 @@ export const BotAutomationSettingsView = ({
   onToggleOneHourReminder,
   onTogglePenaltyEnabled,
   onAttendanceReminderLeadMinutesChange,
+  onAttendanceResponseTimeoutMinutesChange,
   onCancellationLockHoursChange,
   onTrustedClientConfirmationCountChange,
   onPenaltyLimitChange,
@@ -72,6 +79,7 @@ export const BotAutomationSettingsView = ({
   onDailyAvailabilityDigestHourChange,
   onToggleDailyAvailabilityDigestNextDay,
   onSaveReminderMinutes,
+  onSaveAttendanceResponseTimeoutMinutes,
   onSaveCancellationLockHours,
   onSaveTrustedCount,
   onSavePenaltyLimit,
@@ -155,6 +163,35 @@ export const BotAutomationSettingsView = ({
             </div>
             <p className="text-[11px] text-gray-400">
               El botón guarda cuántos minutos antes se dispara el aviso.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Input
+                label="Tiempo máximo de espera (minutos)"
+                labelPlacement="outside"
+                value={attendanceResponseTimeoutMinutesInput}
+                onValueChange={onAttendanceResponseTimeoutMinutesChange}
+                placeholder="15"
+                type="number"
+                min={1}
+                max={240}
+                className="flex-grow"
+                classNames={{
+                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                  input: "text-foreground font-bold",
+                  label: "text-gray-400 font-bold mb-2",
+                }}
+              />
+              <Button
+                className="h-12 bg-primary text-black rounded-2xl font-black uppercase"
+                onPress={onSaveAttendanceResponseTimeoutMinutes}
+                isLoading={isSavingResponseTimeoutMinutes}
+                startContent={<Save size={18} />}
+              >
+                Guardar espera
+              </Button>
+            </div>
+            <p className="text-[11px] text-gray-400">
+              Si el cliente no responde dentro de este tiempo, el bot avisa al admin.
             </p>
           </div>
 

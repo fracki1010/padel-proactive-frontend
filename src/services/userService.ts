@@ -21,8 +21,16 @@ export const userService = {
     const response = await api.get(`/users/${id}/history`);
     return response.data;
   },
+  getUserById: async (id: string): Promise<any> => {
+    const response = await api.get(`/users/${id}`);
+    return response.data;
+  },
   clearPenalties: async (id: string): Promise<any> => {
     const response = await api.post(`/users/${id}/clear-penalties`);
+    return response.data;
+  },
+  adjustAttendanceCount: async (id: string, delta: number): Promise<any> => {
+    const response = await api.post(`/users/${id}/attendance/adjust`, { delta });
     return response.data;
   },
 };

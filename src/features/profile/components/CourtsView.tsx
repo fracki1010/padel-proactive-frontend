@@ -1,25 +1,54 @@
 import { Button, Card, CardBody, Input, Switch } from "@heroui/react";
-import { ChevronLeft, MapPin } from "lucide-react";
+import { Check, ChevronLeft, MapPin, Pencil, Trash2, X } from "lucide-react";
+import { useState } from "react";
 
 type CourtsViewProps = {
   courts: any[];
   newCourtName: string;
   createCourtPending: boolean;
+  updateCourtPending: boolean;
+  deleteCourtPendingId: string | null;
   onBack: () => void;
   onCourtNameChange: (value: string) => void;
   onCreateCourt: () => void;
   onToggleCourt: (id: string, isActive: boolean) => void;
+  onSaveCourtName: (id: string, name: string) => void;
+  onDeleteCourt: (id: string, name: string) => void;
 };
 
 export const CourtsView = ({
   courts,
   newCourtName,
   createCourtPending,
+  updateCourtPending,
+  deleteCourtPendingId,
   onBack,
   onCourtNameChange,
   onCreateCourt,
   onToggleCourt,
+  onSaveCourtName,
+  onDeleteCourt,
 }: CourtsViewProps) => {
+  const [editingCourtId, setEditingCourtId] = useState<string | null>(null);
+  const [editingCourtName, setEditingCourtName] = useState("");
+
+  const startEditing = (court: any) => {
+    setEditingCourtId(court._id);
+    setEditingCourtName(String(court.name || ""));
+  };
+
+  const cancelEditing = () => {
+    setEditingCourtId(null);
+    setEditingCourtName("");
+  };
+
+  const saveEditing = () => {
+    if (!editingCourtId) return;
+    onSaveCourtName(editingCourtId, editingCourtName);
+    setEditingCourtId(null);
+    setEditingCourtName("");
+  };
+
   return (
     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300 max-w-5xl mx-auto">
       <div className="flex items-center gap-4">
@@ -42,30 +71,93 @@ export const CourtsView = ({
             key={court._id}
             className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[2rem]"
           >
-            <CardBody className="p-6 flex flex-row items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div
-                  className={`w-12 h-12 ${court.isActive ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-gray-500"} rounded-2xl flex items-center justify-center transition-colors`}
-                >
-                  <MapPin size={24} />
-                </div>
-                <div>
-                  <p
-                    className={`font-bold ${court.isActive ? "text-foreground" : "text-gray-500"} text-lg transition-colors`}
+            <CardBody className="p-6 space-y-4">
+              <div className="flex flex-row items-start justify-between gap-3">
+                <div className="flex items-center gap-4 min-w-0">
+                  <div
+                    className={`w-12 h-12 ${court.isActive ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-gray-500"} rounded-2xl flex items-center justify-center transition-colors`}
                   >
-                    {court.name}
-                  </p>
-                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                    Estado: {court.isActive ? "Activa" : "Inactiva"}
-                  </p>
+                    <MapPin size={24} />
+                  </div>
+                  <div className="min-w-0">
+                    {editingCourtId === court._id ? (
+                      <Input
+                        value={editingCourtName}
+                        onValueChange={setEditingCourtName}
+                        placeholder="Nombre de la cancha"
+                        className="max-w-xs"
+                        classNames={{
+                          inputWrapper:
+                            "bg-black/5 dark:bg-white/5 border-none h-11 rounded-xl px-3",
+                          input: "text-foreground font-bold",
+                        }}
+                      />
+                    ) : (
+                      <p
+                        className={`font-bold ${court.isActive ? "text-foreground" : "text-gray-500"} text-lg transition-colors truncate`}
+                      >
+                        {court.name}
+                      </p>
+                    )}
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                      Estado: {court.isActive ? "Activa" : "Inactiva"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {editingCourtId === court._id ? (
+                    <>
+                      <Button
+                        isIconOnly
+                        variant="flat"
+                        className="bg-emerald-500/20 text-emerald-300 rounded-xl"
+                        onPress={saveEditing}
+                        isDisabled={updateCourtPending}
+                      >
+                        <Check size={16} />
+                      </Button>
+                      <Button
+                        isIconOnly
+                        variant="flat"
+                        className="bg-black/5 dark:bg-white/5 text-gray-400 rounded-xl"
+                        onPress={cancelEditing}
+                        isDisabled={updateCourtPending}
+                      >
+                        <X size={16} />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        isIconOnly
+                        variant="flat"
+                        className="bg-black/5 dark:bg-white/5 text-foreground rounded-xl"
+                        onPress={() => startEditing(court)}
+                        isDisabled={updateCourtPending || deleteCourtPendingId === court._id}
+                      >
+                        <Pencil size={16} />
+                      </Button>
+                      <Button
+                        isIconOnly
+                        variant="flat"
+                        className="bg-red-500/20 text-red-300 rounded-xl"
+                        onPress={() => onDeleteCourt(court._id, String(court.name || ""))}
+                        isLoading={deleteCourtPendingId === court._id}
+                        isDisabled={updateCourtPending}
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </>
+                  )}
+                  <Switch
+                    isSelected={court.isActive}
+                    onValueChange={(value) => onToggleCourt(court._id, value)}
+                    color="primary"
+                    size="sm"
+                    isDisabled={updateCourtPending || deleteCourtPendingId === court._id}
+                  />
                 </div>
               </div>
-              <Switch
-                isSelected={court.isActive}
-                onValueChange={(value) => onToggleCourt(court._id, value)}
-                color="primary"
-                size="sm"
-              />
             </CardBody>
           </Card>
         ))}

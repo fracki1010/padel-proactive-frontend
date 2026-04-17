@@ -1,4 +1,4 @@
-import { Avatar, Button, Card, CardBody, Chip, Input, Switch } from "@heroui/react";
+import { Avatar, Button, Card, CardBody, Chip, Input, Select, SelectItem, Switch } from "@heroui/react";
 import type { ReactNode } from "react";
 import {
   Bot,
@@ -13,6 +13,12 @@ import {
   Shield,
   Target,
 } from "lucide-react";
+import {
+  composePhoneForStorage,
+  parseStoredPhone,
+  PHONE_COUNTRY_OPTIONS,
+  type PhoneCountryId,
+} from "../../../utils/phone";
 
 type ProfileMenuViewProps = {
   user: any;
@@ -94,6 +100,7 @@ export const ProfileMenuView = ({
   const avatarSrc = `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${avatarSeed}`;
   const normalizedPhoneNumber = phoneNumber.replace(/\D/g, "");
   const normalizedSavedPhoneNumber = savedPhoneNumber.replace(/\D/g, "");
+  const { countryId: phoneCountryId, localNumber: phoneLocalNumber } = parseStoredPhone(phoneNumber);
   const phoneHasEnoughDigits = normalizedPhoneNumber.length >= 10;
   const phoneHasChanges = normalizedPhoneNumber !== normalizedSavedPhoneNumber;
   const canSavePhone = phoneHasEnoughDigits && phoneHasChanges && !updateProfilePending;
@@ -171,12 +178,34 @@ export const ProfileMenuView = ({
         </div>
 
         <div className="flex gap-2">
+          <Select
+            selectedKeys={[phoneCountryId]}
+            onSelectionChange={(keys) => {
+              const nextCountryId = Array.from(keys)[0] as PhoneCountryId;
+              if (!nextCountryId) return;
+              onPhoneChange(composePhoneForStorage(nextCountryId, phoneLocalNumber));
+            }}
+            className="w-44 shrink-0"
+            classNames={{
+              trigger: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-2",
+              value: "text-foreground font-bold",
+              popoverContent:
+                "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+              listbox: "text-foreground",
+            }}
+          >
+            {PHONE_COUNTRY_OPTIONS.map((country) => (
+              <SelectItem key={country.id}>
+                {country.label} ({country.dialCode})
+              </SelectItem>
+            ))}
+          </Select>
           <Input
-            value={phoneNumber}
-            onValueChange={(value) =>
-              onPhoneChange(value.replace(/[^\d]/g, "").slice(0, 15))
-            }
-            placeholder="549351..."
+            value={phoneLocalNumber}
+            onValueChange={(value) => {
+              onPhoneChange(composePhoneForStorage(phoneCountryId, value));
+            }}
+            placeholder="Número (sin prefijo)"
             className="flex-grow"
             type="tel"
             inputMode="numeric"

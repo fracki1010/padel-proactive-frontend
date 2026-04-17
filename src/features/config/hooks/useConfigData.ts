@@ -19,6 +19,7 @@ export const useUpdateCourt = () => {
       configService.updateCourt(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courts"] });
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
     },
   });
 };
@@ -30,6 +31,18 @@ export const useCreateCourt = () => {
     mutationFn: (data: { name: string }) => configService.createCourt(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courts"] });
+    },
+  });
+};
+
+export const useDeleteCourt = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => configService.deleteCourt(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courts"] });
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
     },
   });
 };
@@ -188,6 +201,7 @@ export const useUpdateBotAutomationSettings = () => {
     mutationFn: (payload: {
       oneHourReminderEnabled?: boolean;
       attendanceReminderLeadMinutes?: number;
+      attendanceResponseTimeoutMinutes?: number;
       cancellationLockHours?: number;
       trustedClientConfirmationCount?: number;
       penaltyEnabled?: boolean;
