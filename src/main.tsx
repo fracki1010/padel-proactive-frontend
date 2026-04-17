@@ -12,7 +12,45 @@ import { getDeviceKind } from "./lib/device";
 import { registerSW } from "virtual:pwa-register";
 
 const queryClient = new QueryClient();
-registerSW({ immediate: true });
+const updateSW = registerSW({
+  immediate: true,
+  onRegisteredSW: (_swUrl, registration) => {
+    if (!registration) return;
+
+    registration.update().catch(() => {
+      // Ignore transient update errors; periodic checks continue running.
+    });
+
+    window.setInterval(() => {
+      registration.update().catch(() => {
+        // Ignore transient update errors; next interval will retry.
+      });
+    }, 60_000);
+  },
+  onNeedRefresh() {
+    const applyUpdate = () => {
+      void updateSW(true);
+    };
+
+    if (document.visibilityState === "hidden" || !document.hasFocus()) {
+      applyUpdate();
+      return;
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+        applyUpdate();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.setTimeout(() => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      applyUpdate();
+    }, 30_000);
+  },
+});
 const deviceKind = getDeviceKind();
 const isMobileViewport =
   typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
