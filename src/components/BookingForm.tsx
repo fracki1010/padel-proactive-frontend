@@ -35,6 +35,7 @@ import {
   DEFAULT_PHONE_COUNTRY_ID,
   parseStoredPhone,
   PHONE_COUNTRY_OPTIONS,
+  sanitizeLocalPhoneInput,
   type PhoneCountryId,
 } from "../utils/phone";
 
@@ -281,7 +282,11 @@ export const BookingForm = ({
                 selectedKeys={[clientPhoneCountry]}
                 onSelectionChange={(keys) => {
                   const nextCountry = Array.from(keys)[0] as PhoneCountryId;
-                  if (nextCountry) setClientPhoneCountry(nextCountry);
+                  if (!nextCountry) return;
+                  setClientPhoneCountry(nextCountry);
+                  setClientPhoneLocal((currentValue) =>
+                    sanitizeLocalPhoneInput(nextCountry, currentValue),
+                  );
                 }}
                 className="w-40 shrink-0"
                 classNames={{
@@ -306,7 +311,9 @@ export const BookingForm = ({
                 labelPlacement="outside"
                 value={clientPhoneLocal}
                 onValueChange={(value) => {
-                  setClientPhoneLocal(value.replace(/\D/g, ""));
+                  setClientPhoneLocal(
+                    sanitizeLocalPhoneInput(clientPhoneCountry, value),
+                  );
                   if (error) setError("");
                 }}
                 className="flex-grow"

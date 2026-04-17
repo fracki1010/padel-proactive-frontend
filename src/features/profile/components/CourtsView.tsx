@@ -1,52 +1,114 @@
-import { Button, Card, CardBody, Input, Switch } from "@heroui/react";
-import { Check, ChevronLeft, MapPin, Pencil, Trash2, X } from "lucide-react";
+import {
+  Button,
+  Card,
+  CardBody,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  Input,
+  Select,
+  SelectItem,
+  Switch,
+} from "@heroui/react";
+import { ChevronLeft, MapPin, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { useState } from "react";
+
+type CourtFormData = {
+  name: string;
+  surface: string;
+  isIndoor: boolean;
+};
+
+const COURT_SURFACE_OPTIONS = [
+  "Césped sintético",
+  "Cemento",
+  "Alfombra",
+  "Polvo de ladrillo",
+  "Hormigón",
+] as const;
 
 type CourtsViewProps = {
   courts: any[];
-  newCourtName: string;
   createCourtPending: boolean;
   updateCourtPending: boolean;
   deleteCourtPendingId: string | null;
   onBack: () => void;
-  onCourtNameChange: (value: string) => void;
-  onCreateCourt: () => void;
+  onCreateCourt: (payload: CourtFormData) => Promise<boolean>;
   onToggleCourt: (id: string, isActive: boolean) => void;
-  onSaveCourtName: (id: string, name: string) => void;
+  onSaveCourtName: (id: string, payload: CourtFormData) => Promise<boolean>;
   onDeleteCourt: (id: string, name: string) => void;
 };
 
 export const CourtsView = ({
   courts,
-  newCourtName,
   createCourtPending,
   updateCourtPending,
   deleteCourtPendingId,
   onBack,
-  onCourtNameChange,
   onCreateCourt,
   onToggleCourt,
   onSaveCourtName,
   onDeleteCourt,
 }: CourtsViewProps) => {
+  const defaultSurface = COURT_SURFACE_OPTIONS[0];
+  const normalizeSurface = (value: string) =>
+    COURT_SURFACE_OPTIONS.includes(value as (typeof COURT_SURFACE_OPTIONS)[number])
+      ? value
+      : defaultSurface;
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+  const [createCourtName, setCreateCourtName] = useState("");
+  const [createCourtSurface, setCreateCourtSurface] = useState<string>(defaultSurface);
+  const [createCourtIndoor, setCreateCourtIndoor] = useState(false);
   const [editingCourtId, setEditingCourtId] = useState<string | null>(null);
   const [editingCourtName, setEditingCourtName] = useState("");
+  const [editingCourtSurface, setEditingCourtSurface] = useState<string>(defaultSurface);
+  const [editingCourtIndoor, setEditingCourtIndoor] = useState(false);
 
-  const startEditing = (court: any) => {
+  const openEditDrawer = (court: any) => {
     setEditingCourtId(court._id);
     setEditingCourtName(String(court.name || ""));
+    setEditingCourtSurface(normalizeSurface(String(court.surface || defaultSurface)));
+    setEditingCourtIndoor(Boolean(court.isIndoor));
+    setIsEditDrawerOpen(true);
   };
 
-  const cancelEditing = () => {
+  const closeEditDrawer = () => {
+    setIsEditDrawerOpen(false);
     setEditingCourtId(null);
     setEditingCourtName("");
+    setEditingCourtSurface(defaultSurface);
+    setEditingCourtIndoor(false);
   };
 
-  const saveEditing = () => {
+  const closeCreateDrawer = () => {
+    setIsCreateDrawerOpen(false);
+    setCreateCourtName("");
+    setCreateCourtSurface(defaultSurface);
+    setCreateCourtIndoor(false);
+  };
+
+  const handleCreateFromDrawer = async () => {
+    const wasCreated = await onCreateCourt({
+      name: createCourtName,
+      surface: createCourtSurface,
+      isIndoor: createCourtIndoor,
+    });
+    if (!wasCreated) return;
+    closeCreateDrawer();
+  };
+
+  const handleSaveFromDrawer = async () => {
     if (!editingCourtId) return;
-    onSaveCourtName(editingCourtId, editingCourtName);
-    setEditingCourtId(null);
-    setEditingCourtName("");
+    const wasUpdated = await onSaveCourtName(editingCourtId, {
+      name: editingCourtName,
+      surface: editingCourtSurface,
+      isIndoor: editingCourtIndoor,
+    });
+    if (!wasUpdated) return;
+    closeEditDrawer();
   };
 
   return (
@@ -63,6 +125,13 @@ export const CourtsView = ({
         <h3 className="text-xl font-black text-foreground uppercase italic">
           Mis Canchas
         </h3>
+        <Button
+          className="ml-auto bg-primary text-black font-black rounded-2xl uppercase"
+          onPress={() => setIsCreateDrawerOpen(true)}
+          startContent={<Plus size={16} />}
+        >
+          Nueva Cancha
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -80,75 +149,39 @@ export const CourtsView = ({
                     <MapPin size={24} />
                   </div>
                   <div className="min-w-0">
-                    {editingCourtId === court._id ? (
-                      <Input
-                        value={editingCourtName}
-                        onValueChange={setEditingCourtName}
-                        placeholder="Nombre de la cancha"
-                        className="max-w-xs"
-                        classNames={{
-                          inputWrapper:
-                            "bg-black/5 dark:bg-white/5 border-none h-11 rounded-xl px-3",
-                          input: "text-foreground font-bold",
-                        }}
-                      />
-                    ) : (
-                      <p
-                        className={`font-bold ${court.isActive ? "text-foreground" : "text-gray-500"} text-lg transition-colors truncate`}
-                      >
-                        {court.name}
-                      </p>
-                    )}
+                    <p
+                      className={`font-bold ${court.isActive ? "text-foreground" : "text-gray-500"} text-lg transition-colors truncate`}
+                    >
+                      {court.name}
+                    </p>
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
                       Estado: {court.isActive ? "Activa" : "Inactiva"}
+                    </p>
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                      {court.surface || defaultSurface} · {court.isIndoor ? "Techada" : "Descubierta"}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  {editingCourtId === court._id ? (
-                    <>
-                      <Button
-                        isIconOnly
-                        variant="flat"
-                        className="bg-emerald-500/20 text-emerald-300 rounded-xl"
-                        onPress={saveEditing}
-                        isDisabled={updateCourtPending}
-                      >
-                        <Check size={16} />
-                      </Button>
-                      <Button
-                        isIconOnly
-                        variant="flat"
-                        className="bg-black/5 dark:bg-white/5 text-gray-400 rounded-xl"
-                        onPress={cancelEditing}
-                        isDisabled={updateCourtPending}
-                      >
-                        <X size={16} />
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        isIconOnly
-                        variant="flat"
-                        className="bg-black/5 dark:bg-white/5 text-foreground rounded-xl"
-                        onPress={() => startEditing(court)}
-                        isDisabled={updateCourtPending || deleteCourtPendingId === court._id}
-                      >
-                        <Pencil size={16} />
-                      </Button>
-                      <Button
-                        isIconOnly
-                        variant="flat"
-                        className="bg-red-500/20 text-red-300 rounded-xl"
-                        onPress={() => onDeleteCourt(court._id, String(court.name || ""))}
-                        isLoading={deleteCourtPendingId === court._id}
-                        isDisabled={updateCourtPending}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    </>
-                  )}
+                  <Button
+                    isIconOnly
+                    variant="flat"
+                    className="bg-black/5 dark:bg-white/5 text-foreground rounded-xl"
+                    onPress={() => openEditDrawer(court)}
+                    isDisabled={updateCourtPending || deleteCourtPendingId === court._id}
+                  >
+                    <Pencil size={16} />
+                  </Button>
+                  <Button
+                    isIconOnly
+                    variant="flat"
+                    className="bg-red-500/20 text-red-300 rounded-xl"
+                    onPress={() => onDeleteCourt(court._id, String(court.name || ""))}
+                    isLoading={deleteCourtPendingId === court._id}
+                    isDisabled={updateCourtPending}
+                  >
+                    <Trash2 size={16} />
+                  </Button>
                   <Switch
                     isSelected={court.isActive}
                     onValueChange={(value) => onToggleCourt(court._id, value)}
@@ -161,25 +194,208 @@ export const CourtsView = ({
             </CardBody>
           </Card>
         ))}
-        <div className="mt-2 xl:col-span-2 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
-          <Input
-            value={newCourtName}
-            onValueChange={onCourtNameChange}
-            placeholder="Nombre de la nueva cancha"
-            classNames={{
-              inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-14 rounded-2xl px-4",
-              input: "text-foreground font-bold",
-            }}
-          />
-          <Button
-            className="h-14 bg-primary text-black font-black rounded-2xl uppercase"
-            onPress={onCreateCourt}
-            isLoading={createCourtPending}
-          >
-            Añadir Cancha
-          </Button>
-        </div>
       </div>
+
+      <Drawer
+        isOpen={isCreateDrawerOpen}
+        onOpenChange={(isOpen) => {
+          if (isOpen) {
+            setIsCreateDrawerOpen(true);
+            return;
+          }
+          closeCreateDrawer();
+        }}
+        placement="right"
+        hideCloseButton
+        backdrop="blur"
+        classNames={{
+          base: "bg-dark-200 border-l border-black/10 dark:border-white/10",
+        }}
+      >
+        <DrawerContent>
+          {(onClose) => (
+            <>
+              <DrawerHeader className="flex items-center justify-between gap-4 p-6 border-b border-black/10 dark:border-white/10">
+                <h4 className="text-xl font-black text-foreground uppercase italic">
+                  Nueva Cancha
+                </h4>
+                <Button
+                  isIconOnly
+                  variant="flat"
+                  className="bg-black/5 dark:bg-white/5 text-foreground rounded-xl"
+                  onPress={() => {
+                    onClose();
+                    closeCreateDrawer();
+                  }}
+                >
+                  <X size={16} />
+                </Button>
+              </DrawerHeader>
+              <DrawerBody className="p-6">
+                <div className="space-y-4">
+                  <Input
+                    value={createCourtName}
+                    onValueChange={setCreateCourtName}
+                    placeholder="Ej: Cancha 3"
+                    label="Nombre"
+                    classNames={{
+                      inputWrapper:
+                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-2xl px-4",
+                      input: "text-foreground font-bold",
+                    }}
+                  />
+                  <Select
+                    label="Superficie"
+                    selectedKeys={[createCourtSurface]}
+                    onSelectionChange={(keys) => {
+                      const selected = Array.from(keys)[0] as string | undefined;
+                      if (!selected) return;
+                      setCreateCourtSurface(selected);
+                    }}
+                    classNames={{
+                      trigger:
+                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-2xl px-4",
+                      value: "text-foreground font-bold",
+                      popoverContent:
+                        "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                      listbox: "text-foreground",
+                    }}
+                  >
+                    {COURT_SURFACE_OPTIONS.map((surface) => (
+                      <SelectItem key={surface} textValue={surface}>
+                        {surface}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  <div className="flex items-center justify-between rounded-2xl bg-black/5 dark:bg-white/5 px-4 py-3">
+                    <div>
+                      <p className="text-sm font-bold text-foreground">¿Cancha techada?</p>
+                      <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+                        {createCourtIndoor ? "Sí" : "No"}
+                      </p>
+                    </div>
+                    <Switch
+                      isSelected={createCourtIndoor}
+                      onValueChange={setCreateCourtIndoor}
+                      color="primary"
+                    />
+                  </div>
+                </div>
+              </DrawerBody>
+              <DrawerFooter className="p-6 pt-0">
+                <Button
+                  className="w-full h-12 bg-primary text-black rounded-2xl font-black uppercase"
+                  onPress={handleCreateFromDrawer}
+                  isLoading={createCourtPending}
+                >
+                  Crear Cancha
+                </Button>
+              </DrawerFooter>
+            </>
+          )}
+        </DrawerContent>
+      </Drawer>
+
+      <Drawer
+        isOpen={isEditDrawerOpen}
+        onOpenChange={(isOpen) => {
+          if (isOpen) {
+            setIsEditDrawerOpen(true);
+            return;
+          }
+          closeEditDrawer();
+        }}
+        placement="right"
+        hideCloseButton
+        backdrop="blur"
+        classNames={{
+          base: "bg-dark-200 border-l border-black/10 dark:border-white/10",
+        }}
+      >
+        <DrawerContent>
+          {(onClose) => (
+            <>
+              <DrawerHeader className="flex items-center justify-between gap-4 p-6 border-b border-black/10 dark:border-white/10">
+                <h4 className="text-xl font-black text-foreground uppercase italic">
+                  Editar Cancha
+                </h4>
+                <Button
+                  isIconOnly
+                  variant="flat"
+                  className="bg-black/5 dark:bg-white/5 text-foreground rounded-xl"
+                  onPress={() => {
+                    onClose();
+                    closeEditDrawer();
+                  }}
+                >
+                  <X size={16} />
+                </Button>
+              </DrawerHeader>
+              <DrawerBody className="p-6">
+                <div className="space-y-4">
+                  <Input
+                    value={editingCourtName}
+                    onValueChange={setEditingCourtName}
+                    placeholder="Nombre de la cancha"
+                    label="Nombre"
+                    classNames={{
+                      inputWrapper:
+                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-2xl px-4",
+                      input: "text-foreground font-bold",
+                    }}
+                  />
+                  <Select
+                    label="Superficie"
+                    selectedKeys={[editingCourtSurface]}
+                    onSelectionChange={(keys) => {
+                      const selected = Array.from(keys)[0] as string | undefined;
+                      if (!selected) return;
+                      setEditingCourtSurface(selected);
+                    }}
+                    classNames={{
+                      trigger:
+                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-2xl px-4",
+                      value: "text-foreground font-bold",
+                      popoverContent:
+                        "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                      listbox: "text-foreground",
+                    }}
+                  >
+                    {COURT_SURFACE_OPTIONS.map((surface) => (
+                      <SelectItem key={surface} textValue={surface}>
+                        {surface}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  <div className="flex items-center justify-between rounded-2xl bg-black/5 dark:bg-white/5 px-4 py-3">
+                    <div>
+                      <p className="text-sm font-bold text-foreground">¿Cancha techada?</p>
+                      <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+                        {editingCourtIndoor ? "Sí" : "No"}
+                      </p>
+                    </div>
+                    <Switch
+                      isSelected={editingCourtIndoor}
+                      onValueChange={setEditingCourtIndoor}
+                      color="primary"
+                    />
+                  </div>
+                </div>
+              </DrawerBody>
+              <DrawerFooter className="p-6 pt-0">
+                <Button
+                  className="w-full h-12 bg-primary text-black rounded-2xl font-black uppercase"
+                  onPress={handleSaveFromDrawer}
+                  isLoading={updateCourtPending}
+                  startContent={<Save size={16} />}
+                >
+                  Guardar Cambios
+                </Button>
+              </DrawerFooter>
+            </>
+          )}
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };

@@ -177,7 +177,7 @@ export const ProfileMenuView = ({
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[176px_minmax(0,1fr)_auto]">
           <Select
             selectedKeys={[phoneCountryId]}
             onSelectionChange={(keys) => {
@@ -185,7 +185,7 @@ export const ProfileMenuView = ({
               if (!nextCountryId) return;
               onPhoneChange(composePhoneForStorage(nextCountryId, phoneLocalNumber));
             }}
-            className="w-44 shrink-0"
+            className="w-full"
             classNames={{
               trigger: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-2",
               value: "text-foreground font-bold",
@@ -195,7 +195,7 @@ export const ProfileMenuView = ({
             }}
           >
             {PHONE_COUNTRY_OPTIONS.map((country) => (
-              <SelectItem key={country.id}>
+              <SelectItem key={country.id} textValue={`${country.label} (${country.dialCode})`}>
                 {country.label} ({country.dialCode})
               </SelectItem>
             ))}
@@ -206,7 +206,7 @@ export const ProfileMenuView = ({
               onPhoneChange(composePhoneForStorage(phoneCountryId, value));
             }}
             placeholder="Número (sin prefijo)"
-            className="flex-grow"
+            className="w-full"
             type="tel"
             inputMode="numeric"
             classNames={{
@@ -215,7 +215,7 @@ export const ProfileMenuView = ({
             }}
           />
           <Button
-            className="h-12 min-w-28 bg-primary text-black rounded-2xl font-black uppercase"
+            className="h-12 w-full sm:w-auto sm:min-w-28 bg-primary text-black rounded-2xl font-black uppercase"
             onPress={onSavePhone}
             isDisabled={!canSavePhone}
             isLoading={updateProfilePending}

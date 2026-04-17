@@ -39,6 +39,27 @@ export const composePhoneForStorage = (
   return `${country.storagePrefix}${trimmedLocalDigits}`;
 };
 
+export const sanitizeLocalPhoneInput = (
+  countryId: PhoneCountryId,
+  value: string,
+) => {
+  const digits = onlyDigits(value);
+  if (!digits) return "";
+
+  const country = getCountryById(countryId);
+
+  if (countryId === "AR") {
+    if (digits.startsWith("549")) return digits.slice(3);
+    if (digits.startsWith("54")) return digits.slice(2).replace(/^9/, "");
+  }
+
+  if (digits.startsWith(country.storagePrefix)) {
+    return digits.slice(country.storagePrefix.length);
+  }
+
+  return digits;
+};
+
 export const parseStoredPhone = (value: string) => {
   const digits = onlyDigits(value);
   if (!digits) {

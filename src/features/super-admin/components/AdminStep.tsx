@@ -116,7 +116,7 @@ export const AdminStep = ({
             }}
           >
             {PHONE_COUNTRY_OPTIONS.map((country) => (
-              <SelectItem key={country.id}>
+              <SelectItem key={country.id} textValue={`${country.label} (${country.dialCode})`}>
                 {country.label} ({country.dialCode})
               </SelectItem>
             ))}

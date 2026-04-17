@@ -258,7 +258,6 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const [newAdminPassword, setNewAdminPassword] = useState("");
   const [newAdminPhone, setNewAdminPhone] = useState("");
   const [newAdminCompanyId, setNewAdminCompanyId] = useState("");
-  const [newCourtName, setNewCourtName] = useState("");
   const [newSlotStartTime, setNewSlotStartTime] = useState("");
   const [newSlotEndTime, setNewSlotEndTime] = useState("");
   const [newSlotPrice, setNewSlotPrice] = useState("");
@@ -1299,28 +1298,37 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     );
   };
 
-  const handleCreateCourt = () => {
-    const name = newCourtName.trim();
+  const handleCreateCourt = async ({
+    name: rawName,
+    surface: rawSurface,
+    isIndoor,
+  }: {
+    name: string;
+    surface: string;
+    isIndoor: boolean;
+  }): Promise<boolean> => {
+    const name = rawName.trim();
+    const surface = rawSurface.trim();
     if (!name) {
       addToast({ title: "Ingresá un nombre de cancha", color: "danger" });
-      return;
+      return false;
+    }
+    if (!surface) {
+      addToast({ title: "Ingresá la superficie de la cancha", color: "danger" });
+      return false;
     }
 
-    createCourt.mutate(
-      { name },
-      {
-        onSuccess: () => {
-          addToast({ title: "Cancha creada", color: "success" });
-          setNewCourtName("");
-        },
-        onError: (err: any) => {
-          addToast({
-            title: err?.response?.data?.error || "No se pudo crear la cancha",
-            color: "danger",
-          });
-        },
-      },
-    );
+    try {
+      await createCourt.mutateAsync({ name, surface, isIndoor });
+      addToast({ title: "Cancha creada", color: "success" });
+      return true;
+    } catch (err: any) {
+      addToast({
+        title: err?.response?.data?.error || "No se pudo crear la cancha",
+        color: "danger",
+      });
+      return false;
+    }
   };
 
   const handleToggleCourt = (id: string, isActive: boolean) => {
@@ -1337,27 +1345,39 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     );
   };
 
-  const handleSaveCourtName = (id: string, rawName: string) => {
-    const name = rawName.trim();
+  const handleSaveCourtName = async (
+    id: string,
+    payload: {
+      name: string;
+      surface: string;
+      isIndoor: boolean;
+    },
+  ): Promise<boolean> => {
+    const name = payload.name.trim();
+    const surface = payload.surface.trim();
     if (!name) {
       addToast({ title: "Ingresá un nombre de cancha", color: "danger" });
-      return;
+      return false;
+    }
+    if (!surface) {
+      addToast({ title: "Ingresá la superficie de la cancha", color: "danger" });
+      return false;
     }
 
-    updateCourt.mutate(
-      { id, data: { name } },
-      {
-        onSuccess: () => {
-          addToast({ title: "Cancha actualizada", color: "success" });
-        },
-        onError: (err: any) => {
-          addToast({
-            title: err?.response?.data?.error || "No se pudo actualizar la cancha",
-            color: "danger",
-          });
-        },
-      },
-    );
+    try {
+      await updateCourt.mutateAsync({
+        id,
+        data: { name, surface, isIndoor: Boolean(payload.isIndoor) },
+      });
+      addToast({ title: "Cancha actualizada", color: "success" });
+      return true;
+    } catch (err: any) {
+      addToast({
+        title: err?.response?.data?.error || "No se pudo actualizar la cancha",
+        color: "danger",
+      });
+      return false;
+    }
   };
 
   const handleDeleteCourt = (id: string, courtName: string) => {
@@ -1613,12 +1633,10 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     return (
       <CourtsView
         courts={courts}
-        newCourtName={newCourtName}
         createCourtPending={createCourt.isPending}
         updateCourtPending={updateCourt.isPending}
         deleteCourtPendingId={deleteCourtPendingId}
         onBack={() => setView("menu")}
-        onCourtNameChange={setNewCourtName}
         onCreateCourt={handleCreateCourt}
         onToggleCourt={handleToggleCourt}
         onSaveCourtName={handleSaveCourtName}
