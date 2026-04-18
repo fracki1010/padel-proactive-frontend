@@ -4,6 +4,7 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-
 
 import { BottomNav } from "./components/BottomNav";
 import { DesktopSidebar } from "./components/DesktopSidebar";
+import { GlobalActionOverlay } from "./components/GlobalActionOverlay";
 import { Navbar } from "./components/Navbar";
 import { PwaManager } from "./components/PwaManager";
 import { useAuth } from "./context/AuthContext";
@@ -101,6 +102,7 @@ export default function App() {
     readStoredString(APP_SELECTED_COURT_KEY, "all"),
   );
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [isSuspendingBooking, setIsSuspendingBooking] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -220,6 +222,7 @@ export default function App() {
     }
 
     if (booking.status === "suspendido" && !booking._id) {
+      setIsSuspendingBooking(true);
       createBooking.mutate(
         {
           courtId: booking.court?._id,
@@ -240,6 +243,9 @@ export default function App() {
               title: err?.response?.data?.error || "Error al suspender turno",
               color: "danger",
             });
+          },
+          onSettled: () => {
+            setIsSuspendingBooking(false);
           },
         },
       );
@@ -451,6 +457,8 @@ export default function App() {
                   onOpenRelatedBooking={handleOpenBookingFromNotification}
                   isDesktop={isDesktop}
                 />
+
+                <GlobalActionOverlay isOpen={isSuspendingBooking} title="Suspendiendo turno..." />
               </div>
             )
           }

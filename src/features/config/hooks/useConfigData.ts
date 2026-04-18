@@ -79,7 +79,7 @@ export const useWhatsappStatus = () => {
           };
         }
 
-        if (status === 401 || status === 404) {
+        if (status === 401) {
           return {
             data: {
               enabled: false,

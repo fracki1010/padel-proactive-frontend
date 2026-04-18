@@ -22,8 +22,10 @@ type TenantsViewProps = {
   newAdminCompanyId: string;
   createCompanyPending: boolean;
   updateCompanyPending: boolean;
+  updateCompanyStatusPending: boolean;
   bootstrapPending: boolean;
   createAdminPending: boolean;
+  updateAdminStatusPending: boolean;
   onBack: () => void;
   onCompanyNameChange: (value: string) => void;
   onAdminUsernameChange: (value: string) => void;
@@ -52,8 +54,10 @@ export const TenantsView = ({
   newAdminCompanyId,
   createCompanyPending,
   updateCompanyPending,
+  updateCompanyStatusPending,
   bootstrapPending,
   createAdminPending,
+  updateAdminStatusPending,
   onBack,
   onCompanyNameChange,
   onAdminUsernameChange,
@@ -356,7 +360,7 @@ export const TenantsView = ({
                   <Switch
                     isSelected={Boolean(company.isActive)}
                     onValueChange={(value) => onUpdateCompanyStatus(company._id, value)}
-                    isDisabled={!isSuperAdmin}
+                    isDisabled={!isSuperAdmin || updateCompanyStatusPending}
                     color="primary"
                     size="sm"
                   />
@@ -471,6 +475,7 @@ export const TenantsView = ({
                   <Switch
                     isSelected={Boolean(admin.isActive)}
                     onValueChange={(value) => onUpdateAdminStatus(admin._id, value)}
+                    isDisabled={updateAdminStatusPending}
                     color="primary"
                     size="sm"
                   />

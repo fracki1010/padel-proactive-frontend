@@ -165,6 +165,7 @@ export const BookingDetailDrawer = ({
                           },
                         );
                       }}
+                      isDisabled={updateBooking.isPending || deleteBooking.isPending}
                       color="primary"
                     />
                   </div>
@@ -174,6 +175,8 @@ export const BookingDetailDrawer = ({
                   {selectedBooking?.status === "suspendido" ? (
                     <Button
                       className="h-16 bg-red-500 text-white font-black text-lg rounded-2xl shadow-xl shadow-red-500/20"
+                      isLoading={deleteBooking.isPending}
+                      isDisabled={updateBooking.isPending}
                       onPress={() => {
                         deleteBooking.mutate(selectedBooking._id, {
                           onSuccess: () => {
@@ -225,7 +228,11 @@ export const BookingDetailDrawer = ({
                   <Button
                     variant="flat"
                     className="h-16 text-foreground bg-black/5 dark:bg-white/5 rounded-2xl font-bold"
-                    onPress={onClose}
+                    isDisabled={updateBooking.isPending || deleteBooking.isPending}
+                    onPress={() => {
+                      onClose();
+                      onOpenChange(false);
+                    }}
                   >
                     Cerrar Detalle
                   </Button>

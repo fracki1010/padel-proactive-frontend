@@ -1,5 +1,6 @@
 import { Button, Card, CardBody, Chip, Select, SelectItem, Switch } from "@heroui/react";
 import { CheckCircle2, ChevronLeft, QrCode, Smartphone, TriangleAlert } from "lucide-react";
+import { useState } from "react";
 
 type WhatsappSettingsViewProps = {
   whatsappEnabled: boolean;
@@ -50,6 +51,7 @@ export const WhatsappSettingsView = ({
   onCancellationGroupEnabledChange,
   onSelectWhatsappGroup,
 }: WhatsappSettingsViewProps) => {
+  const [allowExternalQrRender, setAllowExternalQrRender] = useState(false);
   const isLockedElsewhere = whatsappStatus === "locked_elsewhere";
   const canManageSession =
     (whatsappEnabled || whatsappStatus === "logged_out") && !isLockedElsewhere;
@@ -130,6 +132,9 @@ export const WhatsappSettingsView = ({
               <p className="text-foreground font-bold text-sm">
                 Si está desactivado, WhatsApp queda en reposo.
               </p>
+              {updateWhatsappPending && (
+                <p className="text-[11px] font-bold text-primary mt-1">Aplicando cambios...</p>
+              )}
             </div>
             <Switch
               isSelected={whatsappEnabled}
@@ -166,6 +171,7 @@ export const WhatsappSettingsView = ({
               variant="flat"
               color="danger"
               className="font-black uppercase"
+              isLoading={updateWhatsappPending}
               isDisabled={updateWhatsappPending || !canManageSession}
               onPress={onCloseWhatsappSession}
             >
@@ -175,6 +181,7 @@ export const WhatsappSettingsView = ({
               variant="flat"
               color="warning"
               className="font-black uppercase text-black"
+              isLoading={updateWhatsappPending}
               isDisabled={updateWhatsappPending || !canManageSession}
               onPress={onSwitchWhatsappDevice}
             >
@@ -313,13 +320,30 @@ export const WhatsappSettingsView = ({
               <p className="text-center text-dark-100 font-black uppercase text-xs tracking-wide">
                 Escaneá este QR desde WhatsApp en tu celular
               </p>
-              <div className="flex justify-center">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(whatsappQr)}`}
-                  alt="Código QR de WhatsApp"
-                  className="w-[220px] h-[220px] rounded-2xl"
-                />
-              </div>
+              {!allowExternalQrRender ? (
+                <div className="bg-warning-500/10 border border-warning-500/30 rounded-2xl p-4 space-y-3">
+                  <p className="text-[11px] text-warning-200 font-bold">
+                    Por seguridad, el QR no se renderiza automáticamente en servicios externos.
+                  </p>
+                  <Button
+                    size="sm"
+                    color="warning"
+                    variant="flat"
+                    className="font-black uppercase text-black"
+                    onPress={() => setAllowExternalQrRender(true)}
+                  >
+                    Renderizar QR externo
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex justify-center">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(whatsappQr)}`}
+                    alt="Código QR de WhatsApp"
+                    className="w-[220px] h-[220px] rounded-2xl"
+                  />
+                </div>
+              )}
             </div>
           ) : (
             <div className="bg-black/5 dark:bg-white/5 rounded-3xl p-5 border border-black/10 dark:border-white/10">

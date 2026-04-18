@@ -1,6 +1,6 @@
-import { Button, Chip, Input } from "@heroui/react";
+import { Button, Chip, Input, Tab, Tabs } from "@heroui/react";
 import { Calendar, ChevronDown, Filter, MoreVertical, Search } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { formatCurrency, formatPhoneForDisplay, toIsoDateKey } from "../../../utils/formatters";
 
@@ -12,6 +12,8 @@ type BookingsDesktopViewProps = {
   selectedCourt: string;
   onCourtChange: (value: string) => void;
   onBookingClick: (booking: any) => void;
+  selectedDateFilter: "today" | "tomorrow" | "all";
+  onDateFilterChange: (value: "today" | "tomorrow" | "all") => void;
   onClearFilters: () => void;
 };
 
@@ -23,11 +25,14 @@ export const BookingsDesktopView = ({
   selectedCourt,
   onCourtChange,
   onBookingClick,
+  selectedDateFilter,
+  onDateFilterChange,
   onClearFilters,
 }: BookingsDesktopViewProps) => {
   const PAGE_SIZE = 14;
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(bookings.length / PAGE_SIZE));
+  const activePage = Math.min(currentPage, totalPages);
 
   const paidCount = useMemo(
     () => bookings.filter((booking) => booking.paymentStatus === "pagado").length,
@@ -39,18 +44,10 @@ export const BookingsDesktopView = ({
     return courts.find((court) => court._id === selectedCourt)?.name || "Cancha filtrada";
   }, [courts, selectedCourt]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filterValue, selectedCourt, bookings.length]);
-
-  useEffect(() => {
-    setCurrentPage((prev) => Math.min(prev, totalPages));
-  }, [totalPages]);
-
   const paginatedBookings = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
+    const start = (activePage - 1) * PAGE_SIZE;
     return bookings.slice(start, start + PAGE_SIZE);
-  }, [bookings, currentPage]);
+  }, [bookings, activePage]);
 
   return (
     <div className="hidden lg:block space-y-5 animate-in fade-in duration-500">
@@ -112,6 +109,28 @@ export const BookingsDesktopView = ({
           >
             Limpiar
           </Button>
+        </div>
+
+        <div className="mt-4">
+          <Tabs
+            aria-label="Filtros de fecha reservas desktop"
+            variant="underlined"
+            selectedKey={selectedDateFilter}
+            onSelectionChange={(key) => onDateFilterChange(key as "today" | "tomorrow" | "all")}
+            classNames={{
+              base: "w-full overflow-x-auto",
+              tabList:
+                "gap-6 w-full relative rounded-none p-0 border-b border-black/5 dark:border-white/5",
+              cursor: "w-full bg-primary",
+              tab: "max-w-fit px-0 h-12",
+              tabContent:
+                "group-data-[selected=true]:text-primary font-black text-gray-500 uppercase text-xs tracking-wider",
+            }}
+          >
+            <Tab key="today" title="Hoy" />
+            <Tab key="tomorrow" title="Mañana" />
+            <Tab key="all" title="Todos" />
+          </Tabs>
         </div>
 
         <div className="mt-4 grid grid-cols-2 xl:grid-cols-4 gap-2">
@@ -186,15 +205,15 @@ export const BookingsDesktopView = ({
         {bookings.length > 0 && (
           <div className="px-6 py-4 border-t border-black/10 dark:border-white/10 flex items-center justify-between">
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">
-              {bookings.length} reservas • página {currentPage}/{totalPages}
+              {bookings.length} reservas • página {activePage}/{totalPages}
             </p>
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
                 variant="flat"
                 className="bg-black/10 dark:bg-white/10 font-black uppercase text-[11px]"
-                isDisabled={currentPage === 1}
-                onPress={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                isDisabled={activePage === 1}
+                onPress={() => setCurrentPage(Math.max(1, activePage - 1))}
               >
                 Anterior
               </Button>
@@ -202,8 +221,8 @@ export const BookingsDesktopView = ({
                 size="sm"
                 variant="flat"
                 className="bg-primary/20 text-primary border border-primary/30 font-black uppercase text-[11px]"
-                isDisabled={currentPage >= totalPages}
-                onPress={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                isDisabled={activePage >= totalPages}
+                onPress={() => setCurrentPage(Math.min(totalPages, activePage + 1))}
               >
                 Siguiente
               </Button>

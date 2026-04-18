@@ -43,6 +43,23 @@ import { WhatsappSettingsView } from "../components/WhatsappSettingsView";
 interface ProfileProps {
   courts: any[];
 }
+const WHATSAPP_GROUP_ID_REGEX = /^[A-Za-z0-9._:-]{6,80}@g\.us$/;
+
+const resolveOneHourReminderEnabled = (
+  source: any,
+  fallback = true,
+): boolean => {
+  const candidates = [
+    source?.oneHourReminderEnabled,
+    source?.oneHourBeforeEnabled,
+    source?.bookingReminderOneHourEnabled,
+    source?.notifyOneHourBeforeMatch,
+    source?.notifyOneHourBeforeBooking,
+  ];
+
+  const firstBoolean = candidates.find((value) => typeof value === "boolean");
+  return typeof firstBoolean === "boolean" ? firstBoolean : fallback;
+};
 
 export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const queryClient = useQueryClient();
@@ -340,12 +357,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   }, [botAutomationSettings]);
 
   useEffect(() => {
-    const fromBotConfig = botAutomationSettings?.oneHourReminderEnabled;
-    if (typeof fromBotConfig === "boolean") {
-      setBotOneHourReminderEnabledInput(fromBotConfig);
-      return;
-    }
-    setBotOneHourReminderEnabledInput(true);
+    setBotOneHourReminderEnabledInput(resolveOneHourReminderEnabled(botAutomationSettings));
   }, [botAutomationSettings]);
 
   useEffect(() => {
@@ -751,6 +763,13 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       });
       return;
     }
+    if (nextEnabled && !WHATSAPP_GROUP_ID_REGEX.test(nextGroupId)) {
+      addToast({
+        title: "ID de grupo inválido. Debe terminar en @g.us.",
+        color: "danger",
+      });
+      return;
+    }
 
     if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(nextDailyAvailabilityDigestHour)) {
       addToast({
@@ -875,6 +894,13 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const handleSelectWhatsappGroup = (groupId: string) => {
     const selected = whatsappGroups.find((group: any) => group.id === groupId);
     if (!selected) return;
+    if (!WHATSAPP_GROUP_ID_REGEX.test(selected.id)) {
+      addToast({
+        title: "Grupo inválido recibido desde backend.",
+        color: "danger",
+      });
+      return;
+    }
 
     setCancellationGroupIdInput(selected.id);
     setCancellationGroupNameInput(selected.name || "");
@@ -897,10 +923,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     ].find((value) => typeof value === "boolean");
 
     return {
-      oneHourReminderEnabled:
-        typeof botAutomationSettings?.oneHourReminderEnabled === "boolean"
-          ? botAutomationSettings.oneHourReminderEnabled
-          : true,
+      oneHourReminderEnabled: resolveOneHourReminderEnabled(botAutomationSettings),
       penaltyEnabled:
         typeof rawPenaltyEnabled === "boolean" ? rawPenaltyEnabled : true,
       attendanceReminderLeadMinutes:
@@ -946,9 +969,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
 
   const syncBotAutomationFromResponse = (response: any) => {
     const data = response?.data || {};
-    if (typeof data?.oneHourReminderEnabled === "boolean") {
-      setBotOneHourReminderEnabledInput(data.oneHourReminderEnabled);
-    }
+    setBotOneHourReminderEnabledInput(
+      resolveOneHourReminderEnabled(data, botOneHourReminderEnabledInput),
+    );
     const responsePenaltyEnabled = [
       data?.penaltyEnabled,
       data?.penaltySystemEnabled,
@@ -1511,8 +1534,10 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         newAdminCompanyId={newAdminCompanyId}
         createCompanyPending={createCompany.isPending}
         updateCompanyPending={updateCompany.isPending || updateOwnCompany.isPending}
+        updateCompanyStatusPending={updateCompanyStatus.isPending}
         bootstrapPending={bootstrapTenant.isPending}
         createAdminPending={createAdmin.isPending}
+        updateAdminStatusPending={updateAdminStatus.isPending}
         onBack={() => setView("menu")}
         onCompanyNameChange={setCompanyNameInput}
         onAdminUsernameChange={setNewAdminUsername}

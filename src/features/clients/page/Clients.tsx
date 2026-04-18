@@ -20,6 +20,7 @@ import {
 import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { GlobalActionOverlay } from "../../../components/GlobalActionOverlay";
 import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
 import {
   useUsers,
@@ -62,6 +63,10 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
+  const [pendingDeleteUserId, setPendingDeleteUserId] = useState<string | null>(null);
+  const [pendingClearPenaltyUserId, setPendingClearPenaltyUserId] = useState<string | null>(null);
+  const [isBulkDeletingUsers, setIsBulkDeletingUsers] = useState(false);
+  const [isBulkClearingPenalties, setIsBulkClearingPenalties] = useState(false);
   const longPressTimerRef = useRef<number | null>(null);
   const suppressClickRef = useRef(false);
 
@@ -112,23 +117,31 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
   };
 
   const handleDelete = async (id: string) => {
+    if (pendingDeleteUserId || pendingClearPenaltyUserId) return;
     if (confirm("¿Estás seguro de eliminar este socio?")) {
+      setPendingDeleteUserId(id);
       try {
         await deleteUser.mutateAsync(id);
         addToast({ title: "Socio eliminado", color: "success" });
       } catch (_error) {
         addToast({ title: "Error al eliminar socio", color: "danger" });
+      } finally {
+        setPendingDeleteUserId(null);
       }
     }
   };
 
   const handleClearPenalties = async (id: string) => {
+    if (pendingDeleteUserId || pendingClearPenaltyUserId) return;
     if (confirm("¿Deseas limpiar las penalizaciones y rehabilitar a este socio?")) {
+      setPendingClearPenaltyUserId(id);
       try {
         await clearPenalties.mutateAsync(id);
         addToast({ title: "Penalizaciones eliminadas", color: "success" });
       } catch (_error) {
         addToast({ title: "Error al limpiar penalizaciones", color: "danger" });
+      } finally {
+        setPendingClearPenaltyUserId(null);
       }
     }
   };
@@ -201,9 +214,11 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
 
   const handleSelectionClearPenalties = async () => {
     if (selectedUsers.length === 0) return;
+    if (isBulkDeletingUsers || isBulkClearingPenalties) return;
 
     if (!confirm("¿Deseas despenalizar los socios seleccionados?")) return;
 
+    setIsBulkClearingPenalties(true);
     try {
       await Promise.all(
         selectedUsers.map((selectedUser: User) =>
@@ -214,14 +229,18 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
       clearSelection();
     } catch (_error) {
       addToast({ title: "Error al limpiar penalizaciones", color: "danger" });
+    } finally {
+      setIsBulkClearingPenalties(false);
     }
   };
 
   const handleSelectionDelete = async () => {
     if (selectedUsers.length === 0) return;
+    if (isBulkDeletingUsers || isBulkClearingPenalties) return;
 
     if (!confirm("¿Estás seguro de eliminar los socios seleccionados?")) return;
 
+    setIsBulkDeletingUsers(true);
     try {
       await Promise.all(
         selectedUsers.map((selectedUser: User) =>
@@ -232,6 +251,8 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
       clearSelection();
     } catch (_error) {
       addToast({ title: "Error al eliminar socios", color: "danger" });
+    } finally {
+      setIsBulkDeletingUsers(false);
     }
   };
 
@@ -243,6 +264,10 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
         filterValue={filterValue}
         onFilterChange={onFilterChange}
         penaltyLimit={penaltyLimit}
+        pendingDeleteUserId={pendingDeleteUserId}
+        pendingClearPenaltyUserId={pendingClearPenaltyUserId}
+        isBulkDeletingUsers={isBulkDeletingUsers}
+        isBulkClearingPenalties={isBulkClearingPenalties}
         onCreate={handleCreate}
         onEdit={handleEdit}
         onHistory={handleHistory}
@@ -334,6 +359,8 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                 color="success"
                 variant="flat"
                 className="font-black"
+                isLoading={isBulkClearingPenalties}
+                isDisabled={isBulkDeletingUsers}
                 onPress={handleSelectionClearPenalties}
               >
                 Despenalizar
@@ -343,6 +370,8 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                 color="danger"
                 variant="flat"
                 className="font-black"
+                isLoading={isBulkDeletingUsers}
+                isDisabled={isBulkClearingPenalties}
                 onPress={handleSelectionDelete}
               >
                 Eliminar
@@ -507,6 +536,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
       </div>
 
       <UserModal
+        key={`${formMode}-${selectedUser?._id || "new"}-${isModalOpen ? "open" : "closed"}`}
         isOpen={isModalOpen}
         onClose={onModalClose}
         user={selectedUser}
@@ -519,6 +549,12 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
         user={selectedUser}
         history={history}
         isLoading={isLoadingHistory}
+      />
+
+      <GlobalActionOverlay
+        isOpen={isBulkDeletingUsers || isBulkClearingPenalties}
+        title={isBulkDeletingUsers ? "Eliminando socios..." : "Limpiando penalizaciones..."}
+        zIndexClassName="z-[130]"
       />
     </div>
   );

@@ -1,9 +1,9 @@
-import { Spinner } from "@heroui/react";
+import { Spinner, Tab, Tabs } from "@heroui/react";
 import { DashboardControls } from "../../../components/FilterSidebar";
 import { BookingCard } from "../../../components/BookingCard";
 import { formatDate, getTodayIsoLocal, toIsoDateKey } from "../../../utils/formatters";
 import { HelpCircle } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
 import { BookingsDesktopView } from "../components/BookingsDesktopView";
 
@@ -28,7 +28,17 @@ export const Bookings = ({
   onCourtChange,
   onBookingClick,
 }: BookingsProps) => {
-  const hasActiveFilters = Boolean(filterValue.trim()) || selectedCourt !== "all";
+  const [selectedDateFilter, setSelectedDateFilter] = useState<"today" | "tomorrow" | "all">("today");
+  const todayIso = getTodayIsoLocal();
+  const tomorrowIso = useMemo(() => {
+    const [year, month, day] = todayIso.split("-").map(Number);
+    const tomorrow = new Date(year, month - 1, day + 1);
+    return `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(
+      tomorrow.getDate(),
+    ).padStart(2, "0")}`;
+  }, [todayIso]);
+  const hasActiveFilters =
+    Boolean(filterValue.trim()) || selectedCourt !== "all" || selectedDateFilter !== "all";
 
   const filteredBookings = useMemo(() => {
     return bookings
@@ -41,8 +51,13 @@ export const Bookings = ({
 
         const matchesCourt =
           selectedCourt === "all" || booking.court?._id === selectedCourt;
+        const bookingDate = toIsoDateKey(booking.date);
+        const matchesDate =
+          selectedDateFilter === "all" ||
+          (selectedDateFilter === "today" && bookingDate === todayIso) ||
+          (selectedDateFilter === "tomorrow" && bookingDate === tomorrowIso);
 
-        return matchesSearch && matchesCourt;
+        return matchesSearch && matchesCourt && matchesDate;
       })
       .sort((a: any, b: any) => {
         const dateA = toIsoDateKey(a.date);
@@ -52,7 +67,7 @@ export const Bookings = ({
           b.timeSlot?.startTime || "",
         );
       });
-  }, [bookings, filterValue, selectedCourt]);
+  }, [bookings, filterValue, selectedCourt, selectedDateFilter, todayIso, tomorrowIso]);
 
   const stats = useMemo(() => {
     const today = getTodayIsoLocal();
@@ -94,6 +109,7 @@ export const Bookings = ({
   return (
     <div className="space-y-8 animate-in fade-in duration-500 w-full overflow-x-hidden">
       <BookingsDesktopView
+        key={`${filterValue}|${selectedCourt}|${selectedDateFilter}|${filteredBookings.length}`}
         bookings={filteredBookings}
         courts={courts}
         filterValue={filterValue}
@@ -101,9 +117,12 @@ export const Bookings = ({
         selectedCourt={selectedCourt}
         onCourtChange={onCourtChange}
         onBookingClick={onBookingClick}
+        selectedDateFilter={selectedDateFilter}
+        onDateFilterChange={(value) => setSelectedDateFilter(value as "today" | "tomorrow" | "all")}
         onClearFilters={() => {
           onFilterChange("");
           onCourtChange("all");
+          setSelectedDateFilter("all");
         }}
       />
 
@@ -112,6 +131,28 @@ export const Bookings = ({
           Turnos Históricos
         </h1>
         <p className="text-gray-500 text-sm">Registro de todas las reservas</p>
+      </div>
+
+      <div className="lg:hidden">
+        <Tabs
+          aria-label="Filtros de fecha reservas"
+          variant="underlined"
+          selectedKey={selectedDateFilter}
+          onSelectionChange={(key) => setSelectedDateFilter(key as "today" | "tomorrow" | "all")}
+          classNames={{
+            base: "w-full overflow-x-auto",
+            tabList:
+              "gap-6 w-full relative rounded-none p-0 border-b border-black/5 dark:border-white/5",
+            cursor: "w-full bg-primary",
+            tab: "max-w-fit px-0 h-12",
+            tabContent:
+              "group-data-[selected=true]:text-primary font-bold text-gray-500 uppercase text-xs tracking-wider",
+          }}
+        >
+          <Tab key="today" title="Hoy" />
+          <Tab key="tomorrow" title="Mañana" />
+          <Tab key="all" title="Todos" />
+        </Tabs>
       </div>
 
       <div className="lg:hidden xl:grid xl:grid-cols-[340px_minmax(0,1fr)] xl:gap-8 2xl:gap-10 xl:items-start">
@@ -148,6 +189,7 @@ export const Bookings = ({
                   onClick={() => {
                     onFilterChange("");
                     onCourtChange("all");
+                    setSelectedDateFilter("all");
                   }}
                 >
                   Limpiar filtros

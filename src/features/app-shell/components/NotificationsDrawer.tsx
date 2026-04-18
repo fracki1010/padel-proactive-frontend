@@ -82,6 +82,8 @@ export const NotificationsDrawer = ({
                   variant="flat"
                   className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl"
                   onPress={() => markAllRead.mutate()}
+                  isLoading={markAllRead.isPending}
+                  isDisabled={markAllRead.isPending}
                 >
                   <CheckCheck size={20} />
                 </Button>

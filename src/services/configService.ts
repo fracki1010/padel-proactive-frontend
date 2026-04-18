@@ -5,6 +5,7 @@ import { api } from "./httpClient";
 const ONE_HOUR_REMINDER_KEY = "booking-reminder-one-hour-enabled";
 const CANCELLATION_GROUP_SETTINGS_KEY = "whatsapp-cancellation-group-settings";
 const WHATSAPP_GROUPS_CACHE_KEY = "whatsapp-groups-cache";
+const WHATSAPP_GROUP_ID_REGEX = /^[A-Za-z0-9._:-]{6,80}@g\.us$/;
 let isBotAutomationEndpointAvailable: boolean | null = null;
 const DEFAULT_ATTENDANCE_REMINDER_LEAD_MINUTES = 60;
 const DEFAULT_ATTENDANCE_RESPONSE_TIMEOUT_MINUTES = 15;
@@ -166,11 +167,12 @@ const parseWhatsappGroups = (responseData: any): Array<{ id: string; name: strin
   const normalized = groupsRaw
     .map((group: any) => {
       const id = normalizeGroupId(group).trim();
-      const name = normalizeGroupName(group);
+      const rawName = normalizeGroupName(group);
+      const name = rawName.replace(/\s+/g, " ").trim().slice(0, 80);
 
       return { id, name: name || id };
     })
-    .filter((group: { id: string }) => group.id.endsWith("@g.us"));
+    .filter((group: { id: string }) => WHATSAPP_GROUP_ID_REGEX.test(group.id));
 
   const uniqueById = new Map<string, { id: string; name: string }>();
   for (const group of normalized) {
@@ -179,7 +181,7 @@ const parseWhatsappGroups = (responseData: any): Array<{ id: string; name: strin
     }
   }
 
-  return Array.from(uniqueById.values());
+  return Array.from(uniqueById.values()).slice(0, 200);
 };
 
 const parseWhatsappCommandId = (responseData: any): string => {
@@ -364,6 +366,14 @@ export const configService = {
     penaltySystemEnabled?: boolean;
     penaltyLimit?: number;
   }): Promise<any> => {
+    const canFallbackToLegacyRoutes =
+      payload.attendanceReminderLeadMinutes === undefined &&
+      payload.attendanceResponseTimeoutMinutes === undefined &&
+      payload.cancellationLockHours === undefined &&
+      payload.trustedClientConfirmationCount === undefined &&
+      payload.penaltyEnabled === undefined &&
+      payload.penaltySystemEnabled === undefined;
+
     if (isBotAutomationEndpointAvailable !== false) {
       try {
         const response = await api.put("/config/bot-automation", payload);
@@ -371,7 +381,11 @@ export const configService = {
         return response.data;
       } catch (error: any) {
         const status = error?.response?.status;
-        if (![404, 405].includes(status)) {
+        const shouldFallback =
+          [404, 405].includes(status) ||
+          (canFallbackToLegacyRoutes && [400, 422].includes(status));
+
+        if (!shouldFallback) {
           throw error;
         }
         isBotAutomationEndpointAvailable = false;
@@ -656,13 +670,12 @@ export const configService = {
       }
     }
 
-    const status = lastError?.response?.status;
-    if (status === 404 || status === 405 || status === 400 || !status) {
-      localStorage.setItem(ONE_HOUR_REMINDER_KEY, String(enabled));
-      return { data: { oneHourReminderEnabled: enabled, persistedLocally: true } };
-    }
-
-    throw lastError;
+    throw (
+      lastError ??
+      new Error(
+        "No se pudo guardar la configuración de confirmación previa en el backend.",
+      )
+    );
   },
 
   getWhatsappCancellationGroupSettings: async (): Promise<any> => {
@@ -748,6 +761,9 @@ export const configService = {
   }): Promise<any> => {
     const normalizedGroupId = groupId.trim();
     const normalizedGroupName = groupName.trim();
+    if (enabled && !WHATSAPP_GROUP_ID_REGEX.test(normalizedGroupId)) {
+      throw new Error("ID de grupo inválido. Debe terminar en @g.us.");
+    }
     const normalizedDailyAvailabilityDigestHour =
       typeof dailyAvailabilityDigestHour === "string" &&
       /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(dailyAvailabilityDigestHour.trim())
@@ -869,24 +885,10 @@ export const configService = {
       }
     }
 
-    const status = lastError?.response?.status;
-    if (status === 404 || status === 405 || status === 400 || !status) {
-      const normalizedResult = {
-        enabled,
-        groupId: normalizedGroupId,
-        groupName: normalizedGroupName,
-        dailyAvailabilityDigestEnabled,
-        dailyAvailabilityDigestHour: normalizedDailyAvailabilityDigestHour,
-        dailyAvailabilityDigestNextDayEnabled,
-      };
-      localStorage.setItem(
-        CANCELLATION_GROUP_SETTINGS_KEY,
-        JSON.stringify(normalizedResult),
-      );
-      return { data: { ...normalizedResult, persistedLocally: true } };
-    }
-
-    throw lastError;
+    throw (
+      lastError ??
+      new Error("No se pudo guardar la configuración de grupo en el backend.")
+    );
   },
 
   getWhatsappGroups: async (): Promise<any> => {
@@ -924,8 +926,9 @@ export const configService = {
     try {
       const localRaw = localStorage.getItem(WHATSAPP_GROUPS_CACHE_KEY);
       const localParsed = localRaw ? JSON.parse(localRaw) : [];
-      if (Array.isArray(localParsed) && localParsed.length > 0) {
-        return { data: localParsed, persistedLocally: true };
+      const normalizedCached = parseWhatsappGroups({ data: localParsed });
+      if (normalizedCached.length > 0) {
+        return { data: normalizedCached, persistedLocally: true };
       }
     } catch {
       // ignore malformed local data

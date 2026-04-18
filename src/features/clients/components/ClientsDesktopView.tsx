@@ -37,6 +37,10 @@ type ClientsDesktopViewProps = {
   filterValue: string;
   onFilterChange: (val: string) => void;
   penaltyLimit: number;
+  pendingDeleteUserId: string | null;
+  pendingClearPenaltyUserId: string | null;
+  isBulkDeletingUsers: boolean;
+  isBulkClearingPenalties: boolean;
   onCreate: () => void;
   onEdit: (user: User) => void;
   onHistory: (user: User) => void;
@@ -51,6 +55,10 @@ export const ClientsDesktopView = ({
   filterValue,
   onFilterChange,
   penaltyLimit,
+  pendingDeleteUserId,
+  pendingClearPenaltyUserId,
+  isBulkDeletingUsers,
+  isBulkClearingPenalties,
   onCreate,
   onEdit,
   onHistory,
@@ -355,9 +363,15 @@ export const ClientsDesktopView = ({
                         className="text-danger"
                         color="danger"
                         startContent={<Trash2 size={16} />}
+                        isDisabled={
+                          isBulkDeletingUsers ||
+                          isBulkClearingPenalties ||
+                          pendingDeleteUserId === client._id ||
+                          pendingClearPenaltyUserId === client._id
+                        }
                         onClick={() => onDelete(client._id)}
                       >
-                        Eliminar Socio
+                        {pendingDeleteUserId === client._id ? "Eliminando..." : "Eliminar Socio"}
                       </DropdownItem>
                       {client.isSuspended || (client.penalties || 0) > 0 ? (
                         <DropdownItem
@@ -365,9 +379,17 @@ export const ClientsDesktopView = ({
                           color="success"
                           className="text-success"
                           startContent={<ShieldOff size={16} />}
+                          isDisabled={
+                            isBulkDeletingUsers ||
+                            isBulkClearingPenalties ||
+                            pendingDeleteUserId === client._id ||
+                            pendingClearPenaltyUserId === client._id
+                          }
                           onClick={() => onClearPenalties(client._id)}
                         >
-                          Despenalizar Socio
+                          {pendingClearPenaltyUserId === client._id
+                            ? "Despenalizando..."
+                            : "Despenalizar Socio"}
                         </DropdownItem>
                       ) : (
                         <DropdownItem key="no-clear-penalties" className="hidden" />
