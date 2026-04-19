@@ -17,10 +17,9 @@ import {
   CheckCircle2,
   ShieldOff,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { GlobalActionOverlay } from "../../../components/GlobalActionOverlay";
 import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
 import {
   useUsers,
@@ -62,13 +61,8 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
-  const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
   const [pendingDeleteUserId, setPendingDeleteUserId] = useState<string | null>(null);
   const [pendingClearPenaltyUserId, setPendingClearPenaltyUserId] = useState<string | null>(null);
-  const [isBulkDeletingUsers, setIsBulkDeletingUsers] = useState(false);
-  const [isBulkClearingPenalties, setIsBulkClearingPenalties] = useState(false);
-  const longPressTimerRef = useRef<number | null>(null);
-  const suppressClickRef = useRef(false);
 
   const deleteUser = useDeleteUser();
   const clearPenalties = useClearPenalties();
@@ -77,7 +71,6 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
     selectedUser?._id || null,
   );
   const history: Booking[] = historyData?.data || [];
-  const isSelectionMode = selectedClientIds.length > 0;
 
   const filteredUsers = useMemo(() => {
     return users.filter(
@@ -146,116 +139,6 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
     }
   };
 
-  const toggleClientSelection = (clientId: string) => {
-    setSelectedClientIds((prev) =>
-      prev.includes(clientId) ? prev.filter((id) => id !== clientId) : [...prev, clientId],
-    );
-  };
-
-  const clearSelection = () => {
-    setSelectedClientIds([]);
-  };
-
-  const startLongPress = (clientId: string) => {
-    if (longPressTimerRef.current) {
-      window.clearTimeout(longPressTimerRef.current);
-    }
-
-    longPressTimerRef.current = window.setTimeout(() => {
-      suppressClickRef.current = true;
-      toggleClientSelection(clientId);
-    }, 450);
-  };
-
-  const endLongPress = () => {
-    if (!longPressTimerRef.current) return;
-    window.clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = null;
-  };
-
-  const handleClientTap = (client: User) => {
-    if (suppressClickRef.current) {
-      suppressClickRef.current = false;
-      return;
-    }
-
-    if (isSelectionMode) {
-      toggleClientSelection(client._id);
-      return;
-    }
-
-    handleDetails(client);
-  };
-
-  const selectedUsers = users.filter((user: User) => selectedClientIds.includes(user._id));
-
-  const handleSelectionOpenDetails = () => {
-    if (selectedUsers.length !== 1) return;
-    handleDetails(selectedUsers[0]);
-  };
-
-  const handleSelectionEdit = () => {
-    if (selectedUsers.length !== 1) return;
-    handleEdit(selectedUsers[0]);
-  };
-
-  const handleSelectionHistory = () => {
-    if (selectedUsers.length !== 1) return;
-    handleHistory(selectedUsers[0]);
-  };
-
-  const handleSelectionWhatsapp = () => {
-    if (selectedUsers.length !== 1) return;
-    window.open(
-      `https://wa.me/${selectedUsers[0].phoneNumber.replace(/\D/g, "")}`,
-      "_blank",
-    );
-  };
-
-  const handleSelectionClearPenalties = async () => {
-    if (selectedUsers.length === 0) return;
-    if (isBulkDeletingUsers || isBulkClearingPenalties) return;
-
-    if (!confirm("¿Deseas despenalizar los socios seleccionados?")) return;
-
-    setIsBulkClearingPenalties(true);
-    try {
-      await Promise.all(
-        selectedUsers.map((selectedUser: User) =>
-          clearPenalties.mutateAsync(selectedUser._id),
-        ),
-      );
-      addToast({ title: "Penalizaciones limpiadas", color: "success" });
-      clearSelection();
-    } catch (_error) {
-      addToast({ title: "Error al limpiar penalizaciones", color: "danger" });
-    } finally {
-      setIsBulkClearingPenalties(false);
-    }
-  };
-
-  const handleSelectionDelete = async () => {
-    if (selectedUsers.length === 0) return;
-    if (isBulkDeletingUsers || isBulkClearingPenalties) return;
-
-    if (!confirm("¿Estás seguro de eliminar los socios seleccionados?")) return;
-
-    setIsBulkDeletingUsers(true);
-    try {
-      await Promise.all(
-        selectedUsers.map((selectedUser: User) =>
-          deleteUser.mutateAsync(selectedUser._id),
-        ),
-      );
-      addToast({ title: "Socios eliminados", color: "success" });
-      clearSelection();
-    } catch (_error) {
-      addToast({ title: "Error al eliminar socios", color: "danger" });
-    } finally {
-      setIsBulkDeletingUsers(false);
-    }
-  };
-
   return (
     <div className="space-y-6 animate-in slide-in-from-right-10 duration-500">
       <ClientsDesktopView
@@ -266,8 +149,6 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
         penaltyLimit={penaltyLimit}
         pendingDeleteUserId={pendingDeleteUserId}
         pendingClearPenaltyUserId={pendingClearPenaltyUserId}
-        isBulkDeletingUsers={isBulkDeletingUsers}
-        isBulkClearingPenalties={isBulkClearingPenalties}
         onCreate={handleCreate}
         onEdit={handleEdit}
         onHistory={handleHistory}
@@ -312,82 +193,6 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
           />
         </div>
 
-        {isSelectionMode && (
-          <div className="rounded-3xl bg-primary/10 border border-primary/30 p-3 space-y-3">
-            <p className="text-xs font-black uppercase tracking-wider text-primary">
-              {selectedClientIds.length} socio(s) seleccionado(s)
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant="flat"
-                className="font-black"
-                isDisabled={selectedUsers.length !== 1}
-                onPress={handleSelectionOpenDetails}
-              >
-                Ver detalle
-              </Button>
-              <Button
-                size="sm"
-                variant="flat"
-                className="font-black"
-                isDisabled={selectedUsers.length !== 1}
-                onPress={handleSelectionEdit}
-              >
-                Editar
-              </Button>
-              <Button
-                size="sm"
-                variant="flat"
-                className="font-black"
-                isDisabled={selectedUsers.length !== 1}
-                onPress={handleSelectionHistory}
-              >
-                Historial
-              </Button>
-              <Button
-                size="sm"
-                variant="flat"
-                className="font-black"
-                isDisabled={selectedUsers.length !== 1}
-                onPress={handleSelectionWhatsapp}
-              >
-                WhatsApp
-              </Button>
-              <Button
-                size="sm"
-                color="success"
-                variant="flat"
-                className="font-black"
-                isLoading={isBulkClearingPenalties}
-                isDisabled={isBulkDeletingUsers}
-                onPress={handleSelectionClearPenalties}
-              >
-                Despenalizar
-              </Button>
-              <Button
-                size="sm"
-                color="danger"
-                variant="flat"
-                className="font-black"
-                isLoading={isBulkDeletingUsers}
-                isDisabled={isBulkClearingPenalties}
-                onPress={handleSelectionDelete}
-              >
-                Eliminar
-              </Button>
-              <Button
-                size="sm"
-                variant="light"
-                className="font-black"
-                onPress={clearSelection}
-              >
-                Cancelar selección
-              </Button>
-            </div>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {isLoadingUsers ? (
             <div className="col-span-full flex justify-center p-12">
@@ -405,20 +210,10 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
               {visibleUsers.map((client: User) => (
                 <Card
                   key={client._id}
-                  className={`bg-dark-200 border-black/5 dark:border-white/5 hover:border-primary/30 transition-all duration-300 rounded-3xl group ${
-                    selectedClientIds.includes(client._id)
-                      ? "ring-2 ring-primary/70 border-primary/40"
-                      : ""
-                  }`}
+                  className="bg-dark-200 border-black/5 dark:border-white/5 hover:border-primary/30 transition-all duration-300 rounded-3xl group"
                   shadow="sm"
                   isPressable
-                  onPress={() => handleClientTap(client)}
-                  onMouseDown={() => startLongPress(client._id)}
-                  onMouseUp={endLongPress}
-                  onMouseLeave={endLongPress}
-                  onTouchStart={() => startLongPress(client._id)}
-                  onTouchEnd={endLongPress}
-                  onTouchCancel={endLongPress}
+                  onPress={() => handleDetails(client)}
                 >
                   <CardBody className="p-5 flex flex-row items-center gap-4">
                     <Avatar
@@ -508,12 +303,6 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                         )}
                       </div>
                     </div>
-
-                    {selectedClientIds.includes(client._id) && (
-                      <Chip color="primary" variant="flat" className="font-black uppercase">
-                        Seleccionado
-                      </Chip>
-                    )}
                   </CardBody>
                 </Card>
               ))}
@@ -549,12 +338,6 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
         user={selectedUser}
         history={history}
         isLoading={isLoadingHistory}
-      />
-
-      <GlobalActionOverlay
-        isOpen={isBulkDeletingUsers || isBulkClearingPenalties}
-        title={isBulkDeletingUsers ? "Eliminando socios..." : "Limpiando penalizaciones..."}
-        zIndexClassName="z-[130]"
       />
     </div>
   );

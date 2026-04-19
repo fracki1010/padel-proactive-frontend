@@ -39,8 +39,6 @@ type ClientsDesktopViewProps = {
   penaltyLimit: number;
   pendingDeleteUserId: string | null;
   pendingClearPenaltyUserId: string | null;
-  isBulkDeletingUsers: boolean;
-  isBulkClearingPenalties: boolean;
   onCreate: () => void;
   onEdit: (user: User) => void;
   onHistory: (user: User) => void;
@@ -57,8 +55,6 @@ export const ClientsDesktopView = ({
   penaltyLimit,
   pendingDeleteUserId,
   pendingClearPenaltyUserId,
-  isBulkDeletingUsers,
-  isBulkClearingPenalties,
   onCreate,
   onEdit,
   onHistory,
@@ -364,8 +360,6 @@ export const ClientsDesktopView = ({
                         color="danger"
                         startContent={<Trash2 size={16} />}
                         isDisabled={
-                          isBulkDeletingUsers ||
-                          isBulkClearingPenalties ||
                           pendingDeleteUserId === client._id ||
                           pendingClearPenaltyUserId === client._id
                         }
@@ -380,8 +374,6 @@ export const ClientsDesktopView = ({
                           className="text-success"
                           startContent={<ShieldOff size={16} />}
                           isDisabled={
-                            isBulkDeletingUsers ||
-                            isBulkClearingPenalties ||
                             pendingDeleteUserId === client._id ||
                             pendingClearPenaltyUserId === client._id
                           }
