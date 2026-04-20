@@ -1323,12 +1323,12 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
 
   const handleCreateCourt = async ({
     name: rawName,
+    courtType,
     surface: rawSurface,
-    isIndoor,
   }: {
     name: string;
+    courtType: string;
     surface: string;
-    isIndoor: boolean;
   }): Promise<boolean> => {
     const name = rawName.trim();
     const surface = rawSurface.trim();
@@ -1342,7 +1342,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     }
 
     try {
-      await createCourt.mutateAsync({ name, surface, isIndoor });
+      await createCourt.mutateAsync({ name, courtType, surface });
       addToast({ title: "Cancha creada", color: "success" });
       return true;
     } catch (err: any) {
@@ -1372,8 +1372,8 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     id: string,
     payload: {
       name: string;
+      courtType: string;
       surface: string;
-      isIndoor: boolean;
     },
   ): Promise<boolean> => {
     const name = payload.name.trim();
@@ -1390,7 +1390,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     try {
       await updateCourt.mutateAsync({
         id,
-        data: { name, surface, isIndoor: Boolean(payload.isIndoor) },
+        data: { name, courtType: payload.courtType, surface },
       });
       addToast({ title: "Cancha actualizada", color: "success" });
       return true;

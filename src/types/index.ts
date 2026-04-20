@@ -1,6 +1,10 @@
 export interface Court {
   _id: string;
   name: string;
+  courtType?: string;
+  surface?: string;
+  isIndoor?: boolean;
+  isActive?: boolean;
 }
 
 export interface TimeSlot {

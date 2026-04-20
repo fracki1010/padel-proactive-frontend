@@ -28,7 +28,7 @@ export const useCreateCourt = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { name: string; surface?: string; isIndoor?: boolean }) =>
+    mutationFn: (data: { name: string; courtType?: string; surface?: string; isIndoor?: boolean }) =>
       configService.createCourt(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courts"] });

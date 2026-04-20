@@ -19,7 +19,6 @@ type CourtFormData = {
   name: string;
   courtType: string;
   surface: string;
-  isIndoor: boolean;
 };
 
 const COURT_TYPE_OPTIONS = [
@@ -76,19 +75,16 @@ export const CourtsView = ({
   const [createCourtName, setCreateCourtName] = useState("");
   const [createCourtType, setCreateCourtType] = useState<string>(defaultCourtType);
   const [createCourtSurface, setCreateCourtSurface] = useState<string>(defaultSurface);
-  const [createCourtIndoor, setCreateCourtIndoor] = useState(false);
   const [editingCourtId, setEditingCourtId] = useState<string | null>(null);
   const [editingCourtName, setEditingCourtName] = useState("");
   const [editingCourtType, setEditingCourtType] = useState<string>(defaultCourtType);
   const [editingCourtSurface, setEditingCourtSurface] = useState<string>(defaultSurface);
-  const [editingCourtIndoor, setEditingCourtIndoor] = useState(false);
 
   const openEditDrawer = (court: any) => {
     setEditingCourtId(court._id);
     setEditingCourtName(String(court.name || ""));
     setEditingCourtType(normalizeCourtType(String(court.courtType || defaultCourtType)));
     setEditingCourtSurface(normalizeSurface(String(court.surface || defaultSurface)));
-    setEditingCourtIndoor(Boolean(court.isIndoor));
     setIsEditDrawerOpen(true);
   };
 
@@ -98,7 +94,6 @@ export const CourtsView = ({
     setEditingCourtName("");
     setEditingCourtType(defaultCourtType);
     setEditingCourtSurface(defaultSurface);
-    setEditingCourtIndoor(false);
   };
 
   const closeCreateDrawer = () => {
@@ -106,7 +101,6 @@ export const CourtsView = ({
     setCreateCourtName("");
     setCreateCourtType(defaultCourtType);
     setCreateCourtSurface(defaultSurface);
-    setCreateCourtIndoor(false);
   };
 
   const handleCreateFromDrawer = async () => {
@@ -114,7 +108,6 @@ export const CourtsView = ({
       name: createCourtName,
       courtType: createCourtType,
       surface: createCourtSurface,
-      isIndoor: createCourtIndoor,
     });
     if (!wasCreated) return;
     closeCreateDrawer();
@@ -126,7 +119,6 @@ export const CourtsView = ({
       name: editingCourtName,
       courtType: editingCourtType,
       surface: editingCourtSurface,
-      isIndoor: editingCourtIndoor,
     });
     if (!wasUpdated) return;
     closeEditDrawer();
@@ -311,19 +303,6 @@ export const CourtsView = ({
                       </SelectItem>
                     ))}
                   </Select>
-                  <div className="flex items-center justify-between rounded-2xl bg-black/5 dark:bg-white/5 px-4 py-3">
-                    <div>
-                      <p className="text-sm font-bold text-foreground">¿Cancha techada?</p>
-                      <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                        {createCourtIndoor ? "Sí" : "No"}
-                      </p>
-                    </div>
-                    <Switch
-                      isSelected={createCourtIndoor}
-                      onValueChange={setCreateCourtIndoor}
-                      color="primary"
-                    />
-                  </div>
                 </div>
               </DrawerBody>
               <DrawerFooter className="p-6 pt-0">
@@ -434,19 +413,6 @@ export const CourtsView = ({
                       </SelectItem>
                     ))}
                   </Select>
-                  <div className="flex items-center justify-between rounded-2xl bg-black/5 dark:bg-white/5 px-4 py-3">
-                    <div>
-                      <p className="text-sm font-bold text-foreground">¿Cancha techada?</p>
-                      <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                        {editingCourtIndoor ? "Sí" : "No"}
-                      </p>
-                    </div>
-                    <Switch
-                      isSelected={editingCourtIndoor}
-                      onValueChange={setEditingCourtIndoor}
-                      color="primary"
-                    />
-                  </div>
                 </div>
               </DrawerBody>
               <DrawerFooter className="p-6 pt-0">
