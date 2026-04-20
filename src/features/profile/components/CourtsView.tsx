@@ -17,9 +17,18 @@ import { useState } from "react";
 
 type CourtFormData = {
   name: string;
+  courtType: string;
   surface: string;
   isIndoor: boolean;
 };
+
+const COURT_TYPE_OPTIONS = [
+  "Estándar",
+  "Techada",
+  "Descubierta",
+  "VIP",
+  "Premium",
+] as const;
 
 const COURT_SURFACE_OPTIONS = [
   "Césped sintético",
@@ -53,23 +62,31 @@ export const CourtsView = ({
   onDeleteCourt,
 }: CourtsViewProps) => {
   const defaultSurface = COURT_SURFACE_OPTIONS[0];
+  const defaultCourtType = COURT_TYPE_OPTIONS[0];
   const normalizeSurface = (value: string) =>
     COURT_SURFACE_OPTIONS.includes(value as (typeof COURT_SURFACE_OPTIONS)[number])
       ? value
       : defaultSurface;
+  const normalizeCourtType = (value: string) =>
+    COURT_TYPE_OPTIONS.includes(value as (typeof COURT_TYPE_OPTIONS)[number])
+      ? value
+      : defaultCourtType;
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [createCourtName, setCreateCourtName] = useState("");
+  const [createCourtType, setCreateCourtType] = useState<string>(defaultCourtType);
   const [createCourtSurface, setCreateCourtSurface] = useState<string>(defaultSurface);
   const [createCourtIndoor, setCreateCourtIndoor] = useState(false);
   const [editingCourtId, setEditingCourtId] = useState<string | null>(null);
   const [editingCourtName, setEditingCourtName] = useState("");
+  const [editingCourtType, setEditingCourtType] = useState<string>(defaultCourtType);
   const [editingCourtSurface, setEditingCourtSurface] = useState<string>(defaultSurface);
   const [editingCourtIndoor, setEditingCourtIndoor] = useState(false);
 
   const openEditDrawer = (court: any) => {
     setEditingCourtId(court._id);
     setEditingCourtName(String(court.name || ""));
+    setEditingCourtType(normalizeCourtType(String(court.courtType || defaultCourtType)));
     setEditingCourtSurface(normalizeSurface(String(court.surface || defaultSurface)));
     setEditingCourtIndoor(Boolean(court.isIndoor));
     setIsEditDrawerOpen(true);
@@ -79,6 +96,7 @@ export const CourtsView = ({
     setIsEditDrawerOpen(false);
     setEditingCourtId(null);
     setEditingCourtName("");
+    setEditingCourtType(defaultCourtType);
     setEditingCourtSurface(defaultSurface);
     setEditingCourtIndoor(false);
   };
@@ -86,6 +104,7 @@ export const CourtsView = ({
   const closeCreateDrawer = () => {
     setIsCreateDrawerOpen(false);
     setCreateCourtName("");
+    setCreateCourtType(defaultCourtType);
     setCreateCourtSurface(defaultSurface);
     setCreateCourtIndoor(false);
   };
@@ -93,6 +112,7 @@ export const CourtsView = ({
   const handleCreateFromDrawer = async () => {
     const wasCreated = await onCreateCourt({
       name: createCourtName,
+      courtType: createCourtType,
       surface: createCourtSurface,
       isIndoor: createCourtIndoor,
     });
@@ -104,6 +124,7 @@ export const CourtsView = ({
     if (!editingCourtId) return;
     const wasUpdated = await onSaveCourtName(editingCourtId, {
       name: editingCourtName,
+      courtType: editingCourtType,
       surface: editingCourtSurface,
       isIndoor: editingCourtIndoor,
     });
@@ -158,7 +179,7 @@ export const CourtsView = ({
                       Estado: {court.isActive ? "Activa" : "Inactiva"}
                     </p>
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                      {court.surface || defaultSurface} · {court.isIndoor ? "Techada" : "Descubierta"}
+                      {court.courtType || defaultCourtType} · {court.surface || defaultSurface}
                     </p>
                   </div>
                 </div>
@@ -244,6 +265,29 @@ export const CourtsView = ({
                       input: "text-foreground font-bold",
                     }}
                   />
+                  <Select
+                    label="Tipo de cancha"
+                    selectedKeys={[createCourtType]}
+                    onSelectionChange={(keys) => {
+                      const selected = Array.from(keys)[0] as string | undefined;
+                      if (!selected) return;
+                      setCreateCourtType(selected);
+                    }}
+                    classNames={{
+                      trigger:
+                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-2xl px-4",
+                      value: "text-foreground font-bold",
+                      popoverContent:
+                        "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                      listbox: "text-foreground",
+                    }}
+                  >
+                    {COURT_TYPE_OPTIONS.map((type) => (
+                      <SelectItem key={type} textValue={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </Select>
                   <Select
                     label="Superficie"
                     selectedKeys={[createCourtSurface]}
@@ -344,6 +388,29 @@ export const CourtsView = ({
                       input: "text-foreground font-bold",
                     }}
                   />
+                  <Select
+                    label="Tipo de cancha"
+                    selectedKeys={[editingCourtType]}
+                    onSelectionChange={(keys) => {
+                      const selected = Array.from(keys)[0] as string | undefined;
+                      if (!selected) return;
+                      setEditingCourtType(selected);
+                    }}
+                    classNames={{
+                      trigger:
+                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-2xl px-4",
+                      value: "text-foreground font-bold",
+                      popoverContent:
+                        "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                      listbox: "text-foreground",
+                    }}
+                  >
+                    {COURT_TYPE_OPTIONS.map((type) => (
+                      <SelectItem key={type} textValue={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </Select>
                   <Select
                     label="Superficie"
                     selectedKeys={[editingCourtSurface]}
