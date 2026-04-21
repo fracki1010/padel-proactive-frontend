@@ -267,6 +267,49 @@ export const useWhatsappGroups = () => {
   });
 };
 
+export const useClubClosures = () => {
+  return useQuery({
+    queryKey: ["club-closures"],
+    queryFn: configService.getClubClosures,
+    retry: 1,
+  });
+};
+
+export const useCreateClubClosure = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { startDate: string; endDate: string; reason: string }) =>
+      configService.createClubClosure(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["club-closures"] });
+    },
+  });
+};
+
+export const useUpdateClubClosure = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<{ startDate: string; endDate: string; reason: string }> }) =>
+      configService.updateClubClosure(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["club-closures"] });
+    },
+  });
+};
+
+export const useDeleteClubClosure = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => configService.deleteClubClosure(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["club-closures"] });
+    },
+  });
+};
+
 export const useWhatsappCommands = ({
   limit = 20,
   status = "",

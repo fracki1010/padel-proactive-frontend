@@ -59,6 +59,13 @@ export interface BookingsResponse {
   data: Booking[];
 }
 
+export interface ClubClosure {
+  _id: string;
+  startDate: string;
+  endDate: string;
+  reason: string;
+}
+
 export interface ConfigResponse<T> {
   success: boolean;
   data: T[];

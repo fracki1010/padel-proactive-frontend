@@ -29,10 +29,15 @@ import {
   useCreateAdmin,
   useUpdateAdminStatus,
   useBootstrapDefaultTenant,
+  useClubClosures,
+  useCreateClubClosure,
+  useUpdateClubClosure,
+  useDeleteClubClosure,
 } from "../../../hooks/useData";
 import { useAuth } from "../../../context/AuthContext";
 import { useTheme } from "../../../context/ThemeContext";
 import { configService } from "../../../services/api";
+import { ClubClosuresView } from "../components/ClubClosuresView";
 import { CourtsView } from "../components/CourtsView";
 import { BotAutomationSettingsView } from "../components/BotAutomationSettingsView";
 import { ProfileMenuView } from "../components/ProfileMenuView";
@@ -66,7 +71,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const { logout, user, updateUser } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [view, setView] = useState<
-    "menu" | "courts" | "schedule" | "whatsapp" | "bot-automation" | "tenants"
+    "menu" | "courts" | "schedule" | "whatsapp" | "bot-automation" | "tenants" | "club-closures"
   >("menu");
   const isSuperAdmin = user?.role === "super_admin";
   const canManageClubData = isSuperAdmin || Boolean(user?.companyId);
@@ -84,6 +89,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const { data: botAutomationSettingsData } = useBotAutomationSettings();
   const { data: companiesData } = useCompanies(isSuperAdmin);
   const { data: adminsData } = useAdmins(isSuperAdmin);
+  const { data: clubClosuresData } = useClubClosures();
 
   const updateCourt = useUpdateCourt();
   const createCourt = useCreateCourt();
@@ -104,9 +110,14 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const createAdmin = useCreateAdmin();
   const updateAdminStatus = useUpdateAdminStatus();
   const bootstrapTenant = useBootstrapDefaultTenant();
+  const createClubClosure = useCreateClubClosure();
+  const updateClubClosure = useUpdateClubClosure();
+  const deleteClubClosure = useDeleteClubClosure();
+  const [deletingClosureId, setDeletingClosureId] = useState<string | null>(null);
 
   const courts = courtsData?.data || initialCourts;
   const slots = slotsData?.data || [];
+  const clubClosures = clubClosuresData?.data || [];
   const whatsappRawState = whatsappData?.data ?? {};
   const whatsappState =
     whatsappRawState && typeof whatsappRawState === "object"
@@ -1427,6 +1438,63 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     });
   };
 
+  const handleCreateClubClosure = async (data: { startDate: string; endDate: string; reason: string }): Promise<boolean> => {
+    return new Promise((resolve) => {
+      createClubClosure.mutate(data, {
+        onSuccess: () => {
+          addToast({ title: "Cierre agregado", color: "success" });
+          resolve(true);
+        },
+        onError: (err: any) => {
+          addToast({
+            title: err?.response?.data?.error || "No se pudo agregar el cierre",
+            color: "danger",
+          });
+          resolve(false);
+        },
+      });
+    });
+  };
+
+  const handleUpdateClubClosure = async (id: string, data: { startDate: string; endDate: string; reason: string }): Promise<boolean> => {
+    return new Promise((resolve) => {
+      updateClubClosure.mutate({ id, data }, {
+        onSuccess: () => {
+          addToast({ title: "Cierre actualizado", color: "success" });
+          resolve(true);
+        },
+        onError: (err: any) => {
+          addToast({
+            title: err?.response?.data?.error || "No se pudo actualizar el cierre",
+            color: "danger",
+          });
+          resolve(false);
+        },
+      });
+    });
+  };
+
+  const handleDeleteClubClosure = (id: string) => {
+    const shouldDelete = window.confirm("¿Seguro que querés eliminar este cierre? Esta acción no se puede deshacer.");
+    if (!shouldDelete) return;
+
+    setDeletingClosureId(id);
+    deleteClubClosure.mutate(id, {
+      onSuccess: () => {
+        addToast({ title: "Cierre eliminado", color: "success" });
+      },
+      onError: (err: any) => {
+        addToast({
+          title: err?.response?.data?.error || "No se pudo eliminar el cierre",
+          color: "danger",
+        });
+      },
+      onSettled: () => {
+        setDeletingClosureId(null);
+      },
+    });
+  };
+
   const handleCreateSlot = () => {
     if (!newSlotStartTime || !newSlotEndTime) {
       addToast({
@@ -1654,6 +1722,21 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     );
   }
 
+  if (view === "club-closures") {
+    return (
+      <ClubClosuresView
+        closures={clubClosures}
+        createPending={createClubClosure.isPending}
+        updatePending={updateClubClosure.isPending}
+        deletePendingId={deletingClosureId}
+        onBack={() => setView("menu")}
+        onCreate={handleCreateClubClosure}
+        onUpdate={handleUpdateClubClosure}
+        onDelete={handleDeleteClubClosure}
+      />
+    );
+  }
+
   if (view === "courts") {
     return (
       <CourtsView
@@ -1714,6 +1797,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       onGoToSchedule={() => setView("schedule")}
       onGoToBotAutomation={() => setView("bot-automation")}
       onGoToTenants={() => setView("tenants")}
+      onGoToClubClosures={() => setView("club-closures")}
       onLogout={logout}
     />
   );

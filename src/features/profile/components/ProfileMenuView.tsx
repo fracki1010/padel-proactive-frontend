@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import {
   Bot,
   Building2,
+  CalendarOff,
   ChevronRight,
   CreditCard,
   LogOut,
@@ -40,6 +41,7 @@ type ProfileMenuViewProps = {
   onGoToSchedule: () => void;
   onGoToBotAutomation: () => void;
   onGoToTenants: () => void;
+  onGoToClubClosures: () => void;
   onLogout: () => void;
 };
 
@@ -93,6 +95,7 @@ export const ProfileMenuView = ({
   onGoToSchedule,
   onGoToBotAutomation,
   onGoToTenants,
+  onGoToClubClosures,
   onLogout,
 }: ProfileMenuViewProps) => {
   const adminName = (user?.name || user?.username || "Admin PADEXA").trim();
@@ -277,6 +280,14 @@ export const ProfileMenuView = ({
               subtitle="Configurar tarifas"
               icon={<Target size={18} />}
               iconClassName="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all"
+            />
+
+            <MenuItemButton
+              onPress={onGoToClubClosures}
+              title="Cierres del Club"
+              subtitle="Días sin actividad"
+              icon={<CalendarOff size={18} />}
+              iconClassName="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center text-red-400 group-hover:bg-red-500 group-hover:text-white transition-all"
             />
 
             {canManageClubData && (
