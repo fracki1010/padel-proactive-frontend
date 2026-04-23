@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 const CLIENT_TOKEN_KEY = "padexa:client_token";
 const CLIENT_USER_KEY = "padexa:client_user";

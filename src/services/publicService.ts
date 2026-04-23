@@ -28,7 +28,12 @@ export const publicService = {
     return res.data;
   },
 
-  register: async (slug: string, payload: { name: string; email: string; phone: string; password: string }) => {
+  sendOtp: async (slug: string, countryCode: string, localNumber: string) => {
+    const res = await publicApi.post(`/public/${slug}/auth/send-otp`, { countryCode, localNumber });
+    return res.data;
+  },
+
+  register: async (slug: string, payload: { name: string; email: string; countryCode: string; localNumber: string; password: string; otp: string }) => {
     const res = await publicApi.post(`/public/${slug}/auth/register`, payload);
     return res.data;
   },
@@ -55,6 +60,16 @@ export const publicService = {
 
   cancelBooking: async (slug: string, bookingId: string) => {
     const res = await publicApi.delete(`/public/${slug}/bookings/${bookingId}`);
+    return res.data;
+  },
+
+  googleAuth: async (slug: string, idToken: string, phonePayload?: { countryCode: string; localNumber: string; otp: string }) => {
+    const res = await publicApi.post(`/public/${slug}/auth/google`, { idToken, ...phonePayload });
+    return res.data;
+  },
+
+  updatePhone: async (slug: string, payload: { countryCode: string; localNumber: string; otp: string }) => {
+    const res = await publicApi.put(`/public/${slug}/auth/me/phone`, payload);
     return res.data;
   },
 };

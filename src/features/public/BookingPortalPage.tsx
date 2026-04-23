@@ -1,17 +1,21 @@
-import { Button, Chip, Spinner, useDisclosure } from "@heroui/react";
-import { CalendarDays, ChevronLeft, ChevronRight, LogIn, LogOut, Ticket } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner, useDisclosure } from "@heroui/react";
+import { Check, Lock, LogIn, LogOut, Plus, Ticket, User } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import logo from "../../assets/logo-8.svg";
 import { useClientAuth } from "../../context/ClientAuthContext";
 import { publicService } from "../../services/publicService";
 import { BookingConfirmModal } from "./components/BookingConfirmModal";
 import { ClientAuthModal } from "./components/ClientAuthModal";
 import { MyBookingsDrawer } from "./components/MyBookingsDrawer";
 
+// ─── Tipos ──────────────────────────────────────────────────────────────────
+
 interface Court {
   _id: string;
   name: string;
   courtType?: string;
+  surface?: string;
 }
 
 interface Slot {
@@ -29,39 +33,64 @@ interface AvailabilityItem {
   available: boolean;
 }
 
-const todayIso = () => {
-  const d = new Date();
-  return d.toISOString().slice(0, 10);
+interface SelectedSlot {
+  court: Court;
+  slot: Slot;
+}
+
+// ─── Helpers de fecha ────────────────────────────────────────────────────────
+
+const todayIso = () => new Date().toISOString().slice(0, 10);
+
+const addDays = (iso: string, n: number) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d + n).toISOString().slice(0, 10);
 };
 
-const addDays = (isoDate: string, days: number) => {
-  const [y, m, d] = isoDate.split("-").map(Number);
-  const date = new Date(y, m - 1, d + days);
-  return date.toISOString().slice(0, 10);
-};
+const MAX_DAYS = 14;
 
-const formatDisplayDate = (isoDate: string) => {
-  const [y, m, d] = isoDate.split("-").map(Number);
+const DAY_SHORT = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
+const MONTH_NAMES = [
+  "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+  "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE",
+];
+
+const getDateParts = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
   const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString("es-AR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+  return {
+    dayName: DAY_SHORT[date.getDay()],
+    day: date.getDate(),
+    month: MONTH_NAMES[date.getMonth()],
+    year: date.getFullYear(),
+  };
 };
 
-const MAX_DAYS_AHEAD = 14;
+const calcDurationMin = (start: string, end: string) => {
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  return eh * 60 + em - (sh * 60 + sm);
+};
+
+const buildDates = () =>
+  Array.from({ length: MAX_DAYS }, (_, i) => addDays(todayIso(), i));
+
+// ─── Página ──────────────────────────────────────────────────────────────────
 
 export const BookingPortalPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { clientUser, isClientAuthenticated, logoutClient } = useClientAuth();
 
-  const [selectedDate, setSelectedDate] = useState(todayIso());
+  const dates = buildDates();
+  const [selectedDate, setSelectedDate] = useState(dates[0]);
+  const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
+
   const [clubInfo, setClubInfo] = useState<{
     club: { name: string; address?: string };
     courts: Court[];
     slots: Slot[];
   } | null>(null);
+
   const [availability, setAvailability] = useState<{
     closed: boolean;
     closureReason?: string;
@@ -69,95 +98,85 @@ export const BookingPortalPage = () => {
     slots: Slot[];
     availability: AvailabilityItem[];
   } | null>(null);
+
   const [isLoadingInfo, setIsLoadingInfo] = useState(true);
-  const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
+  const [isLoadingAvail, setIsLoadingAvail] = useState(false);
 
-  const [pendingCourt, setPendingCourt] = useState<Court | null>(null);
-  const [pendingSlot, setPendingSlot] = useState<Slot | null>(null);
+  const dateScrollRef = useRef<HTMLDivElement>(null);
 
-  const {
-    isOpen: isAuthOpen,
-    onOpen: openAuth,
-    onClose: closeAuth,
-  } = useDisclosure();
-
-  const {
-    isOpen: isConfirmOpen,
-    onOpen: openConfirm,
-    onClose: closeConfirm,
-  } = useDisclosure();
-
-  const {
-    isOpen: isMyBookingsOpen,
-    onOpen: openMyBookings,
-    onClose: closeMyBookings,
-  } = useDisclosure();
+  const { isOpen: isAuthOpen, onOpen: openAuth, onClose: closeAuth } = useDisclosure();
+  const { isOpen: isConfirmOpen, onOpen: openConfirm, onClose: closeConfirm } = useDisclosure();
+  const { isOpen: isMyBookingsOpen, onOpen: openMyBookings, onClose: closeMyBookings } = useDisclosure();
 
   useEffect(() => {
     if (!slug) return;
     setIsLoadingInfo(true);
-    publicService
-      .getClubInfo(slug)
-      .then((res) => setClubInfo(res.data))
+    publicService.getClubInfo(slug)
+      .then((r) => setClubInfo(r.data))
       .catch(() => setClubInfo(null))
       .finally(() => setIsLoadingInfo(false));
   }, [slug]);
 
   useEffect(() => {
     if (!slug) return;
-    setIsLoadingAvailability(true);
-    publicService
-      .getAvailability(slug, selectedDate)
-      .then((res) => setAvailability(res.data))
+    setIsLoadingAvail(true);
+    setSelectedSlot(null);
+    publicService.getAvailability(slug, selectedDate)
+      .then((r) => setAvailability(r.data))
       .catch(() => setAvailability(null))
-      .finally(() => setIsLoadingAvailability(false));
+      .finally(() => setIsLoadingAvail(false));
   }, [slug, selectedDate]);
-
-  const handleSlotClick = (court: Court, slot: Slot) => {
-    setPendingCourt(court);
-    setPendingSlot(slot);
-    if (!isClientAuthenticated) {
-      openAuth();
-    } else {
-      openConfirm();
-    }
-  };
-
-  const handleAuthSuccess = () => {
-    if (pendingCourt && pendingSlot) {
-      openConfirm();
-    }
-  };
-
-  const handleBookingConfirmed = () => {
-    if (!slug) return;
-    setIsLoadingAvailability(true);
-    publicService
-      .getAvailability(slug, selectedDate)
-      .then((res) => setAvailability(res.data))
-      .catch(() => {})
-      .finally(() => setIsLoadingAvailability(false));
-  };
-
-  const canGoBack = selectedDate > todayIso();
-  const canGoForward = selectedDate < addDays(todayIso(), MAX_DAYS_AHEAD - 1);
-
-  const courts = availability?.courts || clubInfo?.courts || [];
-  const slots = availability?.slots || clubInfo?.slots || [];
 
   const isAvailable = (courtId: string, slotId: string) => {
     if (!availability || availability.closed) return false;
-    return (
-      availability.availability?.find(
-        (a) => a.courtId === courtId && a.slotId === slotId,
-      )?.available ?? false
+    return availability.availability?.find(
+      (a) => a.courtId === courtId && a.slotId === slotId,
+    )?.available ?? false;
+  };
+
+  const isSelected = (courtId: string, slotId: string) =>
+    selectedSlot?.court._id === courtId && selectedSlot?.slot._id === slotId;
+
+  const handleSlotClick = (court: Court, slot: Slot) => {
+    setSelectedSlot((prev) =>
+      prev?.court._id === court._id && prev?.slot._id === slot._id ? null : { court, slot },
     );
   };
+
+  const handleCompleteBooking = () => {
+    if (!selectedSlot) return;
+    if (!isClientAuthenticated) openAuth();
+    else openConfirm();
+  };
+
+  const handleAuthSuccess = () => {
+    if (selectedSlot) openConfirm();
+  };
+
+  const handleBookingConfirmed = () => {
+    setSelectedSlot(null);
+    if (!slug) return;
+    setIsLoadingAvail(true);
+    publicService.getAvailability(slug, selectedDate)
+      .then((r) => setAvailability(r.data))
+      .catch(() => {})
+      .finally(() => setIsLoadingAvail(false));
+  };
+
+  const courts = availability?.courts || clubInfo?.courts || [];
+  const slots = availability?.slots || clubInfo?.slots || [];
+  const { month, year } = selectedDate ? getDateParts(selectedDate) : { month: "", year: 0 };
+
+  const clubWords = clubInfo?.club.name.trim().split(" ") ?? [];
+  const heroFirst = clubWords.length > 1 ? clubWords.slice(0, -1).join(" ") : clubWords[0] ?? "";
+  const heroLast = clubWords.length > 1 ? clubWords[clubWords.length - 1] : "";
+
+  // ─── Loading / error ─────────────────────────────────────────────────────
 
   if (isLoadingInfo) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Spinner size="lg" />
+        <Spinner size="lg" color="primary" />
       </div>
     );
   }
@@ -166,51 +185,89 @@ export const BookingPortalPage = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background text-foreground">
         <span className="text-5xl">🎾</span>
-        <p className="text-xl font-semibold">Club no encontrado</p>
-        <p className="text-default-500 text-sm">
-          Verificá que el link sea correcto.
-        </p>
+        <p className="text-xl font-bold">Club no encontrado</p>
+        <p className="text-default-400 text-sm">Verificá que el link sea correcto.</p>
       </div>
     );
   }
 
+  // ─── Render ──────────────────────────────────────────────────────────────
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur border-b border-default-200">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
-          <div className="flex flex-col leading-tight">
-            <span className="font-bold text-base">{clubInfo.club.name}</span>
-            {clubInfo.club.address && (
-              <span className="text-xs text-default-400">{clubInfo.club.address}</span>
-            )}
+    <div className="min-h-screen bg-background text-foreground font-sans">
+
+      {/* ── Navbar ────────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-black/10 dark:border-white/10">
+        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
+
+          {/* Logo izquierda */}
+          <div className="flex items-center gap-2.5">
+            <img
+              src={logo}
+              alt="Logo"
+              className="w-8 h-8 rounded-lg object-cover"
+            />
+            <span className="font-black text-sm tracking-widest uppercase text-foreground truncate max-w-[160px]">
+              PADEXA
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Íconos derecha */}
+          <div className="flex items-center gap-1">
             {isClientAuthenticated ? (
               <>
                 <Button
-                  size="sm"
-                  variant="flat"
-                  startContent={<Ticket size={14} />}
-                  onPress={openMyBookings}
-                >
-                  Mis turnos
-                </Button>
-                <Button
-                  size="sm"
-                  variant="light"
                   isIconOnly
-                  onPress={logoutClient}
-                  title="Cerrar sesión"
+                  variant="light"
+                  size="sm"
+                  radius="lg"
+                  className="text-default-500"
+                  onPress={openMyBookings}
+                  title="Mis turnos"
                 >
-                  <LogOut size={16} />
+                  <Ticket size={18} />
                 </Button>
+                <Dropdown placement="bottom-end">
+                  <DropdownTrigger>
+                    <Button
+                      isIconOnly
+                      variant="flat"
+                      size="sm"
+                      radius="lg"
+                      className="bg-primary/10 text-primary border border-primary/20"
+                      title={clientUser?.name}
+                    >
+                      <User size={17} />
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu aria-label="Cuenta">
+                    <DropdownItem key="name" isReadOnly className="opacity-60 text-xs">
+                      {clientUser?.name}
+                    </DropdownItem>
+                    <DropdownItem
+                      key="bookings"
+                      startContent={<Ticket size={14} />}
+                      onPress={openMyBookings}
+                    >
+                      Mis turnos
+                    </DropdownItem>
+                    <DropdownItem
+                      key="logout"
+                      color="danger"
+                      startContent={<LogOut size={14} />}
+                      onPress={logoutClient}
+                    >
+                      Cerrar sesión
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
               </>
             ) : (
               <Button
-                size="sm"
                 variant="flat"
+                size="sm"
+                radius="lg"
+                className="bg-primary/10 text-primary border border-primary/20 font-semibold text-xs"
                 startContent={<LogIn size={14} />}
                 onPress={openAuth}
               >
@@ -221,108 +278,229 @@ export const BookingPortalPage = () => {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6 flex flex-col gap-6">
-        {/* Saludo */}
-        {isClientAuthenticated && (
-          <p className="text-sm text-default-500">
-            Hola, <span className="font-semibold text-foreground">{clientUser?.name}</span>
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <section className="relative max-w-2xl mx-auto px-6 pt-10 pb-8 overflow-hidden">
+
+        {/* Glow de fondo */}
+        <div
+          className="absolute -top-10 -left-10 w-72 h-72 rounded-full pointer-events-none"
+          style={{
+            background: "radial-gradient(circle, rgba(13,181,219,0.12) 0%, transparent 70%)",
+          }}
+        />
+
+        {/* Parte superior del nombre — tracking abierto, peso medio */}
+        {heroFirst && (
+          <p className="text-xs sm:text-sm font-bold tracking-[0.35em] uppercase text-default-400 mb-1 relative">
+            {heroFirst}
           </p>
         )}
 
-        {/* Selector de fecha */}
-        <div className="flex items-center gap-3 justify-between">
-          <Button
-            isIconOnly
-            variant="flat"
-            size="sm"
-            isDisabled={!canGoBack}
-            onPress={() => setSelectedDate((d) => addDays(d, -1))}
+        {/* Palabra principal — enorme, gradiente */}
+        <h1 className="relative leading-none mb-4">
+          <span
+            className="font-black uppercase block"
+            style={{
+              fontSize: "clamp(3.5rem, 16vw, 6rem)",
+              background: "linear-gradient(135deg, rgb(13,181,219) 0%, rgb(56,189,248) 55%, rgb(45,212,191) 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              lineHeight: 0.9,
+              letterSpacing: "-0.02em",
+            }}
           >
-            <ChevronLeft size={18} />
-          </Button>
+            {heroLast || heroFirst}
+          </span>
+        </h1>
 
-          <div className="flex items-center gap-2 flex-1 justify-center">
-            <CalendarDays size={16} className="text-primary" />
-            <span className="font-semibold text-sm capitalize">
-              {formatDisplayDate(selectedDate)}
-            </span>
-          </div>
-
-          <Button
-            isIconOnly
-            variant="flat"
-            size="sm"
-            isDisabled={!canGoForward}
-            onPress={() => setSelectedDate((d) => addDays(d, 1))}
-          >
-            <ChevronRight size={18} />
-          </Button>
+        {/* Línea decorativa */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-px bg-primary w-10 opacity-60" />
+          <div className="h-[3px] bg-primary rounded-full w-2 opacity-40" />
         </div>
 
-        {/* Estado del club */}
+        {/* Subtítulo + dirección */}
+        <p className="text-default-400 text-sm font-medium">Reservá tu turno</p>
+        {clubInfo.club.address && (
+          <p className="text-default-500 text-xs mt-1">{clubInfo.club.address}</p>
+        )}
+        {isClientAuthenticated && (
+          <p className="text-default-400 text-sm mt-2">
+            Hola, <span className="text-foreground font-semibold">{clientUser?.name}</span>
+          </p>
+        )}
+      </section>
+
+      {/* ── Selector de fecha ─────────────────────────────────────────────── */}
+      <section className="max-w-2xl mx-auto px-6 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-bold tracking-widest uppercase text-default-400">
+            Seleccioná una fecha
+          </p>
+          <span className="text-xs font-bold tracking-widest text-primary">
+            {month} {year}
+          </span>
+        </div>
+
+        <div
+          ref={dateScrollRef}
+          className="flex gap-2 overflow-x-auto pb-1"
+          style={{ scrollbarWidth: "none" }}
+        >
+          {dates.map((iso) => {
+            const { dayName, day } = getDateParts(iso);
+            const isActive = iso === selectedDate;
+            return (
+              <button
+                key={iso}
+                onClick={() => setSelectedDate(iso)}
+                className={`
+                  flex flex-col items-center py-3 px-3.5 rounded-2xl shrink-0 transition-all border
+                  ${isActive
+                    ? "bg-primary/10 border-primary text-primary"
+                    : "bg-default-100 border-default-200 text-default-500 hover:border-default-400"}
+                `}
+              >
+                <span className="text-[9px] font-bold tracking-widest mb-1.5">{dayName}</span>
+                <span className={`text-xl font-black leading-none ${isActive ? "text-primary" : "text-foreground"}`}>
+                  {day}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Canchas y turnos ──────────────────────────────────────────────── */}
+      <section className="max-w-2xl mx-auto px-4 pb-40">
+
+        {/* Cierre del club */}
         {availability?.closed && (
-          <div className="rounded-xl border border-warning-200 bg-warning-50 p-4 text-center text-warning-700 text-sm">
-            <span className="font-semibold">El club está cerrado ese día.</span>
+          <div className="mx-2 p-4 rounded-2xl border border-warning-200 bg-warning-50 dark:bg-warning-900/20 text-center mb-6">
+            <p className="font-bold text-warning-600 dark:text-warning-400">El club está cerrado ese día</p>
             {availability.closureReason && (
-              <p className="mt-1 text-xs">{availability.closureReason}</p>
+              <p className="text-xs text-warning-500 mt-1">{availability.closureReason}</p>
             )}
           </div>
         )}
 
-        {/* Grid de disponibilidad */}
-        {isLoadingAvailability ? (
-          <div className="flex justify-center py-16">
-            <Spinner />
+        {isLoadingAvail ? (
+          <div className="flex justify-center py-20">
+            <Spinner color="primary" />
           </div>
         ) : courts.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-16 text-default-400">
+          <div className="flex flex-col items-center gap-3 py-20 text-default-400">
             <span className="text-4xl">🎾</span>
             <p className="text-sm">No hay canchas configuradas todavía</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-6">
-            {courts.map((court) => (
-              <div key={court._id} className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <h2 className="font-bold text-sm">{court.name}</h2>
-                  {court.courtType && (
-                    <Chip size="sm" variant="flat" className="text-xs">
-                      {court.courtType}
-                    </Chip>
-                  )}
+          <div className="flex flex-col gap-10">
+            {courts.map((court, idx) => (
+              <div key={court._id}>
+
+                {/* Cabecera de la cancha */}
+                <div className="flex items-start gap-3 mb-4 px-2">
+                  <span className="text-primary font-black text-sm tabular-nums mt-0.5 w-6 shrink-0">
+                    {String(idx + 1).padStart(2, "0")}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-xl font-black uppercase tracking-tight leading-tight">
+                      {court.name}
+                    </h2>
+                    <div className="flex gap-2 mt-2 flex-wrap">
+                      {court.courtType && (
+                        <span className="text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full border border-default-300 text-default-500">
+                          {court.courtType}
+                        </span>
+                      )}
+                      {court.surface && (
+                        <span className="text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full border border-default-300 text-default-500">
+                          {court.surface}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+
+                {/* Grid de turnos */}
+                <div className="grid grid-cols-2 gap-3 px-2">
                   {slots.map((slot) => {
-                    const available = isAvailable(court._id, slot._id);
+                    const avail = isAvailable(court._id, slot._id);
+                    const sel = isSelected(court._id, slot._id);
+                    const durationMin = calcDurationMin(slot.startTime, slot.endTime);
+
+                    if (!avail) {
+                      return (
+                        <div
+                          key={slot._id}
+                          className="bg-default-50 border border-default-100 rounded-2xl p-4 flex items-center justify-between opacity-50"
+                        >
+                          <span className="text-xl font-black text-default-400">
+                            {slot.startTime}
+                          </span>
+                          <div className="flex flex-col items-end gap-1">
+                            <Lock size={12} className="text-default-300" />
+                            <span className="text-[9px] font-bold tracking-widest uppercase text-default-400">
+                              Ocupado
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+
                     return (
                       <button
                         key={slot._id}
-                        disabled={!available || availability?.closed}
-                        onClick={() => available && handleSlotClick(court, slot)}
+                        onClick={() => handleSlotClick(court, slot)}
                         className={`
-                          rounded-xl border p-3 text-left flex flex-col gap-1 transition-all
-                          ${
-                            available && !availability?.closed
-                              ? "border-primary/40 bg-primary/5 hover:bg-primary/10 hover:border-primary cursor-pointer"
-                              : "border-default-200 bg-default-50 opacity-50 cursor-not-allowed"
-                          }
+                          rounded-2xl p-4 text-left flex flex-col gap-2 border transition-all
+                          ${sel
+                            ? "bg-primary/10 border-primary shadow-sm shadow-primary/20"
+                            : "bg-default-100 border-default-200 hover:border-primary/40 hover:bg-primary/5"}
                         `}
                       >
-                        <span className="font-semibold text-sm">
-                          {slot.label || `${slot.startTime}`}
-                        </span>
-                        <span className="text-xs text-default-500">
-                          {slot.startTime} - {slot.endTime}
-                        </span>
-                        {available && !availability?.closed ? (
-                          <span className="text-xs font-medium text-primary mt-1">
-                            {slot.price > 0
-                              ? `$${slot.price.toLocaleString("es-AR")}`
-                              : "Reservar"}
+                        {/* Hora + ícono acción */}
+                        <div className="flex items-start justify-between">
+                          <span className="text-xl font-black text-foreground leading-none">
+                            {slot.startTime}
                           </span>
-                        ) : (
-                          <span className="text-xs text-default-400 mt-1">Ocupado</span>
+                          <div
+                            className={`
+                              w-6 h-6 rounded-full flex items-center justify-center shrink-0 border transition-all
+                              ${sel
+                                ? "bg-primary border-primary"
+                                : "bg-primary/10 border-primary/30"}
+                            `}
+                          >
+                            {sel
+                              ? <Check size={11} className="text-white" strokeWidth={3} />
+                              : <Plus size={11} className="text-primary" strokeWidth={3} />
+                            }
+                          </div>
+                        </div>
+
+                        {/* Duración */}
+                        {durationMin > 0 && (
+                          <div>
+                            <p className="text-[9px] font-bold tracking-widest uppercase text-default-400 mb-0.5">
+                              Duración
+                            </p>
+                            <p className="text-sm font-bold text-default-500">
+                              {durationMin} MIN
+                            </p>
+                          </div>
                         )}
+
+                        {/* Precio + estado */}
+                        <div className="flex items-center justify-between mt-auto">
+                          <span className="text-lg font-black text-primary">
+                            {slot.price > 0 ? `$${slot.price.toLocaleString("es-AR")}` : "—"}
+                          </span>
+                          <span className={`text-[9px] font-bold tracking-widest uppercase ${sel ? "text-primary" : "text-default-400"}`}>
+                            {sel ? "SELEC." : "DISP."}
+                          </span>
+                        </div>
                       </button>
                     );
                   })}
@@ -331,9 +509,43 @@ export const BookingPortalPage = () => {
             ))}
           </div>
         )}
-      </main>
+      </section>
 
-      {/* Modales */}
+      {/* ── Barra inferior de reserva ──────────────────────────────────────── */}
+      <div
+        className={`
+          fixed bottom-0 left-0 right-0 z-20
+          bg-background/95 backdrop-blur-md border-t border-black/10 dark:border-white/10
+          px-4 py-4 transition-transform duration-300 ease-out
+          ${selectedSlot ? "translate-y-0" : "translate-y-full"}
+        `}
+      >
+        <div className="max-w-2xl mx-auto flex items-center gap-4">
+          <div className="flex-1 min-w-0">
+            <p className="text-[9px] font-bold tracking-widest uppercase text-default-400 mb-0.5">
+              Turno seleccionado
+            </p>
+            <p className="font-bold text-sm text-foreground truncate">
+              {selectedSlot?.court.name} · {selectedSlot?.slot.startTime}
+            </p>
+            {(selectedSlot?.slot.price ?? 0) > 0 && (
+              <p className="text-xs font-bold text-primary mt-0.5">
+                Total ${selectedSlot?.slot.price.toLocaleString("es-AR")}
+              </p>
+            )}
+          </div>
+          <Button
+            color="primary"
+            radius="lg"
+            className="font-black text-sm tracking-wider uppercase shrink-0 px-6 h-12 shadow-lg shadow-primary/30"
+            onPress={handleCompleteBooking}
+          >
+            Reservar
+          </Button>
+        </div>
+      </div>
+
+      {/* ── Modales ────────────────────────────────────────────────────────── */}
       {slug && (
         <>
           <ClientAuthModal
@@ -342,18 +554,16 @@ export const BookingPortalPage = () => {
             slug={slug}
             onSuccess={handleAuthSuccess}
           />
-
           <BookingConfirmModal
             isOpen={isConfirmOpen}
             onClose={closeConfirm}
             slug={slug}
-            court={pendingCourt}
-            slot={pendingSlot}
+            court={selectedSlot?.court ?? null}
+            slot={selectedSlot?.slot ?? null}
             date={selectedDate}
             clientName={clientUser?.name || ""}
             onConfirmed={handleBookingConfirmed}
           />
-
           <MyBookingsDrawer
             isOpen={isMyBookingsOpen}
             onClose={closeMyBookings}
