@@ -13,6 +13,7 @@ import { BookingDetailDrawer } from "./features/app-shell/components/BookingDeta
 import { NotificationsDrawer } from "./features/app-shell/components/NotificationsDrawer";
 import { Login } from "./features/auth/page/Login";
 import { SuperAdminSetup } from "./features/super-admin/page/SuperAdminSetup";
+import { BookingPortalPage } from "./features/public/BookingPortalPage";
 import {
   useAdmins,
   useBookings,
@@ -358,6 +359,9 @@ export default function App() {
     <>
       <PwaManager />
       <Routes>
+        {/* Portal público de reservas — no requiere auth de admin */}
+        <Route path="/reservar/:slug" element={<BookingPortalPage />} />
+
         <Route
           path="/login"
           element={token ? <Navigate to="/" replace /> : <Login />}

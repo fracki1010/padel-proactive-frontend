@@ -6,6 +6,7 @@ import App from "./App.tsx";
 import { HeroUIProvider, ToastProvider } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
+import { ClientAuthProvider } from "./context/ClientAuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import "./lib/firebase";
 import { getDeviceKind } from "./lib/device";
@@ -66,6 +67,7 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
+          <ClientAuthProvider>
           <BrowserRouter>
             <HeroUIProvider className="text-foreground bg-background">
               <ToastProvider
@@ -77,6 +79,7 @@ createRoot(document.getElementById("root")!).render(
               <App />
             </HeroUIProvider>
           </BrowserRouter>
+          </ClientAuthProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
