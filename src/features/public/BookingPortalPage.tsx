@@ -1,5 +1,5 @@
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner, useDisclosure } from "@heroui/react";
-import { Check, Lock, LogIn, LogOut, Plus, Ticket, User } from "lucide-react";
+import { Check, Clock, Lock, LogIn, LogOut, Plus, Ticket, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import logo from "../../assets/logo-8.svg";
@@ -70,6 +70,13 @@ const calcDurationMin = (start: string, end: string) => {
   const [sh, sm] = start.split(":").map(Number);
   const [eh, em] = end.split(":").map(Number);
   return eh * 60 + em - (sh * 60 + sm);
+};
+
+const isSlotPast = (startTime: string, selectedDate: string) => {
+  if (selectedDate !== todayIso()) return false;
+  const now = new Date();
+  const [h, m] = startTime.split(":").map(Number);
+  return h * 60 + m <= now.getHours() * 60 + now.getMinutes();
 };
 
 const buildDates = () =>
@@ -427,8 +434,28 @@ export const BookingPortalPage = () => {
                 <div className="grid grid-cols-2 gap-3 px-2">
                   {slots.map((slot) => {
                     const avail = isAvailable(court._id, slot._id);
+                    const past = isSlotPast(slot.startTime, selectedDate);
                     const sel = isSelected(court._id, slot._id);
                     const durationMin = calcDurationMin(slot.startTime, slot.endTime);
+
+                    if (past) {
+                      return (
+                        <div
+                          key={slot._id}
+                          className="bg-default-50 border border-default-100 rounded-2xl p-4 flex items-center justify-between opacity-40"
+                        >
+                          <span className="text-xl font-black text-default-400">
+                            {slot.startTime}
+                          </span>
+                          <div className="flex flex-col items-end gap-1">
+                            <Clock size={12} className="text-default-300" />
+                            <span className="text-[9px] font-bold tracking-widest uppercase text-default-400">
+                              Pasado
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
 
                     if (!avail) {
                       return (
