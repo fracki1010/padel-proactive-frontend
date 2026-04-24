@@ -96,6 +96,7 @@ export const BookingPortalPage = () => {
     club: { name: string; address?: string };
     courts: Court[];
     slots: Slot[];
+    cancellationLockHours: number;
   } | null>(null);
 
   const [availability, setAvailability] = useState<{
@@ -396,7 +397,7 @@ export const BookingPortalPage = () => {
           <div className="flex justify-center py-20">
             <Spinner color="primary" />
           </div>
-        ) : courts.length === 0 ? (
+        ) : courts.length === 0 && !availability?.closed ? (
           <div className="flex flex-col items-center gap-3 py-20 text-default-400">
             <span className="text-4xl">🎾</span>
             <p className="text-sm">No hay canchas configuradas todavía</p>
@@ -596,6 +597,7 @@ export const BookingPortalPage = () => {
             onClose={closeMyBookings}
             slug={slug}
             isAuthenticated={isClientAuthenticated}
+            cancellationLockHours={clubInfo?.cancellationLockHours ?? 0}
           />
         </>
       )}
