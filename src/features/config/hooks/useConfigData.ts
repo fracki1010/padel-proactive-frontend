@@ -138,6 +138,17 @@ export const useCloseWhatsappSession = () => {
   });
 };
 
+export const useResetWhatsappSession = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: configService.resetWhatsappSession,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+    },
+  });
+};
+
 export const useUpdateSlot = () => {
   const queryClient = useQueryClient();
 

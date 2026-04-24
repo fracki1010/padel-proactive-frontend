@@ -501,6 +501,11 @@ export const configService = {
     throw lastError;
   },
 
+  resetWhatsappSession: async (): Promise<any> => {
+    const response = await api.post("/config/whatsapp/reset-session");
+    return response.data;
+  },
+
   closeWhatsappSession: async (): Promise<any> => {
     const attempts: Array<{
       method: "put" | "patch";

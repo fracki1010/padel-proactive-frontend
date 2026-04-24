@@ -23,6 +23,7 @@ type WhatsappSettingsViewProps = {
   onToggleWhatsapp: (enabled: boolean) => void;
   onCloseWhatsappSession: () => void;
   onSwitchWhatsappDevice: () => void;
+  onResetWhatsappSession: () => void;
   onCancellationGroupEnabledChange: (enabled: boolean) => void;
   onSelectWhatsappGroup: (groupId: string) => void;
 };
@@ -48,6 +49,7 @@ export const WhatsappSettingsView = ({
   onToggleWhatsapp,
   onCloseWhatsappSession,
   onSwitchWhatsappDevice,
+  onResetWhatsappSession,
   onCancellationGroupEnabledChange,
   onSelectWhatsappGroup,
 }: WhatsappSettingsViewProps) => {
@@ -186,6 +188,16 @@ export const WhatsappSettingsView = ({
               onPress={onSwitchWhatsappDevice}
             >
               Vincular otro dispositivo
+            </Button>
+            <Button
+              variant="flat"
+              color="primary"
+              className="font-black uppercase sm:col-span-2"
+              isLoading={updateWhatsappPending}
+              isDisabled={updateWhatsappPending || !workerOnline}
+              onPress={onResetWhatsappSession}
+            >
+              Nueva sesión / Escanear QR nuevo
             </Button>
           </div>
 

@@ -18,6 +18,7 @@ import {
   useUpdateBotAutomationSettings,
   useUpdateWhatsappStatus,
   useCloseWhatsappSession,
+  useResetWhatsappSession,
   useWhatsappCancellationGroupSettings,
   useUpdateWhatsappCancellationGroupSettings,
   useWhatsappGroups,
@@ -102,6 +103,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const updateOwnCompany = useUpdateOwnCompany();
   const updateWhatsappStatus = useUpdateWhatsappStatus();
   const closeWhatsappSession = useCloseWhatsappSession();
+  const resetWhatsappSession = useResetWhatsappSession();
   const updateWhatsappCancellationGroupSettings =
     useUpdateWhatsappCancellationGroupSettings();
   const createCompany = useCreateCompany();
@@ -751,6 +753,74 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           err?.response?.data?.error ||
           err?.message ||
           "No se pudo cambiar el dispositivo de WhatsApp",
+        color: "danger",
+      });
+    }
+  };
+
+  const handleResetWhatsappSession = async () => {
+    if (!ensureWhatsappWorkerOnline()) return;
+
+    const shouldReset = window.confirm(
+      "¿Querés cerrar la sesión actual y generar un QR nuevo? Se eliminarán los datos de sesión guardados.",
+    );
+    if (!shouldReset) return;
+
+    try {
+      addToast({
+        title: "Reiniciando sesión de WhatsApp...",
+        description: "Esto puede tardar unos segundos.",
+        color: "default",
+      });
+
+      const response = await resetWhatsappSession.mutateAsync();
+      const commandId = String(response?.data?.commandId || "").trim();
+
+      if (!commandId) {
+        addToast({ title: "Sesión reiniciada. Esperá el nuevo QR.", color: "success" });
+        return;
+      }
+
+      setIsWaitingWhatsappCommand(true);
+      try {
+        const maxAttempts = 45;
+        const delayMs = 2000;
+        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+          const statusResponse = await configService.getWhatsappCommandStatus(commandId);
+          const status = String(statusResponse?.data?.status || "").toLowerCase();
+          const errorMessage = String(statusResponse?.data?.lastError || "").trim();
+
+          if (status === "done") {
+            queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+            addToast({
+              title: "Sesión reiniciada",
+              description: "Escaneá el nuevo QR para vincular el dispositivo.",
+              color: "success",
+            });
+            return;
+          }
+
+          if (status === "failed") {
+            throw new Error(errorMessage || "No se pudo reiniciar la sesión de WhatsApp");
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+
+        addToast({
+          title: "WhatsApp sigue procesando el reinicio",
+          description: "El QR debería aparecer en breve.",
+          color: "warning",
+        });
+      } finally {
+        setIsWaitingWhatsappCommand(false);
+      }
+    } catch (err: any) {
+      addToast({
+        title:
+          err?.response?.data?.error ||
+          err?.message ||
+          "No se pudo reiniciar la sesión de WhatsApp",
         color: "danger",
       });
     }
@@ -1567,6 +1637,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         updateWhatsappPending={
           updateWhatsappStatus.isPending ||
           closeWhatsappSession.isPending ||
+          resetWhatsappSession.isPending ||
           isWaitingWhatsappCommand
         }
         whatsappChipColor={whatsappChipColor}
@@ -1583,6 +1654,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         onToggleWhatsapp={handleToggleWhatsapp}
         onCloseWhatsappSession={handleCloseWhatsappSession}
         onSwitchWhatsappDevice={handleSwitchWhatsappDevice}
+        onResetWhatsappSession={handleResetWhatsappSession}
         onCancellationGroupEnabledChange={handleToggleCancellationGroup}
         onSelectWhatsappGroup={handleSelectWhatsappGroup}
       />
