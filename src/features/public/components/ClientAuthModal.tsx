@@ -202,7 +202,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     setIsLoading(true);
     try {
       const { countryCode: gc, localNumber: gl } = normalizePhoneForApi(googlePhone.countryCode, googlePhone.localNumber);
-      const res = await publicService.sendOtp(slug, gc, gl);
+      const res = await publicService.sendOtp(slug, gc, gl, true);
       setGoogleMasked(res.data.masked);
       setStep("google_otp");
       addToast({ title: `Código enviado a WhatsApp ***${res.data.masked}`, color: "success" });
@@ -241,7 +241,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     setIsLoading(true);
     try {
       const { countryCode: pc, localNumber: pl } = normalizePhoneForApi(phone.countryCode, phone.localNumber);
-      const res = await publicService.sendOtp(slug, pc, pl);
+      const res = await publicService.sendOtp(slug, pc, pl, flow === "google");
       if (flow === "reg") setRegMasked(res.data.masked);
       else setGoogleMasked(res.data.masked);
       addToast({ title: "Código reenviado", color: "success" });

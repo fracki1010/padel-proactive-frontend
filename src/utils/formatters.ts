@@ -43,10 +43,31 @@ export const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-export const formatPhoneForDisplay = (value: string) => {
-  const raw = String(value || "").trim();
-  if (!raw) return "";
+const PHONE_PREFIXES = [
+  { prefix: "598", flag: "🇺🇾" },
+  { prefix: "595", flag: "🇵🇾" },
+  { prefix: "591", flag: "🇧🇴" },
+  { prefix: "549", flag: "🇦🇷" }, // Argentina con 9 — antes que "54"
+  { prefix: "54",  flag: "🇦🇷" }, // Argentina sin 9
+  { prefix: "56",  flag: "🇨🇱" },
+  { prefix: "55",  flag: "🇧🇷" },
+  { prefix: "52",  flag: "🇲🇽" },
+  { prefix: "51",  flag: "🇵🇪" },
+  { prefix: "57",  flag: "🇨🇴" },
+  { prefix: "34",  flag: "🇪🇸" },
+  { prefix: "1",   flag: "🇺🇸" },
+];
 
-  const withoutArgentinaMobilePrefix = raw.replace(/^\+?\s*54[\s-]*9[\s-]*/, "");
-  return withoutArgentinaMobilePrefix || raw;
+export const formatPhoneForDisplay = (value: string) => {
+  const digits = String(value || "").trim().replace(/\D/g, "");
+  if (!digits) return "";
+
+  for (const { prefix, flag } of PHONE_PREFIXES) {
+    if (digits.startsWith(prefix)) {
+      const local = digits.slice(prefix.length);
+      return local ? `${flag} ${local}` : digits;
+    }
+  }
+
+  return digits;
 };

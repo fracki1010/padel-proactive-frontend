@@ -28,8 +28,8 @@ export const publicService = {
     return res.data;
   },
 
-  sendOtp: async (slug: string, countryCode: string, localNumber: string) => {
-    const res = await publicApi.post(`/public/${slug}/auth/send-otp`, { countryCode, localNumber });
+  sendOtp: async (slug: string, countryCode: string, localNumber: string, googleFlow?: boolean) => {
+    const res = await publicApi.post(`/public/${slug}/auth/send-otp`, { countryCode, localNumber, ...(googleFlow && { googleFlow: true }) });
     return res.data;
   },
 
