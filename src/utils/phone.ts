@@ -60,6 +60,16 @@ export const sanitizeLocalPhoneInput = (
   return digits;
 };
 
+// Argentina requires the "9" between country code and area code for WhatsApp.
+// Auto-insert it so users don't have to type it.
+export const normalizePhoneForApi = (countryCode: string, localNumber: string) => {
+  if (countryCode === "54") {
+    const digits = localNumber.replace(/\D/g, "");
+    return { countryCode, localNumber: digits.startsWith("9") ? digits : `9${digits}` };
+  }
+  return { countryCode, localNumber };
+};
+
 export const parseStoredPhone = (value: string) => {
   const digits = onlyDigits(value);
   if (!digits) {

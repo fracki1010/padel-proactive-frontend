@@ -16,6 +16,7 @@ import { useClientAuth } from "../../../context/ClientAuthContext";
 import { publicService } from "../../../services/publicService";
 import { PhoneInput, defaultPhone } from "./PhoneInput";
 import type { PhoneValue } from "./PhoneInput";
+import { normalizePhoneForApi } from "../../../utils/phone";
 
 interface Props {
   isOpen: boolean;
@@ -128,7 +129,8 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     }
     setIsLoading(true);
     try {
-      const res = await publicService.sendOtp(slug, regPhone.countryCode, regPhone.localNumber);
+      const { countryCode: rc, localNumber: rl } = normalizePhoneForApi(regPhone.countryCode, regPhone.localNumber);
+      const res = await publicService.sendOtp(slug, rc, rl);
       setRegMasked(res.data.masked);
       setStep("reg_otp");
       addToast({ title: `Código enviado a WhatsApp ***${res.data.masked}`, color: "success" });
@@ -147,12 +149,13 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     }
     setIsLoading(true);
     try {
+      const { countryCode: rc, localNumber: rl } = normalizePhoneForApi(regPhone.countryCode, regPhone.localNumber);
       const res = await publicService.register(slug, {
         name: regForm.name,
         email: regForm.email,
         password: regForm.password,
-        countryCode: regPhone.countryCode,
-        localNumber: regPhone.localNumber,
+        countryCode: rc,
+        localNumber: rl,
         otp: regOtp,
       });
       completeLogin(res.data.token, res.data.client);
@@ -198,7 +201,8 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     }
     setIsLoading(true);
     try {
-      const res = await publicService.sendOtp(slug, googlePhone.countryCode, googlePhone.localNumber);
+      const { countryCode: gc, localNumber: gl } = normalizePhoneForApi(googlePhone.countryCode, googlePhone.localNumber);
+      const res = await publicService.sendOtp(slug, gc, gl);
       setGoogleMasked(res.data.masked);
       setStep("google_otp");
       addToast({ title: `Código enviado a WhatsApp ***${res.data.masked}`, color: "success" });
@@ -217,9 +221,10 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     }
     setIsLoading(true);
     try {
+      const { countryCode: gc, localNumber: gl } = normalizePhoneForApi(googlePhone.countryCode, googlePhone.localNumber);
       const res = await publicService.googleAuth(slug, googleIdToken, {
-        countryCode: googlePhone.countryCode,
-        localNumber: googlePhone.localNumber,
+        countryCode: gc,
+        localNumber: gl,
         otp: googleOtp,
       });
       completeLogin(res.data.token, res.data.client);
@@ -235,7 +240,8 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     const phone = flow === "reg" ? regPhone : googlePhone;
     setIsLoading(true);
     try {
-      const res = await publicService.sendOtp(slug, phone.countryCode, phone.localNumber);
+      const { countryCode: pc, localNumber: pl } = normalizePhoneForApi(phone.countryCode, phone.localNumber);
+      const res = await publicService.sendOtp(slug, pc, pl);
       if (flow === "reg") setRegMasked(res.data.masked);
       else setGoogleMasked(res.data.masked);
       addToast({ title: "Código reenviado", color: "success" });
@@ -265,7 +271,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
         <div className="flex flex-col gap-4">
           <PhoneInput value={phone} onChange={setPhone} isDisabled={isLoading} />
           <p className="text-xs text-default-400">
-            Ingresá el número tal como lo tenés en WhatsApp. Para Argentina incluí el 9 antes del área, por ejemplo: <span className="font-medium">9 11 1234-5678</span>
+            Ingresá el número tal como lo tenés en WhatsApp. Para Argentina el 9 se agrega automáticamente, por ejemplo: <span className="font-medium">2622517447</span> o <span className="font-medium">92622517447</span>
           </p>
           <Button color="primary" onPress={onSend} isLoading={isLoading} fullWidth>
             Enviar código por WhatsApp
