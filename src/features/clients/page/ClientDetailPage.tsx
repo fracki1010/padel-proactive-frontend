@@ -546,6 +546,24 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
                 Suspendido
               </Chip>
             )}
+            {user.accountOrigin && (
+              <Chip
+                variant="flat"
+                className={
+                  user.accountOrigin === "whatsapp"
+                    ? "bg-green-500/20 text-green-300 border border-green-500/30 font-black uppercase"
+                    : user.accountOrigin === "google"
+                    ? "bg-orange-500/20 text-orange-300 border border-orange-500/30 font-black uppercase"
+                    : "bg-blue-500/20 text-blue-300 border border-blue-500/30 font-black uppercase"
+                }
+              >
+                {user.accountOrigin === "whatsapp"
+                  ? "WhatsApp"
+                  : user.accountOrigin === "google"
+                  ? "Google"
+                  : "Sistema"}
+              </Chip>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2">

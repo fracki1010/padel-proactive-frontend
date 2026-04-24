@@ -32,6 +32,7 @@ export interface User {
   trustedClientConfirmationCount?: number;
   confirmationsToBeTrusted?: number;
   isTrustedClient?: boolean;
+  accountOrigin?: "whatsapp" | "sistema" | "google";
 }
 
 export interface Booking {
