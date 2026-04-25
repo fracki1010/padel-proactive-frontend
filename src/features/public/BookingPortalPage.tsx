@@ -93,14 +93,14 @@ const buildDates = () =>
 
 export const BookingPortalPage = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { clientUser, isClientAuthenticated, logoutClient } = useClientAuth();
+  const { clientToken, clientUser, isClientAuthenticated, logoutClient } = useClientAuth();
 
   const dates = buildDates();
   const [selectedDate, setSelectedDate] = useState(dates[0]);
   const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
 
   const [clubInfo, setClubInfo] = useState<{
-    club: { name: string; address?: string; coverImage?: string };
+    club: { name: string; address?: string; coverImage?: string; companyId?: string };
     courts: Court[];
     slots: Slot[];
     cancellationLockHours: number;
@@ -127,7 +127,19 @@ export const BookingPortalPage = () => {
     if (!slug) return;
     setIsLoadingInfo(true);
     publicService.getClubInfo(slug)
-      .then((r) => setClubInfo(r.data))
+      .then((r) => {
+        setClubInfo(r.data);
+        if (clientToken) {
+          try {
+            const payload = JSON.parse(atob(clientToken.split(".")[1]));
+            if (payload?.companyId && payload.companyId !== r.data?.club?.companyId) {
+              logoutClient();
+            }
+          } catch {
+            logoutClient();
+          }
+        }
+      })
       .catch(() => setClubInfo(null))
       .finally(() => setIsLoadingInfo(false));
   }, [slug]);
