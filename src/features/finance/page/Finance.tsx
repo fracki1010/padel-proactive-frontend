@@ -42,7 +42,8 @@ export const Finance = ({ bookings }: FinanceProps) => {
   const todayStr = getTodayIsoLocal();
 
   const metrics = useMemo(() => {
-    const filteredMonth = bookings.filter((b) => {
+    const safeBookings = Array.isArray(bookings) ? bookings : [];
+    const filteredMonth = safeBookings.filter((b) => {
       const d = new Date(`${toIsoDateKey(b.date)}T12:00:00Z`);
       return (
         d.getUTCMonth() === selectedMonth &&
@@ -66,7 +67,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
       0,
     );
 
-    const dailyBookings = bookings.filter((b) => {
+    const dailyBookings = safeBookings.filter((b) => {
       const d = toIsoDateKey(b.date);
       return d === todayStr;
     });

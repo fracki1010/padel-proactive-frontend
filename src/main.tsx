@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App.tsx";
+import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import { HeroUIProvider, ToastProvider } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
@@ -76,7 +77,9 @@ createRoot(document.getElementById("root")!).render(
                 toastProps={{ variant: "solid" }}
                 regionProps={{ className: "toast-region-safe-top" }}
               />
-              <App />
+              <ErrorBoundary>
+                <App />
+              </ErrorBoundary>
             </HeroUIProvider>
           </BrowserRouter>
           </ClientAuthProvider>
