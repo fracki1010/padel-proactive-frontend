@@ -3,9 +3,17 @@ import axios from "axios";
 const API_BASE_URL =
   import.meta.env.VITE_API_URL?.trim() || "http://localhost:3000/api";
 
+type UnauthorizedHandler = () => void;
+let clientUnauthorizedHandler: UnauthorizedHandler | null = null;
+
+export const setClientUnauthorizedHandler = (handler: UnauthorizedHandler | null) => {
+  clientUnauthorizedHandler = handler;
+};
+
 // Instancia sin interceptor de auth de admin
 export const publicApi = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 15000,
 });
 
 // Inyecta token de cliente si existe
@@ -16,6 +24,17 @@ publicApi.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Limpia la sesión del cliente si el token expiró o es inválido
+publicApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401 && clientUnauthorizedHandler) {
+      clientUnauthorizedHandler();
+    }
+    return Promise.reject(error);
+  },
+);
 
 export const publicService = {
   getClubInfo: async (slug: string) => {

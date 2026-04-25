@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { setClientUnauthorizedHandler } from "../services/publicService";
 
 const CLIENT_TOKEN_KEY = "padexa:client_token";
 const CLIENT_USER_KEY = "padexa:client_user";
@@ -57,6 +58,11 @@ export const ClientAuthProvider = ({ children }: { children: React.ReactNode }) 
     setClientToken(null);
     setClientUser(null);
   }, []);
+
+  useEffect(() => {
+    setClientUnauthorizedHandler(logoutClient);
+    return () => setClientUnauthorizedHandler(null);
+  }, [logoutClient]);
 
   const value = useMemo(
     () => ({

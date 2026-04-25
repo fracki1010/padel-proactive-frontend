@@ -219,7 +219,8 @@ export const BookingDetailDrawer = ({
                         setApplyPenalty(true);
                         setIsCancelModalOpen(true);
                       }}
-                      isDisabled={updateBooking.isPending}
+                      isDisabled={updateBooking.isPending || deleteBooking.isPending}
+                      isLoading={updateBooking.isPending}
                     >
                       CANCELAR TURNO
                     </Button>

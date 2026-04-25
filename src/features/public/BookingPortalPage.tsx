@@ -131,7 +131,9 @@ export const BookingPortalPage = () => {
         setClubInfo(r.data);
         if (clientToken) {
           try {
-            const payload = JSON.parse(atob(clientToken.split(".")[1]));
+            const parts = clientToken.split(".");
+            if (parts.length !== 3) throw new Error("malformed token");
+            const payload = JSON.parse(atob(parts[1]));
             if (payload?.companyId && payload.companyId !== r.data?.club?.companyId) {
               logoutClient();
             }
@@ -185,7 +187,7 @@ export const BookingPortalPage = () => {
     setIsLoadingAvail(true);
     publicService.getAvailability(slug, selectedDate)
       .then((r) => setAvailability(r.data))
-      .catch(() => {})
+      .catch(() => setAvailability(null))
       .finally(() => setIsLoadingAvail(false));
   };
 
@@ -203,7 +205,7 @@ export const BookingPortalPage = () => {
   const slots = availability?.slots || clubInfo?.slots || [];
   const { month, year } = selectedDate ? getDateParts(selectedDate) : { month: "", year: 0 };
 
-  const clubWords = clubInfo?.club.name.trim().split(" ") ?? [];
+  const clubWords = clubInfo?.club?.name?.trim().split(" ") ?? [];
   const heroFirst = clubWords.length > 1 ? clubWords.slice(0, -1).join(" ") : clubWords[0] ?? "";
   const heroLast = clubWords.length > 1 ? clubWords[clubWords.length - 1] : "";
 

@@ -125,7 +125,7 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
   }, [isOpen]);
 
   const handleCancelPress = (booking: Booking) => {
-    if (cancellationLockHours > 0) {
+    if (cancellationLockHours > 0 && booking.timeSlot?.startTime) {
       const minutes = minutesUntilSlot(booking.date, booking.timeSlot.startTime);
       if (minutes < cancellationLockHours * 60) {
         setBlockedBooking(booking);

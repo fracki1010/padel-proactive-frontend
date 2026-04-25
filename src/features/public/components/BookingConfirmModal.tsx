@@ -72,8 +72,11 @@ export const BookingConfirmModal = ({
       onConfirmed();
       onClose();
     } catch (err: any) {
+      console.error("[BookingConfirmModal] Error al crear reserva:", err);
       const status = err?.response?.status;
-      const message = err?.response?.data?.error || "No se pudo reservar el turno";
+      const message = typeof err?.response?.data === "string"
+        ? "No se pudo reservar el turno"
+        : err?.response?.data?.error || "No se pudo reservar el turno";
       addToast({ title: message, color: "danger" });
       if (status === 409) {
         onClose();
@@ -87,7 +90,7 @@ export const BookingConfirmModal = ({
   if (!court || !slot) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} placement="center" size="sm">
+    <Modal isOpen={isOpen} onClose={onClose} placement="center" size="sm" isDismissable={!isLoading} hideCloseButton={isLoading}>
       <ModalContent>
         <ModalHeader>Confirmar reserva</ModalHeader>
         <ModalBody>
