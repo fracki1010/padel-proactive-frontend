@@ -32,6 +32,7 @@ interface Props {
   date: string;
   clientName: string;
   onConfirmed: () => void;
+  onConflict?: () => void;
 }
 
 const formatDate = (dateStr: string) => {
@@ -54,6 +55,7 @@ export const BookingConfirmModal = ({
   date,
   clientName,
   onConfirmed,
+  onConflict,
 }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -70,10 +72,13 @@ export const BookingConfirmModal = ({
       onConfirmed();
       onClose();
     } catch (err: any) {
-      addToast({
-        title: err?.response?.data?.error || "No se pudo reservar el turno",
-        color: "danger",
-      });
+      const status = err?.response?.status;
+      const message = err?.response?.data?.error || "No se pudo reservar el turno";
+      addToast({ title: message, color: "danger" });
+      if (status === 409) {
+        onClose();
+        onConflict?.();
+      }
     } finally {
       setIsLoading(false);
     }

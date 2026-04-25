@@ -40,11 +40,18 @@ interface SelectedSlot {
 
 // ─── Helpers de fecha ────────────────────────────────────────────────────────
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const toLocalIso = (date: Date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
+const todayIso = () => toLocalIso(new Date());
 
 const addDays = (iso: string, n: number) => {
   const [y, m, d] = iso.split("-").map(Number);
-  return new Date(y, m - 1, d + n).toISOString().slice(0, 10);
+  return toLocalIso(new Date(y, m - 1, d + n));
 };
 
 const MAX_DAYS = 14;
@@ -161,14 +168,23 @@ export const BookingPortalPage = () => {
     if (selectedSlot) openConfirm();
   };
 
-  const handleBookingConfirmed = () => {
-    setSelectedSlot(null);
+  const refreshAvailability = () => {
     if (!slug) return;
     setIsLoadingAvail(true);
     publicService.getAvailability(slug, selectedDate)
       .then((r) => setAvailability(r.data))
       .catch(() => {})
       .finally(() => setIsLoadingAvail(false));
+  };
+
+  const handleBookingConfirmed = () => {
+    setSelectedSlot(null);
+    refreshAvailability();
+  };
+
+  const handleBookingConflict = () => {
+    setSelectedSlot(null);
+    refreshAvailability();
   };
 
   const courts = availability?.courts || clubInfo?.courts || [];
@@ -591,6 +607,7 @@ export const BookingPortalPage = () => {
             date={selectedDate}
             clientName={clientUser?.name || ""}
             onConfirmed={handleBookingConfirmed}
+            onConflict={handleBookingConflict}
           />
           <MyBookingsDrawer
             isOpen={isMyBookingsOpen}
