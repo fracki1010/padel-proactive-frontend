@@ -13,7 +13,7 @@ import {
   Spinner,
   addToast,
 } from "@heroui/react";
-import { AlertTriangle, Clock } from "lucide-react";
+import { AlertTriangle, Clock, History } from "lucide-react";
 import { useEffect, useState } from "react";
 import { publicService } from "../../../services/publicService";
 
@@ -42,27 +42,67 @@ const formatDate = (dateStr: string) => {
 const minutesUntilSlot = (dateStr: string, startTime: string) => {
   const [y, m, d] = dateStr.split("-").map(Number);
   const [h, min] = startTime.split(":").map(Number);
-  const slotDate = new Date(y, m - 1, d, h, min);
-  return (slotDate.getTime() - Date.now()) / 60000;
+  return (new Date(y, m - 1, d, h, min).getTime() - Date.now()) / 60000;
 };
 
 const statusLabel: Record<string, string> = {
   reservado: "Reservado",
   confirmado: "Confirmado",
   suspendido: "Suspendido",
+  cancelado: "Cancelado",
 };
 
 const statusColor: Record<string, "primary" | "success" | "warning" | "danger" | "default"> = {
   reservado: "primary",
   confirmado: "success",
   suspendido: "warning",
+  cancelado: "danger",
 };
 
+const BookingCard = ({
+  booking,
+  onCancelPress,
+  cancellingId,
+  showCancel,
+}: {
+  booking: Booking;
+  onCancelPress?: (b: Booking) => void;
+  cancellingId: string | null;
+  showCancel: boolean;
+}) => (
+  <div className="rounded-xl border border-default-200 bg-default-50 p-4 flex flex-col gap-2">
+    <div className="flex items-center justify-between">
+      <span className="font-semibold text-sm">{booking.court?.name}</span>
+      <Chip size="sm" color={statusColor[booking.status] || "default"} variant="flat">
+        {statusLabel[booking.status] || booking.status}
+      </Chip>
+    </div>
+    <div className="text-xs text-default-500 flex gap-3">
+      <span>{formatDate(booking.date)}</span>
+      <span>
+        {booking.timeSlot?.label || `${booking.timeSlot?.startTime} - ${booking.timeSlot?.endTime}`}
+      </span>
+    </div>
+    {showCancel && booking.status !== "suspendido" && onCancelPress && (
+      <Button
+        size="sm"
+        variant="flat"
+        color="danger"
+        isLoading={cancellingId === booking._id}
+        onPress={() => onCancelPress(booking)}
+        className="mt-1"
+      >
+        Cancelar turno
+      </Button>
+    )}
+  </div>
+);
+
 export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cancellationLockHours }: Props) => {
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [upcoming, setUpcoming] = useState<Booking[]>([]);
+  const [history, setHistory] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
-
   const [confirmBooking, setConfirmBooking] = useState<Booking | null>(null);
   const [blockedBooking, setBlockedBooking] = useState<Booking | null>(null);
 
@@ -71,7 +111,8 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
     setIsLoading(true);
     try {
       const res = await publicService.getMyBookings(slug);
-      setBookings(res.data || []);
+      setUpcoming(res.data?.upcoming || []);
+      setHistory(res.data?.history || []);
     } catch {
       addToast({ title: "No se pudieron cargar tus turnos", color: "danger" });
     } finally {
@@ -102,7 +143,7 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
     try {
       await publicService.cancelBooking(slug, id);
       addToast({ title: "Turno cancelado", color: "success" });
-      setBookings((prev) => prev.filter((b) => b._id !== id));
+      setUpcoming((prev) => prev.filter((b) => b._id !== id));
     } catch (err: any) {
       addToast({
         title: err?.response?.data?.error || "No se pudo cancelar",
@@ -119,63 +160,67 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
         <DrawerContent>
           <DrawerHeader className="flex flex-col gap-1">
             <span className="text-lg font-bold">Mis turnos</span>
-            <span className="text-sm text-default-500 font-normal">Próximas reservas</span>
           </DrawerHeader>
-          <DrawerBody>
+          <DrawerBody className="gap-6">
             {isLoading ? (
               <div className="flex justify-center py-12">
                 <Spinner />
               </div>
-            ) : bookings.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 py-12 text-default-400">
-                <span className="text-4xl">🎾</span>
-                <p className="text-sm">No tenés turnos próximos</p>
-              </div>
             ) : (
-              <div className="flex flex-col gap-3">
-                {bookings.map((b) => (
-                  <div
-                    key={b._id}
-                    className="rounded-xl border border-default-200 bg-default-50 p-4 flex flex-col gap-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-sm">{b.court?.name}</span>
-                      <Chip
-                        size="sm"
-                        color={statusColor[b.status] || "default"}
-                        variant="flat"
-                      >
-                        {statusLabel[b.status] || b.status}
-                      </Chip>
+              <>
+                {/* ── Próximas reservas ── */}
+                <div>
+                  <p className="text-[10px] font-bold tracking-widest uppercase text-default-400 mb-3">
+                    Próximas reservas
+                  </p>
+                  {upcoming.length === 0 ? (
+                    <div className="flex flex-col items-center gap-2 py-6 text-default-400">
+                      <span className="text-3xl">🎾</span>
+                      <p className="text-xs">No tenés turnos próximos</p>
                     </div>
-                    <div className="text-xs text-default-500 flex gap-3">
-                      <span>{formatDate(b.date)}</span>
-                      <span>
-                        {b.timeSlot?.label ||
-                          `${b.timeSlot?.startTime} - ${b.timeSlot?.endTime}`}
-                      </span>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {upcoming.map((b) => (
+                        <BookingCard
+                          key={b._id}
+                          booking={b}
+                          onCancelPress={handleCancelPress}
+                          cancellingId={cancellingId}
+                          showCancel
+                        />
+                      ))}
                     </div>
-                    {b.status !== "suspendido" && (
-                      <Button
-                        size="sm"
-                        variant="flat"
-                        color="danger"
-                        isLoading={cancellingId === b._id}
-                        onPress={() => handleCancelPress(b)}
-                        className="mt-1"
-                      >
-                        Cancelar turno
-                      </Button>
-                    )}
+                  )}
+                </div>
+
+                {/* ── Historial ── */}
+                {history.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <History size={12} className="text-default-400" />
+                      <p className="text-[10px] font-bold tracking-widest uppercase text-default-400">
+                        Historial (últimos 60 días)
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      {history.map((b) => (
+                        <BookingCard
+                          key={b._id}
+                          booking={b}
+                          cancellingId={cancellingId}
+                          showCancel={false}
+                        />
+                      ))}
+                    </div>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </DrawerBody>
         </DrawerContent>
       </Drawer>
 
-      {/* Modal: confirmación de cancelación */}
+      {/* Modal: confirmación */}
       <Modal isOpen={!!confirmBooking} onClose={() => setConfirmBooking(null)} size="sm">
         <ModalContent>
           <ModalHeader className="flex items-center gap-2">
@@ -185,25 +230,19 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
           <ModalBody>
             <p className="text-sm text-default-600">
               ¿Estás seguro que querés cancelar el turno de las{" "}
-              <span className="font-bold text-foreground">
-                {confirmBooking?.timeSlot?.startTime}
-              </span>{" "}
+              <span className="font-bold text-foreground">{confirmBooking?.timeSlot?.startTime}</span>{" "}
               en <span className="font-bold text-foreground">{confirmBooking?.court?.name}</span>?
             </p>
             <p className="text-xs text-default-400 mt-1">Esta acción no se puede deshacer.</p>
           </ModalBody>
           <ModalFooter>
-            <Button variant="flat" size="sm" onPress={() => setConfirmBooking(null)}>
-              Volver
-            </Button>
-            <Button color="danger" size="sm" onPress={handleConfirmCancel}>
-              Sí, cancelar
-            </Button>
+            <Button variant="flat" size="sm" onPress={() => setConfirmBooking(null)}>Volver</Button>
+            <Button color="danger" size="sm" onPress={handleConfirmCancel}>Sí, cancelar</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      {/* Modal: cancelación bloqueada por ventana de tiempo */}
+      {/* Modal: bloqueo por ventana */}
       <Modal isOpen={!!blockedBooking} onClose={() => setBlockedBooking(null)} size="sm">
         <ModalContent>
           <ModalHeader className="flex items-center gap-2">
@@ -223,9 +262,7 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
             </p>
           </ModalBody>
           <ModalFooter>
-            <Button color="primary" size="sm" onPress={() => setBlockedBooking(null)}>
-              Entendido
-            </Button>
+            <Button color="primary" size="sm" onPress={() => setBlockedBooking(null)}>Entendido</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
