@@ -17,7 +17,7 @@ export const superAdminService = {
   },
   updateCompany: async (
     id: string,
-    data: { name?: string; slug?: string; address?: string },
+    data: { name?: string; slug?: string; address?: string; coverImage?: string },
   ): Promise<any> => {
     const response = await api.put(`/super-admin/companies/${id}`, data);
     return response.data;

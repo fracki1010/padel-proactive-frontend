@@ -1,15 +1,20 @@
 import { addToast, Button, Card, CardBody, Chip, Input, Switch } from "@heroui/react";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import {
   Building2,
   ChevronLeft,
   Copy,
   ExternalLink,
+  Image,
   Link2,
   MapPin,
   PencilLine,
   Save,
+  Trash2,
+  Upload,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { firebaseStorage } from "../../../lib/firebase";
 
 type TenantsViewProps = {
   isSuperAdmin: boolean;
@@ -38,7 +43,7 @@ type TenantsViewProps = {
   onUpdateCompanyStatus: (id: string, isActive: boolean) => void;
   onUpdateCompany: (
     id: string,
-    data: { name?: string; slug?: string; address?: string },
+    data: { name?: string; slug?: string; address?: string; coverImage?: string },
   ) => void;
   onUpdateAdminStatus: (id: string, isActive: boolean) => void;
 };
@@ -73,9 +78,10 @@ export const TenantsView = ({
 }: TenantsViewProps) => {
   const [nameDraftByCompany, setNameDraftByCompany] = useState<Record<string, string>>({});
   const [slugDraftByCompany, setSlugDraftByCompany] = useState<Record<string, string>>({});
-  const [addressDraftByCompany, setAddressDraftByCompany] = useState<Record<string, string>>(
-    {},
-  );
+  const [addressDraftByCompany, setAddressDraftByCompany] = useState<Record<string, string>>({});
+  const [uploadingCoverFor, setUploadingCoverFor] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingCompanyRef = useRef<any>(null);
 
   useEffect(() => {
     setNameDraftByCompany((prev) =>

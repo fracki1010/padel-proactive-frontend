@@ -5,7 +5,7 @@ export const authService = {
     const response = await api.put("/auth/profile", data);
     return response.data;
   },
-  updateCompany: async (data: { name?: string; slug?: string; address?: string }) => {
+  updateCompany: async (data: { name?: string; slug?: string; address?: string; coverImage?: string }) => {
     const response = await api.put("/auth/company", data);
     return response.data;
   },
