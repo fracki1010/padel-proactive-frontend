@@ -1,5 +1,4 @@
 import { addToast, Button, Card, CardBody, Chip, Input, Switch } from "@heroui/react";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import {
   Building2,
   ChevronLeft,
@@ -14,7 +13,7 @@ import {
   Upload,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { firebaseStorage } from "../../../lib/firebase";
+import { authService } from "../../../services/authService";
 
 type TenantsViewProps = {
   isSuperAdmin: boolean;
@@ -193,6 +192,30 @@ export const TenantsView = ({
       nextSlug !== currentSlug ||
       nextAddress !== currentAddress
     );
+  };
+
+  const handleCoverImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const company = pendingCompanyRef.current;
+    if (!file || !company) return;
+    e.target.value = "";
+
+    if (file.size > 5 * 1024 * 1024) {
+      addToast({ title: "La imagen no puede superar los 5 MB.", color: "danger" });
+      return;
+    }
+
+    setUploadingCoverFor(company._id);
+    try {
+      const url = await authService.uploadCoverImage(company._id, file);
+      onUpdateCompany(company._id, { coverImage: url });
+      addToast({ title: "Foto de portada actualizada", color: "success" });
+    } catch {
+      addToast({ title: "No se pudo subir la imagen", color: "danger" });
+    } finally {
+      setUploadingCoverFor(null);
+      pendingCompanyRef.current = null;
+    }
   };
 
   return (
@@ -426,6 +449,53 @@ export const TenantsView = ({
                   />
                 </div>
 
+                <div>
+                  <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider mb-2">
+                    Foto de portada
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-24 h-16 rounded-xl overflow-hidden bg-black/5 dark:bg-white/5 flex items-center justify-center flex-shrink-0 border border-black/5 dark:border-white/5">
+                      {company.coverImage ? (
+                        <img
+                          src={company.coverImage}
+                          alt="Portada"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Image size={22} className="text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <Button
+                        size="sm"
+                        variant="flat"
+                        className="h-9 bg-black/5 dark:bg-white/5 text-foreground font-black rounded-xl uppercase text-[10px]"
+                        startContent={<Upload size={12} />}
+                        isLoading={uploadingCoverFor === company._id}
+                        isDisabled={uploadingCoverFor !== null}
+                        onPress={() => {
+                          pendingCompanyRef.current = company;
+                          fileInputRef.current?.click();
+                        }}
+                      >
+                        {uploadingCoverFor === company._id ? "Subiendo..." : "Subir foto"}
+                      </Button>
+                      {company.coverImage && (
+                        <Button
+                          size="sm"
+                          variant="flat"
+                          className="h-9 bg-danger/10 text-danger font-black rounded-xl uppercase text-[10px]"
+                          startContent={<Trash2 size={12} />}
+                          isDisabled={uploadingCoverFor !== null}
+                          onPress={() => onUpdateCompany(company._id, { coverImage: "" })}
+                        >
+                          Quitar foto
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex flex-col sm:flex-row gap-2 pt-1">
                   <Button
                     className="h-11 bg-primary text-black font-black rounded-xl uppercase text-[10px] sm:min-w-[160px]"
@@ -491,6 +561,14 @@ export const TenantsView = ({
           </div>
         </div>
       )}
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={handleCoverImageFileChange}
+      />
     </div>
   );
 };

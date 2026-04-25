@@ -9,4 +9,13 @@ export const authService = {
     const response = await api.put("/auth/company", data);
     return response.data;
   },
+  uploadCoverImage: async (companyId: string, file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("cover", file);
+    formData.append("companyId", companyId);
+    const response = await api.post("/auth/company/cover", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data?.data?.coverImage;
+  },
 };
