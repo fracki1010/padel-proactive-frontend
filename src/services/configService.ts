@@ -259,7 +259,33 @@ const parsePenaltyLimit = (responseData: any): number | null => {
   return null;
 };
 
+export type DigestBackground = {
+  _id: string;
+  order: number;
+  mimeType: string;
+  url: string;
+};
+
 export const configService = {
+  getDigestBackgrounds: async (): Promise<DigestBackground[]> => {
+    const response = await api.get("/config/digest-backgrounds");
+    return response.data?.data ?? [];
+  },
+
+  uploadDigestBackground: async (file: File, order: number): Promise<DigestBackground> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("order", String(order));
+    const response = await api.post("/config/digest-backgrounds", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data.data;
+  },
+
+  deleteDigestBackground: async (id: string): Promise<void> => {
+    await api.delete(`/config/digest-backgrounds/${id}`);
+  },
+
   getCourts: async (all = false): Promise<ConfigResponse<Court>> => {
     const response = await api.get(`/config/courts${all ? "?all=true" : ""}`);
     return response.data;

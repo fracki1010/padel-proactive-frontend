@@ -22,6 +22,9 @@ import {
   useWhatsappCancellationGroupSettings,
   useUpdateWhatsappCancellationGroupSettings,
   useWhatsappGroups,
+  useDigestBackgrounds,
+  useUploadDigestBackground,
+  useDeleteDigestBackground,
   useCompanies,
   useCreateCompany,
   useUpdateCompanyStatus,
@@ -106,6 +109,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const resetWhatsappSession = useResetWhatsappSession();
   const updateWhatsappCancellationGroupSettings =
     useUpdateWhatsappCancellationGroupSettings();
+  const { data: digestBackgroundsData } = useDigestBackgrounds();
+  const uploadDigestBackground = useUploadDigestBackground();
+  const deleteDigestBackground = useDeleteDigestBackground();
   const createCompany = useCreateCompany();
   const updateCompanyStatus = useUpdateCompanyStatus();
   const updateCompany = useUpdateCompany();
@@ -1810,6 +1816,13 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         onSaveDailyAvailabilityDigestSettings={
           handleSaveDailyAvailabilityDigestSchedule
         }
+        digestBackgrounds={digestBackgroundsData ?? []}
+        isUploadingBackground={uploadDigestBackground.isPending}
+        isDeletingBackground={deleteDigestBackground.isPending}
+        onUploadBackground={(file, order) =>
+          uploadDigestBackground.mutate({ file, order })
+        }
+        onDeleteBackground={(id) => deleteDigestBackground.mutate(id)}
       />
     );
   }

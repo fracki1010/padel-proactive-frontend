@@ -9,6 +9,8 @@ import {
   Timer,
   UserCheck,
 } from "lucide-react";
+import type { DigestBackground } from "../../../services/configService";
+import { DigestBackgroundsGrid } from "./DigestBackgroundsGrid";
 
 type BotAutomationSettingsViewProps = {
   oneHourReminderEnabled: boolean;
@@ -43,6 +45,11 @@ type BotAutomationSettingsViewProps = {
   onDailyAvailabilityDigestHourChange: (value: string) => void;
   onToggleDailyAvailabilityDigestNextDay: (enabled: boolean) => void;
   onDailyAvailabilityDigestFormatChange: (format: "text" | "image") => void;
+  digestBackgrounds: DigestBackground[];
+  isUploadingBackground: boolean;
+  isDeletingBackground: boolean;
+  onUploadBackground: (file: File, order: number) => void;
+  onDeleteBackground: (id: string) => void;
   onSaveReminderMinutes: () => void;
   onSaveAttendanceResponseTimeoutMinutes: () => void;
   onSaveCancellationLockHours: () => void;
@@ -84,6 +91,11 @@ export const BotAutomationSettingsView = ({
   onDailyAvailabilityDigestHourChange,
   onToggleDailyAvailabilityDigestNextDay,
   onDailyAvailabilityDigestFormatChange,
+  digestBackgrounds,
+  isUploadingBackground,
+  isDeletingBackground,
+  onUploadBackground,
+  onDeleteBackground,
   onSaveReminderMinutes,
   onSaveAttendanceResponseTimeoutMinutes,
   onSaveCancellationLockHours,
@@ -285,6 +297,16 @@ export const BotAutomationSettingsView = ({
                 "Imagen" envía una tarjeta visual al grupo; "Texto" envía el mensaje plano.
               </p>
             </div>
+
+            {dailyAvailabilityDigestFormat === "image" && (
+              <DigestBackgroundsGrid
+                backgrounds={digestBackgrounds}
+                isUploading={isUploadingBackground}
+                isDeleting={isDeletingBackground}
+                onUpload={onUploadBackground}
+                onDelete={onDeleteBackground}
+              />
+            )}
 
             <div className="flex flex-col sm:flex-row gap-2">
               <Input

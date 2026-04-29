@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { configService } from "../../../services/api";
+import type { DigestBackground } from "../../../services/configService";
 
 export const useCourts = (all = false, enabled = true) => {
   return useQuery({
@@ -336,5 +337,30 @@ export const useWhatsappCommands = ({
     queryFn: () => configService.getWhatsappCommands({ limit, status, type }),
     retry: 1,
     refetchInterval: 5000,
+  });
+};
+
+export const useDigestBackgrounds = () => {
+  return useQuery<DigestBackground[]>({
+    queryKey: ["digest-backgrounds"],
+    queryFn: configService.getDigestBackgrounds,
+    retry: 1,
+  });
+};
+
+export const useUploadDigestBackground = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ file, order }: { file: File; order: number }) =>
+      configService.uploadDigestBackground(file, order),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["digest-backgrounds"] }),
+  });
+};
+
+export const useDeleteDigestBackground = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => configService.deleteDigestBackground(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["digest-backgrounds"] }),
   });
 };
