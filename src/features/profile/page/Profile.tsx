@@ -239,6 +239,10 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       (candidate) => typeof candidate === "boolean",
     ),
   );
+  const whatsappDailyAvailabilityDigestFormat: "text" | "image" =
+    whatsappCancellationGroupSettingsRaw?.dailyAvailabilityDigestFormat === "image"
+      ? "image"
+      : "text";
   const whatsappGroups = Array.isArray(whatsappGroupsData?.data)
     ? whatsappGroupsData.data
         .map((group: any) => ({
@@ -303,6 +307,8 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     dailyAvailabilityDigestNextDayEnabledInput,
     setDailyAvailabilityDigestNextDayEnabledInput,
   ] = useState(false);
+  const [dailyAvailabilityDigestFormatInput, setDailyAvailabilityDigestFormatInput] =
+    useState<"text" | "image">("text");
   const [isEditingCancellationGroupId, setIsEditingCancellationGroupId] =
     useState(false);
   const [isEditingCancellationGroupName, setIsEditingCancellationGroupName] =
@@ -435,6 +441,10 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       whatsappDailyAvailabilityDigestNextDayEnabled,
     );
   }, [whatsappDailyAvailabilityDigestNextDayEnabled]);
+
+  useEffect(() => {
+    setDailyAvailabilityDigestFormatInput(whatsappDailyAvailabilityDigestFormat);
+  }, [whatsappDailyAvailabilityDigestFormat]);
 
   const whatsappStatusLabelByKey: Record<string, string> = {
     disabled: "Desactivado",
@@ -833,6 +843,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     nextDailyAvailabilityDigestEnabled: boolean,
     nextDailyAvailabilityDigestHourRaw: string,
     nextDailyAvailabilityDigestNextDayEnabled: boolean,
+    nextDailyAvailabilityDigestFormat: "text" | "image" = "text",
   ) => {
     const nextGroupId = nextGroupIdRaw.trim();
     const nextGroupName = nextGroupNameRaw.trim();
@@ -870,6 +881,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         dailyAvailabilityDigestHour: nextDailyAvailabilityDigestHour,
         dailyAvailabilityDigestNextDayEnabled:
           nextDailyAvailabilityDigestNextDayEnabled,
+        dailyAvailabilityDigestFormat: nextDailyAvailabilityDigestFormat,
       });
       setCancellationGroupIdInput(nextGroupId);
       setCancellationGroupNameInput(nextGroupName);
@@ -878,6 +890,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       setDailyAvailabilityDigestNextDayEnabledInput(
         nextDailyAvailabilityDigestNextDayEnabled,
       );
+      setDailyAvailabilityDigestFormatInput(nextDailyAvailabilityDigestFormat);
       setIsEditingCancellationGroupId(false);
       setIsEditingCancellationGroupName(false);
       const persistedLocally = Boolean(response?.data?.persistedLocally);
@@ -912,6 +925,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       dailyAvailabilityDigestEnabledInput,
       dailyAvailabilityDigestHourInput,
       dailyAvailabilityDigestNextDayEnabledInput,
+      dailyAvailabilityDigestFormatInput,
     );
   };
 
@@ -931,6 +945,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       enabled,
       dailyAvailabilityDigestHourInput,
       dailyAvailabilityDigestNextDayEnabledInput,
+      dailyAvailabilityDigestFormatInput,
     );
   };
 
@@ -950,6 +965,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       dailyAvailabilityDigestEnabledInput,
       dailyAvailabilityDigestHourInput,
       enabled,
+      dailyAvailabilityDigestFormatInput,
     );
   };
 
@@ -969,6 +985,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       dailyAvailabilityDigestEnabledInput,
       dailyAvailabilityDigestHourInput,
       dailyAvailabilityDigestNextDayEnabledInput,
+      dailyAvailabilityDigestFormatInput,
     );
   };
 
@@ -994,6 +1011,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       dailyAvailabilityDigestEnabledInput,
       dailyAvailabilityDigestHourInput,
       dailyAvailabilityDigestNextDayEnabledInput,
+      dailyAvailabilityDigestFormatInput,
     );
   };
 
@@ -1780,6 +1798,19 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         onToggleDailyAvailabilityDigestNextDay={
           handleToggleDailyAvailabilityDigestNextDayFromBot
         }
+        dailyAvailabilityDigestFormat={dailyAvailabilityDigestFormatInput}
+        onDailyAvailabilityDigestFormatChange={(fmt) => {
+          setDailyAvailabilityDigestFormatInput(fmt);
+          persistWhatsappCancellationGroupSettings(
+            whatsappCancellationGroupEnabled,
+            cancellationGroupIdInput,
+            cancellationGroupNameInput,
+            dailyAvailabilityDigestEnabledInput,
+            dailyAvailabilityDigestHourInput,
+            dailyAvailabilityDigestNextDayEnabledInput,
+            fmt,
+          );
+        }}
         onSaveReminderMinutes={handleSaveReminderMinutes}
         onSaveAttendanceResponseTimeoutMinutes={
           handleSaveAttendanceResponseTimeoutMinutes

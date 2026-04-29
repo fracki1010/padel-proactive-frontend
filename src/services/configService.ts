@@ -40,6 +40,7 @@ const parseWhatsappCancellationGroupSettings = (
   dailyAvailabilityDigestEnabled: boolean;
   dailyAvailabilityDigestHour: string;
   dailyAvailabilityDigestNextDayEnabled: boolean;
+  dailyAvailabilityDigestFormat: "text" | "image";
 } | null => {
   const data = responseData?.data ?? responseData;
 
@@ -86,6 +87,11 @@ const parseWhatsappCancellationGroupSettings = (
     data?.groupDailyAvailabilityNextDayEnabled,
     data?.groupNotifications?.dailyAvailability?.nextDayEnabled,
   ];
+  const dailyAvailabilityDigestFormatRaw =
+    data?.dailyAvailabilityDigestFormat === "image" ||
+    data?.dailyAvailabilityDigestFormat === "text"
+      ? data.dailyAvailabilityDigestFormat
+      : null;
 
   const enabled = enabledCandidates.find((value) => typeof value === "boolean");
   const groupId = groupIdCandidates.find((value) => typeof value === "string");
@@ -109,7 +115,8 @@ const parseWhatsappCancellationGroupSettings = (
     typeof groupName !== "string" &&
     typeof dailyAvailabilityDigestEnabled !== "boolean" &&
     typeof dailyAvailabilityDigestHour !== "string" &&
-    typeof dailyAvailabilityDigestNextDayEnabled !== "boolean"
+    typeof dailyAvailabilityDigestNextDayEnabled !== "boolean" &&
+    dailyAvailabilityDigestFormatRaw === null
   ) {
     return null;
   }
@@ -126,6 +133,8 @@ const parseWhatsappCancellationGroupSettings = (
     dailyAvailabilityDigestNextDayEnabled: Boolean(
       dailyAvailabilityDigestNextDayEnabled,
     ),
+    dailyAvailabilityDigestFormat:
+      dailyAvailabilityDigestFormatRaw ?? "text",
   };
 };
 

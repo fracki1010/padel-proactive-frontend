@@ -2,6 +2,8 @@ import { Button, Card, CardBody, Chip, Input, Switch } from "@heroui/react";
 import {
   CalendarClock,
   ChevronLeft,
+  FileText,
+  Image,
   Save,
   ShieldAlert,
   Timer,
@@ -19,6 +21,7 @@ type BotAutomationSettingsViewProps = {
   dailyAvailabilityDigestEnabled: boolean;
   dailyAvailabilityDigestHourInput: string;
   dailyAvailabilityDigestNextDayEnabled: boolean;
+  dailyAvailabilityDigestFormat: "text" | "image";
   cancellationGroupConfigured: boolean;
   isSavingReminderToggle: boolean;
   isSavingPenaltyToggle: boolean;
@@ -39,6 +42,7 @@ type BotAutomationSettingsViewProps = {
   onToggleDailyAvailabilityDigest: (enabled: boolean) => void;
   onDailyAvailabilityDigestHourChange: (value: string) => void;
   onToggleDailyAvailabilityDigestNextDay: (enabled: boolean) => void;
+  onDailyAvailabilityDigestFormatChange: (format: "text" | "image") => void;
   onSaveReminderMinutes: () => void;
   onSaveAttendanceResponseTimeoutMinutes: () => void;
   onSaveCancellationLockHours: () => void;
@@ -58,6 +62,7 @@ export const BotAutomationSettingsView = ({
   dailyAvailabilityDigestEnabled,
   dailyAvailabilityDigestHourInput,
   dailyAvailabilityDigestNextDayEnabled,
+  dailyAvailabilityDigestFormat,
   cancellationGroupConfigured,
   isSavingReminderToggle,
   isSavingPenaltyToggle,
@@ -78,6 +83,7 @@ export const BotAutomationSettingsView = ({
   onToggleDailyAvailabilityDigest,
   onDailyAvailabilityDigestHourChange,
   onToggleDailyAvailabilityDigestNextDay,
+  onDailyAvailabilityDigestFormatChange,
   onSaveReminderMinutes,
   onSaveAttendanceResponseTimeoutMinutes,
   onSaveCancellationLockHours,
@@ -241,6 +247,43 @@ export const BotAutomationSettingsView = ({
                 color="primary"
                 size="sm"
               />
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                Formato del mensaje
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => onDailyAvailabilityDigestFormatChange("text")}
+                  disabled={!cancellationGroupConfigured}
+                  className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-2xl font-black text-sm uppercase transition-colors ${
+                    dailyAvailabilityDigestFormat === "text"
+                      ? "bg-sky-300 text-black"
+                      : "bg-black/5 dark:bg-white/5 text-gray-400 hover:bg-black/10 dark:hover:bg-white/10"
+                  } disabled:opacity-40 disabled:cursor-not-allowed`}
+                >
+                  <FileText size={16} />
+                  Texto
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDailyAvailabilityDigestFormatChange("image")}
+                  disabled={!cancellationGroupConfigured}
+                  className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-2xl font-black text-sm uppercase transition-colors ${
+                    dailyAvailabilityDigestFormat === "image"
+                      ? "bg-sky-300 text-black"
+                      : "bg-black/5 dark:bg-white/5 text-gray-400 hover:bg-black/10 dark:hover:bg-white/10"
+                  } disabled:opacity-40 disabled:cursor-not-allowed`}
+                >
+                  <Image size={16} />
+                  Imagen
+                </button>
+              </div>
+              <p className="text-[11px] text-gray-400">
+                "Imagen" envía una tarjeta visual al grupo; "Texto" envía el mensaje plano.
+              </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2">
