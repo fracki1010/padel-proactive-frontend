@@ -765,6 +765,7 @@ export const configService = {
     dailyAvailabilityDigestEnabled,
     dailyAvailabilityDigestHour,
     dailyAvailabilityDigestNextDayEnabled,
+    dailyAvailabilityDigestFormat = "text",
   }: {
     enabled: boolean;
     groupId: string;
@@ -772,6 +773,7 @@ export const configService = {
     dailyAvailabilityDigestEnabled: boolean;
     dailyAvailabilityDigestHour: string;
     dailyAvailabilityDigestNextDayEnabled: boolean;
+    dailyAvailabilityDigestFormat?: "text" | "image";
   }): Promise<any> => {
     const normalizedGroupId = groupId.trim();
     const normalizedGroupName = groupName.trim();
@@ -798,6 +800,7 @@ export const configService = {
           dailyAvailabilityDigestEnabled,
           dailyAvailabilityDigestHour: normalizedDailyAvailabilityDigestHour,
           dailyAvailabilityDigestNextDayEnabled,
+          dailyAvailabilityDigestFormat,
         },
       },
       {
@@ -810,6 +813,7 @@ export const configService = {
           dailyAvailabilityDigestEnabled,
           dailyAvailabilityDigestHour: normalizedDailyAvailabilityDigestHour,
           dailyAvailabilityDigestNextDayEnabled,
+          dailyAvailabilityDigestFormat,
         },
       },
       {
@@ -822,6 +826,7 @@ export const configService = {
           dailyGroupAvailabilityEnabled: dailyAvailabilityDigestEnabled,
           dailyGroupAvailabilityHour: normalizedDailyAvailabilityDigestHour,
           dailyNextDayAvailabilityEnabled: dailyAvailabilityDigestNextDayEnabled,
+          dailyAvailabilityDigestFormat,
         },
       },
       {
@@ -834,6 +839,7 @@ export const configService = {
           dailyGroupAvailabilityEnabled: dailyAvailabilityDigestEnabled,
           dailyGroupAvailabilityHour: normalizedDailyAvailabilityDigestHour,
           dailyNextDayAvailabilityEnabled: dailyAvailabilityDigestNextDayEnabled,
+          dailyAvailabilityDigestFormat,
         },
       },
       {
@@ -845,8 +851,8 @@ export const configService = {
           cancelledBookingGroupName: normalizedGroupName,
           groupDailyAvailabilityDigestEnabled: dailyAvailabilityDigestEnabled,
           groupDailyAvailabilityDigestHour: normalizedDailyAvailabilityDigestHour,
-          groupDailyAvailabilityNextDayEnabled:
-            dailyAvailabilityDigestNextDayEnabled,
+          groupDailyAvailabilityNextDayEnabled: dailyAvailabilityDigestNextDayEnabled,
+          dailyAvailabilityDigestFormat,
         },
       },
       {
@@ -858,8 +864,8 @@ export const configService = {
           cancelledBookingGroupName: normalizedGroupName,
           groupDailyAvailabilityDigestEnabled: dailyAvailabilityDigestEnabled,
           groupDailyAvailabilityDigestHour: normalizedDailyAvailabilityDigestHour,
-          groupDailyAvailabilityNextDayEnabled:
-            dailyAvailabilityDigestNextDayEnabled,
+          groupDailyAvailabilityNextDayEnabled: dailyAvailabilityDigestNextDayEnabled,
+          dailyAvailabilityDigestFormat,
         },
       },
     ];

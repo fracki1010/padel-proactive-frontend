@@ -259,6 +259,7 @@ export const useUpdateWhatsappCancellationGroupSettings = () => {
       dailyAvailabilityDigestEnabled: boolean;
       dailyAvailabilityDigestHour: string;
       dailyAvailabilityDigestNextDayEnabled: boolean;
+      dailyAvailabilityDigestFormat?: "text" | "image";
     }) =>
       configService.updateWhatsappCancellationGroupSettings(payload),
     onSuccess: () => {

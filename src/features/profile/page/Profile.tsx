@@ -1799,18 +1799,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           handleToggleDailyAvailabilityDigestNextDayFromBot
         }
         dailyAvailabilityDigestFormat={dailyAvailabilityDigestFormatInput}
-        onDailyAvailabilityDigestFormatChange={(fmt) => {
-          setDailyAvailabilityDigestFormatInput(fmt);
-          persistWhatsappCancellationGroupSettings(
-            whatsappCancellationGroupEnabled,
-            cancellationGroupIdInput,
-            cancellationGroupNameInput,
-            dailyAvailabilityDigestEnabledInput,
-            dailyAvailabilityDigestHourInput,
-            dailyAvailabilityDigestNextDayEnabledInput,
-            fmt,
-          );
-        }}
+        onDailyAvailabilityDigestFormatChange={setDailyAvailabilityDigestFormatInput}
         onSaveReminderMinutes={handleSaveReminderMinutes}
         onSaveAttendanceResponseTimeoutMinutes={
           handleSaveAttendanceResponseTimeoutMinutes
