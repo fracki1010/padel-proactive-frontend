@@ -386,7 +386,7 @@ export const useUploadDigestBackground = () => {
   return useMutation({
     mutationFn: ({ file, order }: { file: File; order: number }) =>
       configService.uploadDigestBackground(file, order),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["company-images"] }),
+    onSuccess: () => queryClient.refetchQueries({ queryKey: ["company-images"] }),
   });
 };
 
@@ -394,6 +394,6 @@ export const useDeleteDigestBackground = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => configService.deleteDigestBackground(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["company-images"] }),
+    onSuccess: () => queryClient.refetchQueries({ queryKey: ["company-images"] }),
   });
 };

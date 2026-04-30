@@ -1822,9 +1822,15 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         isUploadingBackground={uploadDigestBackground.isPending}
         isDeletingBackground={deleteDigestBackground.isPending}
         onUploadBackground={(file, order) =>
-          uploadDigestBackground.mutate({ file, order })
+          uploadDigestBackground.mutate({ file, order }, {
+            onSuccess: () => addToast({ title: "Imagen guardada", color: "success" }),
+            onError: () => addToast({ title: "Error al subir la imagen", color: "danger" }),
+          })
         }
-        onDeleteBackground={(id) => deleteDigestBackground.mutate(id)}
+        onDeleteBackground={(id) => deleteDigestBackground.mutate(id, {
+          onSuccess: () => addToast({ title: "Imagen eliminada", color: "success" }),
+          onError: () => addToast({ title: "Error al eliminar la imagen", color: "danger" }),
+        })}
         onSendDigestNow={() =>
           sendDigestNow.mutate(undefined, {
             onSuccess: () =>
