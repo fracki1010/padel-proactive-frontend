@@ -1,6 +1,11 @@
 import { useRef } from "react";
 import { ImagePlus, Trash2 } from "lucide-react";
 import type { DigestBackground } from "../../../services/configService";
+import { api } from "../../../services/httpClient";
+
+const clog = (level: "log" | "error", msg: string, data?: unknown) => {
+  api.post("/config/client-log", { level, message: msg, data }).catch(() => {});
+};
 
 const MAX_SLOTS = 6;
 const MAX_MB = 10;
@@ -30,12 +35,19 @@ export const DigestBackgroundsGrid = ({
 
   const handleFileChange = (order: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    clog("log", "handleFileChange triggered", { hasFile: !!file, order });
+    if (!file) {
+      clog("log", "handleFileChange: no file selected");
+      return;
+    }
+    clog("log", "file selected", { name: file.name, type: file.type, size: file.size, order });
     e.target.value = "";
     if (file.size > MAX_MB * 1024 * 1024) {
+      clog("error", "file too large", { size: file.size, max: MAX_MB * 1024 * 1024 });
       alert(`La imagen debe pesar menos de ${MAX_MB}MB.`);
       return;
     }
+    clog("log", "calling onUpload", { order });
     onUpload(file, order);
   };
 
@@ -88,7 +100,7 @@ export const DigestBackgroundsGrid = ({
             <input
               ref={(el) => { inputRefs.current[order] = el; }}
               type="file"
-              accept="image/jpeg,image/png,image/webp"
+              accept="image/*"
               className="hidden"
               onChange={(e) => handleFileChange(order, e)}
             />
@@ -96,7 +108,7 @@ export const DigestBackgroundsGrid = ({
         ))}
       </div>
       <p className="text-[11px] text-gray-400">
-        JPG, PNG o WebP · máx {MAX_MB}MB por imagen · si no hay fondos se usa el fondo oscuro predeterminado.
+        JPG, PNG, WebP o HEIC · máx {MAX_MB}MB · si no hay fondos se usa el fondo oscuro predeterminado.
       </p>
     </div>
   );

@@ -2,6 +2,10 @@ import type { ClubClosure, ConfigResponse, Court, TimeSlot } from "../types";
 
 import { api } from "./httpClient";
 
+const clientLog = (level: "log" | "error", message: string, data?: unknown) => {
+  api.post("/config/client-log", { level, message, data }).catch(() => {});
+};
+
 const ONE_HOUR_REMINDER_KEY = "booking-reminder-one-hour-enabled";
 const CANCELLATION_GROUP_SETTINGS_KEY = "whatsapp-cancellation-group-settings";
 const WHATSAPP_GROUPS_CACHE_KEY = "whatsapp-groups-cache";
@@ -279,9 +283,7 @@ export const configService = {
     formData.append("file", file);
     formData.append("type", type);
     formData.append("order", String(order));
-    const response = await api.post("/config/company-images", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await api.post("/config/company-images", formData, { timeout: 120000 });
     return response.data.data;
   },
 
@@ -295,14 +297,29 @@ export const configService = {
   },
 
   uploadDigestBackground: async (file: File, order: number): Promise<DigestBackground> => {
+    clientLog("log", "uploadDigestBackground start", {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      order,
+    });
     const formData = new FormData();
     formData.append("file", file);
     formData.append("type", "digest_background");
     formData.append("order", String(order));
-    const response = await api.post("/config/company-images", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return response.data.data;
+    try {
+      const response = await api.post("/config/company-images", formData, { timeout: 120000 });
+      clientLog("log", "uploadDigestBackground ok", { status: response.status });
+      return response.data.data;
+    } catch (err: any) {
+      clientLog("error", "uploadDigestBackground error", {
+        message: err?.message,
+        status: err?.response?.status,
+        data: err?.response?.data,
+        code: err?.code,
+      });
+      throw err;
+    }
   },
 
   deleteDigestBackground: async (id: string): Promise<void> => {
