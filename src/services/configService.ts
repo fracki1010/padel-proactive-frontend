@@ -6,6 +6,29 @@ const clientLog = (level: "log" | "error", message: string, data?: unknown) => {
   api.post("/config/client-log", { level, message, data }).catch(() => {});
 };
 
+const compressImage = (file: File, maxPx = 1200, quality = 0.8): Promise<File> =>
+  new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(
+        (blob) => resolve(blob ? new File([blob], file.name, { type: "image/jpeg" }) : file),
+        "image/jpeg",
+        quality,
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+
 const ONE_HOUR_REMINDER_KEY = "booking-reminder-one-hour-enabled";
 const CANCELLATION_GROUP_SETTINGS_KEY = "whatsapp-cancellation-group-settings";
 const WHATSAPP_GROUPS_CACHE_KEY = "whatsapp-groups-cache";
@@ -279,8 +302,9 @@ export const configService = {
   },
 
   uploadCompanyImage: async (file: File, type: "portal_cover" | "digest_background", order = 1): Promise<CompanyImage> => {
+    const compressed = await compressImage(file);
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", compressed);
     formData.append("type", type);
     formData.append("order", String(order));
     const response = await api.post("/config/company-images", formData, { timeout: 120000 });
@@ -303,8 +327,13 @@ export const configService = {
       size: file.size,
       order,
     });
+    const compressed = await compressImage(file);
+    clientLog("log", "uploadDigestBackground compressed", {
+      originalSize: file.size,
+      compressedSize: compressed.size,
+    });
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", compressed);
     formData.append("type", "digest_background");
     formData.append("order", String(order));
     try {
