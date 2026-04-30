@@ -25,6 +25,7 @@ import {
   useDigestBackgrounds,
   useUploadDigestBackground,
   useDeleteDigestBackground,
+  useSendDigestNow,
   useCompanies,
   useCreateCompany,
   useUpdateCompanyStatus,
@@ -112,6 +113,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const { data: digestBackgroundsData } = useDigestBackgrounds();
   const uploadDigestBackground = useUploadDigestBackground();
   const deleteDigestBackground = useDeleteDigestBackground();
+  const sendDigestNow = useSendDigestNow();
   const createCompany = useCreateCompany();
   const updateCompanyStatus = useUpdateCompanyStatus();
   const updateCompany = useUpdateCompany();
@@ -1823,6 +1825,15 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           uploadDigestBackground.mutate({ file, order })
         }
         onDeleteBackground={(id) => deleteDigestBackground.mutate(id)}
+        onSendDigestNow={() =>
+          sendDigestNow.mutate(undefined, {
+            onSuccess: () =>
+              addToast({ title: "Digest en cola — se enviará en segundos", color: "success" }),
+            onError: (err: any) =>
+              addToast({ title: err?.response?.data?.error || "Error al enviar el digest", color: "danger" }),
+          })
+        }
+        isSendingDigestNow={sendDigestNow.isPending}
       />
     );
   }

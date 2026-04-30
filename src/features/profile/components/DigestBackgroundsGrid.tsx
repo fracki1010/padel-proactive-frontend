@@ -3,7 +3,7 @@ import { ImagePlus, Trash2 } from "lucide-react";
 import type { DigestBackground } from "../../../services/configService";
 
 const MAX_SLOTS = 6;
-const MAX_MB = 2;
+const MAX_MB = 10;
 
 type Props = {
   backgrounds: DigestBackground[];

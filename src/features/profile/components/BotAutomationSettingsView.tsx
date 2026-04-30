@@ -5,6 +5,7 @@ import {
   FileText,
   Image,
   Save,
+  Send,
   ShieldAlert,
   Timer,
   UserCheck,
@@ -56,6 +57,8 @@ type BotAutomationSettingsViewProps = {
   onSaveTrustedCount: () => void;
   onSavePenaltyLimit: () => void;
   onSaveDailyAvailabilityDigestSettings: () => void;
+  onSendDigestNow: () => void;
+  isSendingDigestNow: boolean;
 };
 
 export const BotAutomationSettingsView = ({
@@ -102,6 +105,8 @@ export const BotAutomationSettingsView = ({
   onSaveTrustedCount,
   onSavePenaltyLimit,
   onSaveDailyAvailabilityDigestSettings,
+  onSendDigestNow,
+  isSendingDigestNow,
 }: BotAutomationSettingsViewProps) => {
   const penaltyStatusLabel = penaltyEnabled
     ? `Activas (${penaltyLimitInput || "0"})`
@@ -331,6 +336,15 @@ export const BotAutomationSettingsView = ({
                 startContent={<Save size={18} />}
               >
                 Guardar horario
+              </Button>
+              <Button
+                className="h-12 bg-primary/10 text-primary border border-primary/30 rounded-2xl font-black uppercase"
+                onPress={onSendDigestNow}
+                isLoading={isSendingDigestNow}
+                isDisabled={!cancellationGroupConfigured || isSendingDigestNow}
+                startContent={<Send size={18} />}
+              >
+                Enviar ahora
               </Button>
             </div>
 

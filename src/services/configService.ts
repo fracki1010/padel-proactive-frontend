@@ -259,31 +259,54 @@ const parsePenaltyLimit = (responseData: any): number | null => {
   return null;
 };
 
-export type DigestBackground = {
+export type CompanyImage = {
   _id: string;
+  type: "portal_cover" | "digest_background";
   order: number;
-  mimeType: string;
   url: string;
 };
 
+export type DigestBackground = CompanyImage;
+
 export const configService = {
+  getCompanyImages: async (type?: "portal_cover" | "digest_background"): Promise<CompanyImage[]> => {
+    const response = await api.get("/config/company-images", { params: type ? { type } : {} });
+    return response.data?.data ?? [];
+  },
+
+  uploadCompanyImage: async (file: File, type: "portal_cover" | "digest_background", order = 1): Promise<CompanyImage> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", type);
+    formData.append("order", String(order));
+    const response = await api.post("/config/company-images", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data.data;
+  },
+
+  deleteCompanyImage: async (id: string): Promise<void> => {
+    await api.delete(`/config/company-images/${id}`);
+  },
+
   getDigestBackgrounds: async (): Promise<DigestBackground[]> => {
-    const response = await api.get("/config/digest-backgrounds");
+    const response = await api.get("/config/company-images", { params: { type: "digest_background" } });
     return response.data?.data ?? [];
   },
 
   uploadDigestBackground: async (file: File, order: number): Promise<DigestBackground> => {
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("type", "digest_background");
     formData.append("order", String(order));
-    const response = await api.post("/config/digest-backgrounds", formData, {
+    const response = await api.post("/config/company-images", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data.data;
   },
 
   deleteDigestBackground: async (id: string): Promise<void> => {
-    await api.delete(`/config/digest-backgrounds/${id}`);
+    await api.delete(`/config/company-images/${id}`);
   },
 
   getCourts: async (all = false): Promise<ConfigResponse<Court>> => {
@@ -935,6 +958,11 @@ export const configService = {
       lastError ??
       new Error("No se pudo guardar la configuración de grupo en el backend.")
     );
+  },
+
+  sendDigestNow: async (): Promise<{ commandId: string }> => {
+    const response = await api.post("/config/whatsapp/send-digest-now");
+    return response.data?.data ?? {};
   },
 
   getClubClosures: async (): Promise<ConfigResponse<ClubClosure>> => {

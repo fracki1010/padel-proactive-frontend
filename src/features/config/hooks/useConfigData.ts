@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { configService } from "../../../services/api";
-import type { DigestBackground } from "../../../services/configService";
+import type { CompanyImage, DigestBackground } from "../../../services/configService";
 
 export const useCourts = (all = false, enabled = true) => {
   return useQuery({
@@ -340,9 +340,42 @@ export const useWhatsappCommands = ({
   });
 };
 
+export const useCompanyImages = (type?: "portal_cover" | "digest_background") => {
+  return useQuery<CompanyImage[]>({
+    queryKey: ["company-images", type],
+    queryFn: () => configService.getCompanyImages(type),
+    retry: 1,
+  });
+};
+
+export const useUploadCompanyImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ file, type, order }: { file: File; type: "portal_cover" | "digest_background"; order?: number }) =>
+      configService.uploadCompanyImage(file, type, order),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["company-images", variables.type] });
+      queryClient.invalidateQueries({ queryKey: ["company-images"] });
+    },
+  });
+};
+
+export const useDeleteCompanyImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => configService.deleteCompanyImage(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["company-images"] });
+    },
+  });
+};
+
+export const useSendDigestNow = () =>
+  useMutation({ mutationFn: configService.sendDigestNow });
+
 export const useDigestBackgrounds = () => {
   return useQuery<DigestBackground[]>({
-    queryKey: ["digest-backgrounds"],
+    queryKey: ["company-images", "digest_background"],
     queryFn: configService.getDigestBackgrounds,
     retry: 1,
   });
@@ -353,7 +386,7 @@ export const useUploadDigestBackground = () => {
   return useMutation({
     mutationFn: ({ file, order }: { file: File; order: number }) =>
       configService.uploadDigestBackground(file, order),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["digest-backgrounds"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["company-images"] }),
   });
 };
 
@@ -361,6 +394,6 @@ export const useDeleteDigestBackground = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => configService.deleteDigestBackground(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["digest-backgrounds"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["company-images"] }),
   });
 };
