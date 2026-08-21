@@ -1,48 +1,13 @@
-import { addToast } from "@heroui/react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import {
-  useCourts,
-  useCreateCourt,
-  useDeleteCourt,
-  useUpdateCourt,
-  useSlots,
-  useCreateSlot,
-  useUpdateSlot,
-  useUpdateProfile,
-  useUpdateOwnCompany,
-  useWhatsappStatus,
-  useUpdateBasePrice,
-  useBotAutomationSettings,
-  useUpdateBotAutomationSettings,
-  useUpdateWhatsappStatus,
-  useCloseWhatsappSession,
-  useResetWhatsappSession,
-  useWhatsappCancellationGroupSettings,
-  useUpdateWhatsappCancellationGroupSettings,
-  useWhatsappGroups,
-  useDigestBackgrounds,
-  useUploadDigestBackground,
-  useDeleteDigestBackground,
-  useSendDigestNow,
-  useCompanies,
-  useCreateCompany,
-  useUpdateCompanyStatus,
-  useUpdateCompany,
-  useAdmins,
-  useCreateAdmin,
-  useUpdateAdminStatus,
-  useBootstrapDefaultTenant,
-  useClubClosures,
-  useCreateClubClosure,
-  useUpdateClubClosure,
-  useDeleteClubClosure,
-} from "../../../hooks/useData";
-import { useAuth } from "../../../context/AuthContext";
-import { useTheme } from "../../../context/ThemeContext";
-import { useConfirm } from "../../../hooks/useConfirm";
-import { configService } from "../../../services/api";
+import { useClubClosuresManagement } from "../hooks/useClubClosuresManagement";
+import { useCourtsManagement } from "../hooks/useCourtsManagement";
+import { useScheduleManagement } from "../hooks/useScheduleManagement";
+import { useTenantsManagement } from "../hooks/useTenantsManagement";
+import { useProfileMenu } from "../hooks/useProfileMenu";
+import { useBotAutomationManagement } from "../hooks/useBotAutomationManagement";
+import { useWhatsappManagement } from "../hooks/useWhatsappManagement";
+
 import { ClubClosuresView } from "../components/ClubClosuresView";
 import { CourtsView } from "../components/CourtsView";
 import { BotAutomationSettingsView } from "../components/BotAutomationSettingsView";
@@ -54,1882 +19,267 @@ import { WhatsappSettingsView } from "../components/WhatsappSettingsView";
 interface ProfileProps {
   courts: any[];
 }
-const WHATSAPP_GROUP_ID_REGEX = /^[A-Za-z0-9._:-]{6,80}@g\.us$/;
 
-const resolveOneHourReminderEnabled = (
-  source: any,
-  fallback = true,
-): boolean => {
-  const candidates = [
-    source?.oneHourReminderEnabled,
-    source?.oneHourBeforeEnabled,
-    source?.bookingReminderOneHourEnabled,
-    source?.notifyOneHourBeforeMatch,
-    source?.notifyOneHourBeforeBooking,
-  ];
-
-  const firstBoolean = candidates.find((value) => typeof value === "boolean");
-  return typeof firstBoolean === "boolean" ? firstBoolean : fallback;
-};
+type ViewType =
+  | "menu"
+  | "courts"
+  | "schedule"
+  | "whatsapp"
+  | "bot-automation"
+  | "tenants"
+  | "club-closures";
 
 export const Profile = ({ courts: initialCourts }: ProfileProps) => {
-  const queryClient = useQueryClient();
-  const { logout, user, updateUser } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
-  const confirm = useConfirm();
-  const [view, setView] = useState<
-    "menu" | "courts" | "schedule" | "whatsapp" | "bot-automation" | "tenants" | "club-closures"
-  >("menu");
-  const isSuperAdmin = user?.role === "super_admin";
-  const canManageClubData = isSuperAdmin || Boolean(user?.companyId);
+  const [view, setView] = useState<ViewType>("menu");
 
-  const { data: courtsData } = useCourts(true);
-  const { data: slotsData } = useSlots(true);
-  const { data: whatsappData, isLoading: isLoadingWhatsapp } = useWhatsappStatus();
-  const { data: whatsappCancellationGroupSettingsData } =
-    useWhatsappCancellationGroupSettings();
-  const {
-    data: whatsappGroupsData,
-    isLoading: isLoadingWhatsappGroups,
-    refetch: refetchWhatsappGroups,
-  } = useWhatsappGroups();
-  const { data: botAutomationSettingsData } = useBotAutomationSettings();
-  const { data: companiesData } = useCompanies(isSuperAdmin);
-  const { data: adminsData } = useAdmins(isSuperAdmin);
-  const { data: clubClosuresData } = useClubClosures();
+  const clubClosures = useClubClosuresManagement();
+  const courts = useCourtsManagement(initialCourts);
+  const schedule = useScheduleManagement();
+  const tenants = useTenantsManagement();
+  const whatsapp = useWhatsappManagement();
+  const botAutomation = useBotAutomationManagement(whatsapp);
+  const menu = useProfileMenu({
+    courtsCount: courts.courts.length,
+    whatsappEnabled: whatsapp.whatsappEnabled,
+    whatsappStatus: whatsapp.whatsappStatus,
+    whatsappStatusLabelByKey: whatsapp.whatsappStatusLabelByKey,
+    setView,
+  });
 
-  const updateCourt = useUpdateCourt();
-  const createCourt = useCreateCourt();
-  const deleteCourt = useDeleteCourt();
-  const updateSlot = useUpdateSlot();
-  const createSlot = useCreateSlot();
-  const updateBasePrice = useUpdateBasePrice();
-  const updateBotAutomationSettings = useUpdateBotAutomationSettings();
-  const updateProfile = useUpdateProfile();
-  const updateOwnCompany = useUpdateOwnCompany();
-  const updateWhatsappStatus = useUpdateWhatsappStatus();
-  const closeWhatsappSession = useCloseWhatsappSession();
-  const resetWhatsappSession = useResetWhatsappSession();
-  const updateWhatsappCancellationGroupSettings =
-    useUpdateWhatsappCancellationGroupSettings();
-  const { data: digestBackgroundsData } = useDigestBackgrounds();
-  const uploadDigestBackground = useUploadDigestBackground();
-  const deleteDigestBackground = useDeleteDigestBackground();
-  const sendDigestNow = useSendDigestNow();
-  const createCompany = useCreateCompany();
-  const updateCompanyStatus = useUpdateCompanyStatus();
-  const updateCompany = useUpdateCompany();
-  const createAdmin = useCreateAdmin();
-  const updateAdminStatus = useUpdateAdminStatus();
-  const bootstrapTenant = useBootstrapDefaultTenant();
-  const createClubClosure = useCreateClubClosure();
-  const updateClubClosure = useUpdateClubClosure();
-  const deleteClubClosure = useDeleteClubClosure();
-  const [deletingClosureId, setDeletingClosureId] = useState<string | null>(null);
-
-  const courts = courtsData?.data || initialCourts;
-  const slots = slotsData?.data || [];
-  const clubClosures = clubClosuresData?.data || [];
-  const whatsappRawState = whatsappData?.data ?? {};
-  const whatsappState =
-    whatsappRawState && typeof whatsappRawState === "object"
-      ? whatsappRawState
-      : {};
-  const whatsappEnabled = Boolean(whatsappState?.enabled);
-  const whatsappStatusRaw = String(whatsappState?.status || "").toLowerCase();
-  const disconnectedWhatsappStatuses = new Set([
-    "auth_failure",
-    "logged_out",
-    "disconnected",
-    "connection_closed",
-    "unpaired",
-  ]);
-  const whatsappStatus = !whatsappEnabled
-    ? "disabled"
-    : whatsappStatusRaw === "locked_elsewhere"
-      ? "locked_elsewhere"
-    : disconnectedWhatsappStatuses.has(whatsappStatusRaw)
-      ? "logged_out"
-      : whatsappStatusRaw || "initializing";
-  const whatsappQr =
-    typeof whatsappState?.qr === "string" && whatsappState.qr.trim().length > 0
-      ? whatsappState.qr
-      : "";
-  const workerOnline = Boolean(whatsappState?.workerOnline);
-  const workerHeartbeatAt =
-    typeof whatsappState?.workerHeartbeatAt === "string" &&
-    whatsappState.workerHeartbeatAt.trim().length > 0
-      ? whatsappState.workerHeartbeatAt
-      : null;
-  const whatsappCancellationGroupSettingsRaw =
-    whatsappCancellationGroupSettingsData?.data ?? {};
-  const cancellationGroupEnabledCandidates = [
-    whatsappCancellationGroupSettingsRaw?.enabled,
-    whatsappCancellationGroupSettingsRaw?.cancellationGroupEnabled,
-    whatsappCancellationGroupSettingsRaw?.cancelationGroupEnabled,
-    whatsappState?.cancellationGroupEnabled,
-    whatsappState?.cancelationGroupEnabled,
-    whatsappState?.groupCancellationAlertsEnabled,
-    whatsappState?.cancelledBookingGroupEnabled,
-  ];
-  const cancellationGroupIdCandidates = [
-    whatsappCancellationGroupSettingsRaw?.groupId,
-    whatsappCancellationGroupSettingsRaw?.cancellationGroupId,
-    whatsappCancellationGroupSettingsRaw?.cancelationGroupId,
-    whatsappState?.cancellationGroupId,
-    whatsappState?.cancelationGroupId,
-    whatsappState?.groupCancellationAlertsId,
-    whatsappState?.cancelledBookingGroupId,
-  ];
-  const cancellationGroupNameCandidates = [
-    whatsappCancellationGroupSettingsRaw?.groupName,
-    whatsappCancellationGroupSettingsRaw?.cancellationGroupName,
-    whatsappCancellationGroupSettingsRaw?.cancelationGroupName,
-    whatsappState?.groupName,
-    whatsappState?.cancellationGroupName,
-    whatsappState?.cancelationGroupName,
-    whatsappState?.groupCancellationAlertsName,
-    whatsappState?.cancelledBookingGroupName,
-  ];
-  const dailyAvailabilityDigestEnabledCandidates = [
-    whatsappCancellationGroupSettingsRaw?.dailyAvailabilityDigestEnabled,
-    botAutomationSettingsData?.data?.dailyAvailabilityDigestEnabled,
-    botAutomationSettingsData?.data?.dailyGroupAvailabilityEnabled,
-    botAutomationSettingsData?.data?.groupDailyAvailabilityDigestEnabled,
-    whatsappState?.dailyAvailabilityDigestEnabled,
-    whatsappState?.dailyGroupAvailabilityEnabled,
-    whatsappState?.groupDailyAvailabilityDigestEnabled,
-  ];
-  const dailyAvailabilityDigestHourCandidates = [
-    whatsappCancellationGroupSettingsRaw?.dailyAvailabilityDigestHour,
-    whatsappCancellationGroupSettingsRaw?.dailyGroupAvailabilityHour,
-    whatsappCancellationGroupSettingsRaw?.groupDailyAvailabilityDigestHour,
-    botAutomationSettingsData?.data?.dailyAvailabilityDigestHour,
-    botAutomationSettingsData?.data?.dailyGroupAvailabilityHour,
-    botAutomationSettingsData?.data?.groupDailyAvailabilityDigestHour,
-    whatsappState?.dailyAvailabilityDigestHour,
-    whatsappState?.dailyGroupAvailabilityHour,
-    whatsappState?.groupDailyAvailabilityDigestHour,
-  ];
-  const dailyAvailabilityDigestNextDayCandidates = [
-    whatsappCancellationGroupSettingsRaw?.dailyAvailabilityDigestNextDayEnabled,
-    whatsappCancellationGroupSettingsRaw?.dailyNextDayAvailabilityEnabled,
-    whatsappCancellationGroupSettingsRaw?.groupDailyAvailabilityNextDayEnabled,
-    botAutomationSettingsData?.data?.dailyAvailabilityDigestNextDayEnabled,
-    botAutomationSettingsData?.data?.dailyNextDayAvailabilityEnabled,
-    botAutomationSettingsData?.data?.groupDailyAvailabilityNextDayEnabled,
-    whatsappState?.dailyAvailabilityDigestNextDayEnabled,
-    whatsappState?.dailyNextDayAvailabilityEnabled,
-    whatsappState?.groupDailyAvailabilityNextDayEnabled,
-  ];
-  const whatsappCancellationGroupEnabled = Boolean(
-    cancellationGroupEnabledCandidates.find((candidate) => typeof candidate === "boolean"),
-  );
-  const whatsappCancellationGroupId =
-    (cancellationGroupIdCandidates.find((candidate) => typeof candidate === "string") as
-      | string
-      | undefined) || "";
-  const whatsappCancellationGroupName =
-    (cancellationGroupNameCandidates.find((candidate) => typeof candidate === "string") as
-      | string
-      | undefined) || "";
-  const whatsappDailyAvailabilityDigestEnabled = Boolean(
-    dailyAvailabilityDigestEnabledCandidates.find(
-      (candidate) => typeof candidate === "boolean",
-    ),
-  );
-  const whatsappDailyAvailabilityDigestHour =
-    (dailyAvailabilityDigestHourCandidates.find(
-      (candidate) =>
-        typeof candidate === "string" &&
-        /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(candidate),
-    ) as string | undefined) || "09:00";
-  const whatsappDailyAvailabilityDigestNextDayEnabled = Boolean(
-    dailyAvailabilityDigestNextDayCandidates.find(
-      (candidate) => typeof candidate === "boolean",
-    ),
-  );
-  const whatsappDailyAvailabilityDigestFormat: "text" | "image" =
-    whatsappCancellationGroupSettingsRaw?.dailyAvailabilityDigestFormat === "image"
-      ? "image"
-      : "text";
-  const whatsappGroups = Array.isArray(whatsappGroupsData?.data)
-    ? whatsappGroupsData.data
-        .map((group: any) => ({
-          id: String(group?.id || "").trim(),
-          name: String(group?.name || group?.subject || group?.title || "").trim(),
-        }))
-        .filter((group: { id: string }) => group.id.endsWith("@g.us"))
-    : [];
-  const userCompany =
-    user?.companyId && typeof user.companyId === "object"
-      ? {
-          _id: user.companyId._id,
-          name: user.companyId.name || "",
-          slug: user.companyId.slug || "",
-          address: user.companyId.address || "",
-          isActive:
-            typeof user.companyId.isActive === "boolean"
-              ? user.companyId.isActive
-              : true,
-        }
-      : null;
-  const companies = isSuperAdmin
-    ? companiesData?.data || []
-    : userCompany?._id
-      ? [userCompany]
-      : [];
-  const admins = adminsData?.data || [];
-  const botAutomationSettings = botAutomationSettingsData?.data || {};
-
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [basePriceInput, setBasePriceInput] = useState("");
-  const [penaltyLimitInput, setPenaltyLimitInput] = useState("");
-  const [penaltyEnabledInput, setPenaltyEnabledInput] = useState(true);
-  const [attendanceReminderLeadMinutesInput, setAttendanceReminderLeadMinutesInput] =
-    useState("");
-  const [
-    attendanceResponseTimeoutMinutesInput,
-    setAttendanceResponseTimeoutMinutesInput,
-  ] = useState("");
-  const [cancellationLockHoursInput, setCancellationLockHoursInput] = useState("");
-  const [trustedClientConfirmationCountInput, setTrustedClientConfirmationCountInput] =
-    useState("");
-  const [botOneHourReminderEnabledInput, setBotOneHourReminderEnabledInput] =
-    useState(true);
-  const [companyNameInput, setCompanyNameInput] = useState("");
-  const [newAdminUsername, setNewAdminUsername] = useState("");
-  const [newAdminPassword, setNewAdminPassword] = useState("");
-  const [newAdminPhone, setNewAdminPhone] = useState("");
-  const [newAdminCompanyId, setNewAdminCompanyId] = useState("");
-  const [newSlotStartTime, setNewSlotStartTime] = useState("");
-  const [newSlotEndTime, setNewSlotEndTime] = useState("");
-  const [newSlotPrice, setNewSlotPrice] = useState("");
-  const [slotTogglePendingId, setSlotTogglePendingId] = useState<string | null>(null);
-  const [deleteCourtPendingId, setDeleteCourtPendingId] = useState<string | null>(null);
-  const [cancellationGroupIdInput, setCancellationGroupIdInput] = useState("");
-  const [cancellationGroupNameInput, setCancellationGroupNameInput] = useState("");
-  const [dailyAvailabilityDigestEnabledInput, setDailyAvailabilityDigestEnabledInput] =
-    useState(false);
-  const [dailyAvailabilityDigestHourInput, setDailyAvailabilityDigestHourInput] =
-    useState("09:00");
-  const [
-    dailyAvailabilityDigestNextDayEnabledInput,
-    setDailyAvailabilityDigestNextDayEnabledInput,
-  ] = useState(false);
-  const [dailyAvailabilityDigestFormatInput, setDailyAvailabilityDigestFormatInput] =
-    useState<"text" | "image">("text");
-  const [isEditingCancellationGroupId, setIsEditingCancellationGroupId] =
-    useState(false);
-  const [isEditingCancellationGroupName, setIsEditingCancellationGroupName] =
-    useState(false);
-  const [isSavingReminderToggle, setIsSavingReminderToggle] = useState(false);
-  const [isSavingPenaltyToggle, setIsSavingPenaltyToggle] = useState(false);
-  const [isSavingReminderMinutes, setIsSavingReminderMinutes] = useState(false);
-  const [isSavingResponseTimeoutMinutes, setIsSavingResponseTimeoutMinutes] =
-    useState(false);
-  const [isSavingCancellationLockHours, setIsSavingCancellationLockHours] =
-    useState(false);
-  const [isSavingTrustedCount, setIsSavingTrustedCount] = useState(false);
-  const [isSavingPenaltyLimit, setIsSavingPenaltyLimit] = useState(false);
-  const [isSavingDailyAvailabilityDigestSettings, setIsSavingDailyAvailabilityDigestSettings] =
-    useState(false);
-  const [isWaitingWhatsappCommand, setIsWaitingWhatsappCommand] = useState(false);
-
-  useEffect(() => {
-    if (user?.phone) {
-      setPhoneNumber(user.phone);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    const backendLimit = botAutomationSettings?.penaltyLimit;
-    if (!backendLimit) return;
-    setPenaltyLimitInput(String(backendLimit));
-  }, [botAutomationSettings]);
-
-  useEffect(() => {
-    const backendPenaltyEnabledCandidate = [
-      botAutomationSettings?.penaltyEnabled,
-      botAutomationSettings?.penaltySystemEnabled,
-    ].find((value) => typeof value === "boolean");
-
-    if (typeof backendPenaltyEnabledCandidate === "boolean") {
-      setPenaltyEnabledInput(backendPenaltyEnabledCandidate);
-    }
-  }, [botAutomationSettings]);
-
-  useEffect(() => {
-    const leadMinutes = botAutomationSettings?.attendanceReminderLeadMinutes;
-    if (!leadMinutes) return;
-    setAttendanceReminderLeadMinutesInput(String(leadMinutes));
-  }, [botAutomationSettings]);
-
-  useEffect(() => {
-    const timeoutMinutes = botAutomationSettings?.attendanceResponseTimeoutMinutes;
-    if (timeoutMinutes === undefined || timeoutMinutes === null) return;
-    if (!Number.isInteger(Number(timeoutMinutes))) return;
-    setAttendanceResponseTimeoutMinutesInput(String(Number(timeoutMinutes)));
-  }, [botAutomationSettings]);
-
-  useEffect(() => {
-    const lockHours = botAutomationSettings?.cancellationLockHours;
-    if (lockHours === undefined || lockHours === null) return;
-    if (!Number.isInteger(Number(lockHours))) return;
-    setCancellationLockHoursInput(String(Number(lockHours)));
-  }, [botAutomationSettings]);
-
-  useEffect(() => {
-    const trustedCount = botAutomationSettings?.trustedClientConfirmationCount;
-    if (!trustedCount) return;
-    setTrustedClientConfirmationCountInput(String(trustedCount));
-  }, [botAutomationSettings]);
-
-  useEffect(() => {
-    setBotOneHourReminderEnabledInput(resolveOneHourReminderEnabled(botAutomationSettings));
-  }, [botAutomationSettings]);
-
-  useEffect(() => {
-    if (!slots.length) return;
-
-    const firstPrice = slots[0]?.price;
-    if (typeof firstPrice !== "number") return;
-
-    const allSame = slots.every((slot: any) => Number(slot.price) === Number(firstPrice));
-    if (allSame) {
-      setBasePriceInput(String(firstPrice));
-      return;
-    }
-
-    setBasePriceInput("");
-  }, [slots]);
-
+  // Scroll to top on view change
   useEffect(() => {
     const profileScrollContainer = document.getElementById("profile-drawer-body");
     profileScrollContainer?.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [view]);
 
+  // Refetch whatsapp groups when entering whatsapp view
   useEffect(() => {
     if (view !== "whatsapp") return;
 
-    void refetchWhatsappGroups();
+    void whatsapp.refetchWhatsappGroups();
 
-    if (!whatsappEnabled || !workerOnline) return;
+    if (!whatsapp.whatsappEnabledForEffect || !whatsapp.workerOnlineForEffect) return;
     const retryTimer = window.setTimeout(() => {
-      void refetchWhatsappGroups();
+      void whatsapp.refetchWhatsappGroups();
     }, 3500);
 
     return () => window.clearTimeout(retryTimer);
-  }, [view, whatsappEnabled, workerOnline, refetchWhatsappGroups]);
+  }, [
+    view,
+    whatsapp.whatsappEnabledForEffect,
+    whatsapp.workerOnlineForEffect,
+    whatsapp.refetchWhatsappGroups,
+  ]);
 
-  useEffect(() => {
-    if (!newAdminCompanyId && companies.length > 0) {
-      setNewAdminCompanyId(companies[0]._id);
-    }
-  }, [companies, newAdminCompanyId]);
-
-  useEffect(() => {
-    if (isEditingCancellationGroupId) return;
-    setCancellationGroupIdInput(whatsappCancellationGroupId);
-  }, [whatsappCancellationGroupId, isEditingCancellationGroupId]);
-
-  useEffect(() => {
-    if (isEditingCancellationGroupName) return;
-    setCancellationGroupNameInput(whatsappCancellationGroupName);
-  }, [whatsappCancellationGroupName, isEditingCancellationGroupName]);
-
-  useEffect(() => {
-    setDailyAvailabilityDigestEnabledInput(whatsappDailyAvailabilityDigestEnabled);
-  }, [whatsappDailyAvailabilityDigestEnabled]);
-
-  useEffect(() => {
-    setDailyAvailabilityDigestHourInput(whatsappDailyAvailabilityDigestHour);
-  }, [whatsappDailyAvailabilityDigestHour]);
-
-  useEffect(() => {
-    setDailyAvailabilityDigestNextDayEnabledInput(
-      whatsappDailyAvailabilityDigestNextDayEnabled,
-    );
-  }, [whatsappDailyAvailabilityDigestNextDayEnabled]);
-
-  useEffect(() => {
-    setDailyAvailabilityDigestFormatInput(whatsappDailyAvailabilityDigestFormat);
-  }, [whatsappDailyAvailabilityDigestFormat]);
-
-  const whatsappStatusLabelByKey: Record<string, string> = {
-    disabled: "Desactivado",
-    ready: "Conectado",
-    authenticated: "Autenticado",
-    qr_pending: "Esperando escaneo",
-    loading: "Iniciando",
-    auth_failure: "Error de autenticación",
-    initializing: "Inicializando",
-    logged_out: "Sesión cerrada",
-    locked_elsewhere: "Bloqueado por otra instancia",
-    disconnected: "Desconectado",
-    connection_closed: "Conexión cerrada",
-    unpaired: "Desvinculado",
-  };
-
-  const whatsappChipColor =
-    whatsappStatus === "locked_elsewhere"
-      ? "danger"
-      : whatsappStatus === "logged_out" || whatsappStatus === "auth_failure"
-        ? "warning"
-      : !whatsappEnabled
-        ? "default"
-        : whatsappStatus === "ready"
-          ? "success"
-          : "warning";
-
-  const ensureWhatsappWorkerOnline = (): boolean => {
-    if (isLoadingWhatsapp) return true;
-    if (workerOnline) return true;
-
-    addToast({
-      title: "Worker de WhatsApp offline",
-      description: workerHeartbeatAt
-        ? `Último heartbeat: ${new Date(workerHeartbeatAt).toLocaleString()}`
-        : "Iniciá el servicio padel-proactive-wa-worker para aplicar acciones de WhatsApp.",
-      color: "danger",
-    });
-    return false;
-  };
-
-  const handleUpdatePhone = () => {
-    updateProfile.mutate(
-      { phone: phoneNumber },
-      {
-        onSuccess: (response) => {
-          updateUser(response.data);
-        },
-      },
-    );
-  };
-
-  const handleSaveBasePrice = () => {
-    const parsed = Number(basePriceInput);
-    if (!Number.isFinite(parsed) || parsed < 0) {
-      addToast({
-        title: "Ingresá un precio válido (mayor o igual a 0).",
-        color: "danger",
-      });
-      return;
-    }
-
-    updateBasePrice.mutate(parsed, {
-      onSuccess: () => {
-        addToast({ title: "Precio base actualizado en todos los turnos", color: "success" });
-      },
-      onError: (err: any) => {
-        addToast({
-          title: err?.response?.data?.error || "No se pudo actualizar el precio base",
-          color: "danger",
-        });
-      },
-    });
-  };
-
-  const handleToggleWhatsapp = (enabled: boolean) => {
-    if (!ensureWhatsappWorkerOnline()) return;
-
-    const waitForWhatsappCommand = async (
-      commandId: string,
-      successTitle: string,
-    ): Promise<void> => {
-      const normalizedId = String(commandId || "").trim();
-      if (!normalizedId) return;
-
-      setIsWaitingWhatsappCommand(true);
-      const maxAttempts = 45;
-      const delayMs = 2000;
-
-      try {
-        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-          const response = await configService.getWhatsappCommandStatus(normalizedId);
-          const status = String(response?.data?.status || "").toLowerCase();
-          const errorMessage = String(response?.data?.lastError || "").trim();
-
-          if (status === "done") {
-            queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
-            addToast({ title: successTitle, color: "success" });
-            return;
-          }
-
-          if (status === "failed") {
-            queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
-            throw new Error(errorMessage || "El comando de WhatsApp falló.");
-          }
-
-          await new Promise((resolve) => setTimeout(resolve, delayMs));
-        }
-
-        addToast({
-          title: "WhatsApp sigue procesando el cambio",
-          description: "Podés esperar unos segundos más y volver a intentar.",
-          color: "warning",
-        });
-      } finally {
-        setIsWaitingWhatsappCommand(false);
-      }
-    };
-
-    updateWhatsappStatus.mutate(enabled, {
-      onSuccess: async (response: any) => {
-        const commandId = String(response?.data?.commandId || "").trim();
-        if (commandId) {
-          addToast({
-            title: "Comando enviado",
-            description: "Aplicando cambios de WhatsApp...",
-            color: "default",
-          });
-          try {
-            await waitForWhatsappCommand(
-              commandId,
-              enabled ? "WhatsApp activado" : "WhatsApp desactivado",
-            );
-          } catch (error: any) {
-            addToast({
-              title:
-                error?.message || "No se pudo completar el cambio de WhatsApp",
-              color: "danger",
-            });
-          }
-          return;
-        }
-
-        addToast({
-          title: enabled ? "WhatsApp activado" : "WhatsApp desactivado",
-          color: "success",
-        });
-      },
-      onError: (err: any) => {
-        addToast({
-          title: err?.response?.data?.error || "No se pudo actualizar WhatsApp",
-          color: "danger",
-        });
-      },
-    });
-  };
-
-  const handleCloseWhatsappSession = async () => {
-    if (!ensureWhatsappWorkerOnline()) return;
-
-    const shouldClose = await confirm(
-      "¿Seguro que querés cerrar la sesión de WhatsApp y dar de baja todas las sesiones/dispositivos activos?",
-      { variant: "danger", title: "Cerrar sesión de WhatsApp" },
-    );
-    if (!shouldClose) return;
-
-    try {
-      const response = await closeWhatsappSession.mutateAsync();
-      const commandId = String(response?.data?.commandId || "").trim();
-
-      if (!commandId) {
-        addToast({
-          title: "Sesión de WhatsApp cerrada y dada de baja",
-          color: "success",
-        });
-        return;
-      }
-
-      addToast({
-        title: "Comando enviado",
-        description: "Cerrando sesión de WhatsApp...",
-        color: "default",
-      });
-
-      setIsWaitingWhatsappCommand(true);
-      try {
-        const maxAttempts = 45;
-        const delayMs = 2000;
-        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-          const statusResponse = await configService.getWhatsappCommandStatus(commandId);
-          const status = String(statusResponse?.data?.status || "").toLowerCase();
-          const errorMessage = String(statusResponse?.data?.lastError || "").trim();
-
-          if (status === "done") {
-            queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
-            addToast({
-              title: "Sesión de WhatsApp cerrada y dada de baja",
-              color: "success",
-            });
-            return;
-          }
-
-          if (status === "failed") {
-            throw new Error(errorMessage || "No se pudo cerrar la sesión de WhatsApp");
-          }
-
-          await new Promise((resolve) => setTimeout(resolve, delayMs));
-        }
-
-        addToast({
-          title: "WhatsApp sigue procesando el cierre",
-          description: "Podés esperar unos segundos más y volver a intentar.",
-          color: "warning",
-        });
-      } finally {
-        setIsWaitingWhatsappCommand(false);
-      }
-    } catch (err: any) {
-      addToast({
-        title:
-          err?.response?.data?.error ||
-          err?.message ||
-          "No se pudo cerrar la sesión de WhatsApp",
-        color: "danger",
-      });
-    }
-  };
-
-  const handleSwitchWhatsappDevice = async () => {
-    if (!ensureWhatsappWorkerOnline()) return;
-
-    const shouldSwitch = await confirm(
-      "¿Querés cambiar de dispositivo? Se va a cerrar la sesión actual y se regenerará un QR nuevo.",
-      { variant: "danger", title: "Cambiar dispositivo" },
-    );
-    if (!shouldSwitch) return;
-
-    try {
-      const closeResponse = await closeWhatsappSession.mutateAsync();
-      const closeCommandId = String(closeResponse?.data?.commandId || "").trim();
-
-      if (closeCommandId) {
-        setIsWaitingWhatsappCommand(true);
-        try {
-          const maxAttempts = 45;
-          const delayMs = 2000;
-          for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-            const statusResponse =
-              await configService.getWhatsappCommandStatus(closeCommandId);
-            const status = String(statusResponse?.data?.status || "").toLowerCase();
-            const errorMessage = String(statusResponse?.data?.lastError || "").trim();
-
-            if (status === "done") {
-              break;
-            }
-
-            if (status === "failed") {
-              throw new Error(
-                errorMessage || "No se pudo cerrar la sesión actual de WhatsApp",
-              );
-            }
-
-            await new Promise((resolve) => setTimeout(resolve, delayMs));
-          }
-        } finally {
-          setIsWaitingWhatsappCommand(false);
-        }
-      }
-
-      const enableResponse = await updateWhatsappStatus.mutateAsync(true);
-      const enableCommandId = String(enableResponse?.data?.commandId || "").trim();
-      if (!enableCommandId) {
-        addToast({
-          title: "Listo: escaneá el nuevo QR para vincular otro dispositivo",
-          color: "success",
-        });
-        return;
-      }
-
-      setIsWaitingWhatsappCommand(true);
-      try {
-        const maxAttempts = 45;
-        const delayMs = 2000;
-        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-          const statusResponse = await configService.getWhatsappCommandStatus(enableCommandId);
-          const status = String(statusResponse?.data?.status || "").toLowerCase();
-          const errorMessage = String(statusResponse?.data?.lastError || "").trim();
-
-          if (status === "done") {
-            queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
-            addToast({
-              title: "Listo: escaneá el nuevo QR para vincular otro dispositivo",
-              color: "success",
-            });
-            return;
-          }
-
-          if (status === "failed") {
-            throw new Error(
-              errorMessage || "No se pudo iniciar la nueva sesión de WhatsApp",
-            );
-          }
-
-          await new Promise((resolve) => setTimeout(resolve, delayMs));
-        }
-
-        addToast({
-          title: "WhatsApp sigue procesando el cambio de dispositivo",
-          description: "El QR debería aparecer en breve.",
-          color: "warning",
-        });
-      } finally {
-        setIsWaitingWhatsappCommand(false);
-      }
-    } catch (err: any) {
-      addToast({
-        title:
-          err?.response?.data?.error ||
-          err?.message ||
-          "No se pudo cambiar el dispositivo de WhatsApp",
-        color: "danger",
-      });
-    }
-  };
-
-  const handleResetWhatsappSession = async () => {
-    if (!ensureWhatsappWorkerOnline()) return;
-
-    const shouldReset = await confirm(
-      "¿Querés cerrar la sesión actual y generar un QR nuevo? Se eliminarán los datos de sesión guardados.",
-      { variant: "danger", title: "Reiniciar sesión" },
-    );
-    if (!shouldReset) return;
-
-    try {
-      addToast({
-        title: "Reiniciando sesión de WhatsApp...",
-        description: "Esto puede tardar unos segundos.",
-        color: "default",
-      });
-
-      const response = await resetWhatsappSession.mutateAsync();
-      const commandId = String(response?.data?.commandId || "").trim();
-
-      if (!commandId) {
-        addToast({ title: "Sesión reiniciada. Esperá el nuevo QR.", color: "success" });
-        return;
-      }
-
-      setIsWaitingWhatsappCommand(true);
-      try {
-        const maxAttempts = 45;
-        const delayMs = 2000;
-        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-          const statusResponse = await configService.getWhatsappCommandStatus(commandId);
-          const status = String(statusResponse?.data?.status || "").toLowerCase();
-          const errorMessage = String(statusResponse?.data?.lastError || "").trim();
-
-          if (status === "done") {
-            queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
-            addToast({
-              title: "Sesión reiniciada",
-              description: "Escaneá el nuevo QR para vincular el dispositivo.",
-              color: "success",
-            });
-            return;
-          }
-
-          if (status === "failed") {
-            throw new Error(errorMessage || "No se pudo reiniciar la sesión de WhatsApp");
-          }
-
-          await new Promise((resolve) => setTimeout(resolve, delayMs));
-        }
-
-        addToast({
-          title: "WhatsApp sigue procesando el reinicio",
-          description: "El QR debería aparecer en breve.",
-          color: "warning",
-        });
-      } finally {
-        setIsWaitingWhatsappCommand(false);
-      }
-    } catch (err: any) {
-      addToast({
-        title:
-          err?.response?.data?.error ||
-          err?.message ||
-          "No se pudo reiniciar la sesión de WhatsApp",
-        color: "danger",
-      });
-    }
-  };
-
-  const persistWhatsappCancellationGroupSettings = async (
-    nextEnabled: boolean,
-    nextGroupIdRaw: string,
-    nextGroupNameRaw: string,
-    nextDailyAvailabilityDigestEnabled: boolean,
-    nextDailyAvailabilityDigestHourRaw: string,
-    nextDailyAvailabilityDigestNextDayEnabled: boolean,
-    nextDailyAvailabilityDigestFormat: "text" | "image" = "text",
-  ) => {
-    const nextGroupId = nextGroupIdRaw.trim();
-    const nextGroupName = nextGroupNameRaw.trim();
-    const nextDailyAvailabilityDigestHour = nextDailyAvailabilityDigestHourRaw.trim();
-    if (nextEnabled && !nextGroupId) {
-      addToast({
-        title: "Seleccioná un grupo antes de activar avisos de cancelación",
-        color: "warning",
-      });
-      return;
-    }
-    if (nextEnabled && !WHATSAPP_GROUP_ID_REGEX.test(nextGroupId)) {
-      addToast({
-        title: "ID de grupo inválido. Debe terminar en @g.us.",
-        color: "danger",
-      });
-      return;
-    }
-
-    if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(nextDailyAvailabilityDigestHour)) {
-      addToast({
-        title: "Ingresá una hora válida en formato HH:mm.",
-        color: "warning",
-      });
-      return;
-    }
-
-    try {
-      setIsSavingDailyAvailabilityDigestSettings(true);
-      const response = await updateWhatsappCancellationGroupSettings.mutateAsync({
-        enabled: nextEnabled,
-        groupId: nextGroupId,
-        groupName: nextGroupName,
-        dailyAvailabilityDigestEnabled: nextDailyAvailabilityDigestEnabled,
-        dailyAvailabilityDigestHour: nextDailyAvailabilityDigestHour,
-        dailyAvailabilityDigestNextDayEnabled:
-          nextDailyAvailabilityDigestNextDayEnabled,
-        dailyAvailabilityDigestFormat: nextDailyAvailabilityDigestFormat,
-      });
-      setCancellationGroupIdInput(nextGroupId);
-      setCancellationGroupNameInput(nextGroupName);
-      setDailyAvailabilityDigestEnabledInput(nextDailyAvailabilityDigestEnabled);
-      setDailyAvailabilityDigestHourInput(nextDailyAvailabilityDigestHour);
-      setDailyAvailabilityDigestNextDayEnabledInput(
-        nextDailyAvailabilityDigestNextDayEnabled,
+  switch (view) {
+    case "whatsapp":
+      return (
+        <WhatsappSettingsView
+          whatsappEnabled={whatsapp.whatsappEnabled}
+          whatsappStatus={whatsapp.whatsappStatus}
+          whatsappQr={whatsapp.whatsappQr}
+          whatsappState={whatsapp.whatsappState}
+          workerOnline={whatsapp.workerOnline}
+          workerHeartbeatAt={whatsapp.workerHeartbeatAt}
+          isLoadingWhatsapp={whatsapp.isLoadingWhatsapp}
+          updateWhatsappPending={whatsapp.updateWhatsappPending}
+          whatsappChipColor={whatsapp.whatsappChipColor}
+          whatsappStatusLabelByKey={whatsapp.whatsappStatusLabelByKey}
+          cancellationGroupEnabled={whatsapp.cancellationGroupEnabled}
+          cancellationGroupIdInput={whatsapp.cancellationGroupIdInput}
+          cancellationGroupNameInput={whatsapp.cancellationGroupNameInput}
+          whatsappGroups={whatsapp.whatsappGroups}
+          isLoadingWhatsappGroups={whatsapp.isLoadingWhatsappGroups}
+          updateCancellationGroupPending={whatsapp.updateCancellationGroupPending}
+          onBack={() => setView("menu")}
+          onToggleWhatsapp={whatsapp.handleToggleWhatsapp}
+          onCloseWhatsappSession={whatsapp.handleCloseWhatsappSession}
+          onSwitchWhatsappDevice={whatsapp.handleSwitchWhatsappDevice}
+          onResetWhatsappSession={whatsapp.handleResetWhatsappSession}
+          onCancellationGroupEnabledChange={whatsapp.handleToggleCancellationGroup}
+          onSelectWhatsappGroup={whatsapp.handleSelectWhatsappGroup}
+        />
       );
-      setDailyAvailabilityDigestFormatInput(nextDailyAvailabilityDigestFormat);
-      setIsEditingCancellationGroupId(false);
-      setIsEditingCancellationGroupName(false);
-      const persistedLocally = Boolean(response?.data?.persistedLocally);
-      addToast({
-        title: persistedLocally
-          ? "Guardado solo localmente (sin persistir en backend)"
-          : nextEnabled
-            ? "Avisos de cancelación al grupo activados"
-            : "Avisos de cancelación al grupo desactivados",
-        description: persistedLocally
-          ? "El backend no aceptó esta configuración. Los cambios pueden perderse al recargar."
-          : undefined,
-        color: persistedLocally ? "warning" : "success",
-      });
-    } catch (err: any) {
-      addToast({
-        title:
-          err?.response?.data?.error ||
-          "No se pudo actualizar el grupo de avisos de cancelación",
-        color: "danger",
-      });
-    } finally {
-      setIsSavingDailyAvailabilityDigestSettings(false);
-    }
-  };
 
-  const handleToggleCancellationGroup = (enabled: boolean) => {
-    persistWhatsappCancellationGroupSettings(
-      enabled,
-      cancellationGroupIdInput,
-      cancellationGroupNameInput,
-      dailyAvailabilityDigestEnabledInput,
-      dailyAvailabilityDigestHourInput,
-      dailyAvailabilityDigestNextDayEnabledInput,
-      dailyAvailabilityDigestFormatInput,
-    );
-  };
-
-  const handleToggleDailyAvailabilityDigestFromBot = (enabled: boolean) => {
-    if (enabled && !cancellationGroupIdInput.trim()) {
-      addToast({
-        title: "Primero seleccioná un grupo para enviar el resumen diario",
-        color: "warning",
-      });
-      return;
-    }
-
-    persistWhatsappCancellationGroupSettings(
-      whatsappCancellationGroupEnabled,
-      cancellationGroupIdInput,
-      cancellationGroupNameInput,
-      enabled,
-      dailyAvailabilityDigestHourInput,
-      dailyAvailabilityDigestNextDayEnabledInput,
-      dailyAvailabilityDigestFormatInput,
-    );
-  };
-
-  const handleToggleDailyAvailabilityDigestNextDayFromBot = (enabled: boolean) => {
-    if (enabled && !cancellationGroupIdInput.trim()) {
-      addToast({
-        title: "Primero seleccioná un grupo para enviar la disponibilidad de mañana",
-        color: "warning",
-      });
-      return;
-    }
-
-    persistWhatsappCancellationGroupSettings(
-      whatsappCancellationGroupEnabled,
-      cancellationGroupIdInput,
-      cancellationGroupNameInput,
-      dailyAvailabilityDigestEnabledInput,
-      dailyAvailabilityDigestHourInput,
-      enabled,
-      dailyAvailabilityDigestFormatInput,
-    );
-  };
-
-  const handleSaveDailyAvailabilityDigestSchedule = () => {
-    if (!cancellationGroupIdInput.trim()) {
-      addToast({
-        title: "Primero configurá un grupo en WhatsApp Web para usar estos avisos",
-        color: "warning",
-      });
-      return;
-    }
-
-    persistWhatsappCancellationGroupSettings(
-      whatsappCancellationGroupEnabled,
-      cancellationGroupIdInput,
-      cancellationGroupNameInput,
-      dailyAvailabilityDigestEnabledInput,
-      dailyAvailabilityDigestHourInput,
-      dailyAvailabilityDigestNextDayEnabledInput,
-      dailyAvailabilityDigestFormatInput,
-    );
-  };
-
-  const handleSelectWhatsappGroup = (groupId: string) => {
-    const selected = whatsappGroups.find((group: any) => group.id === groupId);
-    if (!selected) return;
-    if (!WHATSAPP_GROUP_ID_REGEX.test(selected.id)) {
-      addToast({
-        title: "Grupo inválido recibido desde backend.",
-        color: "danger",
-      });
-      return;
-    }
-
-    setCancellationGroupIdInput(selected.id);
-    setCancellationGroupNameInput(selected.name || "");
-    setIsEditingCancellationGroupId(false);
-    setIsEditingCancellationGroupName(false);
-    persistWhatsappCancellationGroupSettings(
-      whatsappCancellationGroupEnabled,
-      selected.id,
-      selected.name || "",
-      dailyAvailabilityDigestEnabledInput,
-      dailyAvailabilityDigestHourInput,
-      dailyAvailabilityDigestNextDayEnabledInput,
-      dailyAvailabilityDigestFormatInput,
-    );
-  };
-
-  const getServerBotAutomationSnapshot = () => {
-    const rawPenaltyEnabled = [
-      botAutomationSettings?.penaltyEnabled,
-      botAutomationSettings?.penaltySystemEnabled,
-    ].find((value) => typeof value === "boolean");
-
-    return {
-      oneHourReminderEnabled: resolveOneHourReminderEnabled(botAutomationSettings),
-      penaltyEnabled:
-        typeof rawPenaltyEnabled === "boolean" ? rawPenaltyEnabled : true,
-      attendanceReminderLeadMinutes:
-        Number(botAutomationSettings?.attendanceReminderLeadMinutes) || 60,
-      attendanceResponseTimeoutMinutes: Number.isInteger(
-        Number(botAutomationSettings?.attendanceResponseTimeoutMinutes),
-      )
-        ? Number(botAutomationSettings?.attendanceResponseTimeoutMinutes)
-        : 15,
-      cancellationLockHours:
-        Number.isInteger(Number(botAutomationSettings?.cancellationLockHours))
-          ? Number(botAutomationSettings?.cancellationLockHours)
-          : 0,
-      trustedClientConfirmationCount:
-        Number(botAutomationSettings?.trustedClientConfirmationCount) || 3,
-      penaltyLimit: Number(botAutomationSettings?.penaltyLimit) || 2,
-    };
-  };
-
-  const restoreBotAutomationSnapshot = (snapshot: {
-    oneHourReminderEnabled: boolean;
-    penaltyEnabled: boolean;
-    attendanceReminderLeadMinutes: number;
-    attendanceResponseTimeoutMinutes: number;
-    cancellationLockHours: number;
-    trustedClientConfirmationCount: number;
-    penaltyLimit: number;
-  }) => {
-    setBotOneHourReminderEnabledInput(Boolean(snapshot.oneHourReminderEnabled));
-    setPenaltyEnabledInput(Boolean(snapshot.penaltyEnabled));
-    setAttendanceReminderLeadMinutesInput(
-      String(snapshot.attendanceReminderLeadMinutes),
-    );
-    setAttendanceResponseTimeoutMinutesInput(
-      String(snapshot.attendanceResponseTimeoutMinutes),
-    );
-    setCancellationLockHoursInput(String(snapshot.cancellationLockHours));
-    setTrustedClientConfirmationCountInput(
-      String(snapshot.trustedClientConfirmationCount),
-    );
-    setPenaltyLimitInput(String(snapshot.penaltyLimit));
-  };
-
-  const syncBotAutomationFromResponse = (response: any) => {
-    const data = response?.data || {};
-    setBotOneHourReminderEnabledInput(
-      resolveOneHourReminderEnabled(data, botOneHourReminderEnabledInput),
-    );
-    const responsePenaltyEnabled = [
-      data?.penaltyEnabled,
-      data?.penaltySystemEnabled,
-    ].find((value) => typeof value === "boolean");
-    if (typeof responsePenaltyEnabled === "boolean") {
-      setPenaltyEnabledInput(responsePenaltyEnabled);
-    }
-    if (Number.isInteger(Number(data?.attendanceReminderLeadMinutes))) {
-      setAttendanceReminderLeadMinutesInput(
-        String(Number(data.attendanceReminderLeadMinutes)),
+    case "tenants":
+      return (
+        <TenantsView
+          isSuperAdmin={tenants.isSuperAdmin}
+          companies={tenants.companies}
+          admins={tenants.admins}
+          companyNameInput={tenants.companyNameInput}
+          newAdminUsername={tenants.newAdminUsername}
+          newAdminPassword={tenants.newAdminPassword}
+          newAdminPhone={tenants.newAdminPhone}
+          newAdminCompanyId={tenants.newAdminCompanyId}
+          createCompanyPending={tenants.createCompanyPending}
+          updateCompanyPending={tenants.updateCompanyPending}
+          updateCompanyStatusPending={tenants.updateCompanyStatusPending}
+          bootstrapPending={tenants.bootstrapPending}
+          createAdminPending={tenants.createAdminPending}
+          updateAdminStatusPending={tenants.updateAdminStatusPending}
+          onBack={() => setView("menu")}
+          onCompanyNameChange={tenants.setCompanyNameInput}
+          onAdminUsernameChange={tenants.setNewAdminUsername}
+          onAdminPasswordChange={tenants.setNewAdminPassword}
+          onAdminPhoneChange={tenants.setNewAdminPhone}
+          onAdminCompanyChange={tenants.setNewAdminCompanyId}
+          onCreateCompany={tenants.handleCreateCompany}
+          onBootstrapTenant={tenants.handleBootstrapTenant}
+          onCreateAdmin={tenants.handleCreateAdmin}
+          onUpdateCompanyStatus={tenants.handleUpdateCompanyStatus}
+          onUpdateCompany={tenants.handleUpdateCompany}
+          onUpdateAdminStatus={tenants.handleUpdateAdminStatus}
+        />
       );
-    }
-    if (Number.isInteger(Number(data?.attendanceResponseTimeoutMinutes))) {
-      setAttendanceResponseTimeoutMinutesInput(
-        String(Number(data.attendanceResponseTimeoutMinutes)),
+
+    case "bot-automation":
+      return (
+        <BotAutomationSettingsView
+          oneHourReminderEnabled={botAutomation.oneHourReminderEnabled}
+          penaltyEnabled={botAutomation.penaltyEnabled}
+          attendanceReminderLeadMinutesInput={
+            botAutomation.attendanceReminderLeadMinutesInput
+          }
+          attendanceResponseTimeoutMinutesInput={
+            botAutomation.attendanceResponseTimeoutMinutesInput
+          }
+          cancellationLockHoursInput={botAutomation.cancellationLockHoursInput}
+          trustedClientConfirmationCountInput={
+            botAutomation.trustedClientConfirmationCountInput
+          }
+          penaltyLimitInput={botAutomation.penaltyLimitInput}
+          dailyAvailabilityDigestEnabled={
+            botAutomation.dailyAvailabilityDigestEnabled
+          }
+          dailyAvailabilityDigestHourInput={
+            botAutomation.dailyAvailabilityDigestHourInput
+          }
+          dailyAvailabilityDigestNextDayEnabled={
+            botAutomation.dailyAvailabilityDigestNextDayEnabled
+          }
+          cancellationGroupConfigured={
+            botAutomation.cancellationGroupConfigured
+          }
+          isSavingReminderToggle={botAutomation.isSavingReminderToggle}
+          isSavingPenaltyToggle={botAutomation.isSavingPenaltyToggle}
+          isSavingReminderMinutes={botAutomation.isSavingReminderMinutes}
+          isSavingResponseTimeoutMinutes={
+            botAutomation.isSavingResponseTimeoutMinutes
+          }
+          isSavingCancellationLockHours={
+            botAutomation.isSavingCancellationLockHours
+          }
+          isSavingTrustedCount={botAutomation.isSavingTrustedCount}
+          isSavingPenaltyLimit={botAutomation.isSavingPenaltyLimit}
+          isSavingDailyAvailabilityDigestSettings={
+            botAutomation.isSavingDailyAvailabilityDigestSettings
+          }
+          onBack={() => setView("menu")}
+          onToggleOneHourReminder={botAutomation.onToggleOneHourReminder}
+          onTogglePenaltyEnabled={botAutomation.onTogglePenaltyEnabled}
+          onAttendanceReminderLeadMinutesChange={
+            botAutomation.onAttendanceReminderLeadMinutesChange
+          }
+          onAttendanceResponseTimeoutMinutesChange={
+            botAutomation.onAttendanceResponseTimeoutMinutesChange
+          }
+          onCancellationLockHoursChange={
+            botAutomation.onCancellationLockHoursChange
+          }
+          onTrustedClientConfirmationCountChange={
+            botAutomation.onTrustedClientConfirmationCountChange
+          }
+          onPenaltyLimitChange={botAutomation.onPenaltyLimitChange}
+          onToggleDailyAvailabilityDigest={
+            botAutomation.onToggleDailyAvailabilityDigest
+          }
+          onDailyAvailabilityDigestHourChange={
+            botAutomation.onDailyAvailabilityDigestHourChange
+          }
+          onToggleDailyAvailabilityDigestNextDay={
+            botAutomation.onToggleDailyAvailabilityDigestNextDay
+          }
+          dailyAvailabilityDigestFormat={
+            botAutomation.dailyAvailabilityDigestFormat
+          }
+          onDailyAvailabilityDigestFormatChange={
+            botAutomation.onDailyAvailabilityDigestFormatChange
+          }
+          onSaveReminderMinutes={botAutomation.onSaveReminderMinutes}
+          onSaveAttendanceResponseTimeoutMinutes={
+            botAutomation.onSaveAttendanceResponseTimeoutMinutes
+          }
+          onSaveCancellationLockHours={
+            botAutomation.onSaveCancellationLockHours
+          }
+          onSaveTrustedCount={botAutomation.onSaveTrustedCount}
+          onSavePenaltyLimit={botAutomation.onSavePenaltyLimit}
+          onSaveDailyAvailabilityDigestSettings={
+            botAutomation.onSaveDailyAvailabilityDigestSettings
+          }
+          digestBackgrounds={botAutomation.digestBackgrounds}
+          isUploadingBackground={botAutomation.isUploadingBackground}
+          isDeletingBackground={botAutomation.isDeletingBackground}
+          onUploadBackground={botAutomation.onUploadBackground}
+          onDeleteBackground={botAutomation.onDeleteBackground}
+          onSendDigestNow={botAutomation.onSendDigestNow}
+          isSendingDigestNow={botAutomation.isSendingDigestNow}
+        />
       );
-    }
-    if (Number.isInteger(Number(data?.cancellationLockHours))) {
-      setCancellationLockHoursInput(String(Number(data.cancellationLockHours)));
-    }
-    if (Number.isInteger(Number(data?.trustedClientConfirmationCount))) {
-      setTrustedClientConfirmationCountInput(
-        String(Number(data.trustedClientConfirmationCount)),
+
+    case "club-closures":
+      return (
+        <ClubClosuresView
+          closures={clubClosures.closures}
+          createPending={clubClosures.createPending}
+          updatePending={clubClosures.updatePending}
+          deletePendingId={clubClosures.deletePendingId}
+          onBack={() => setView("menu")}
+          onCreate={clubClosures.handleCreate}
+          onUpdate={clubClosures.handleUpdate}
+          onDelete={clubClosures.handleDelete}
+        />
       );
-    }
-    if (Number.isInteger(Number(data?.penaltyLimit))) {
-      setPenaltyLimitInput(String(Number(data.penaltyLimit)));
-    }
-  };
 
-  const handleToggleBotOneHourReminderRealtime = async (enabled: boolean) => {
-    const previousSnapshot = getServerBotAutomationSnapshot();
-    setBotOneHourReminderEnabledInput(enabled);
-    setIsSavingReminderToggle(true);
-    try {
-      const response = await updateBotAutomationSettings.mutateAsync({
-        oneHourReminderEnabled: enabled,
-      });
-      syncBotAutomationFromResponse(response);
-      addToast({
-        title: enabled ? "Confirmación previa activada" : "Confirmación previa desactivada",
-        color: "success",
-      });
-    } catch (err: any) {
-      restoreBotAutomationSnapshot(previousSnapshot);
-      addToast({
-        title:
-          err?.response?.data?.error ||
-          err?.message ||
-          "No se pudo actualizar la confirmación previa",
-        color: "danger",
-      });
-    } finally {
-      setIsSavingReminderToggle(false);
-    }
-  };
+    case "courts":
+      return (
+        <CourtsView
+          courts={courts.courts}
+          createCourtPending={courts.createCourtPending}
+          updateCourtPending={courts.updateCourtPending}
+          deleteCourtPendingId={courts.deleteCourtPendingId}
+          onBack={() => setView("menu")}
+          onCreateCourt={courts.handleCreateCourt}
+          onToggleCourt={courts.handleToggleCourt}
+          onSaveCourtName={courts.handleSaveCourtName}
+          onDeleteCourt={courts.handleDeleteCourt}
+        />
+      );
 
-  const handleTogglePenaltyEnabledRealtime = async (enabled: boolean) => {
-    const previousSnapshot = getServerBotAutomationSnapshot();
-    setPenaltyEnabledInput(enabled);
-    setIsSavingPenaltyToggle(true);
-    try {
-      const response = await updateBotAutomationSettings.mutateAsync({
-        penaltyEnabled: enabled,
-      });
-      syncBotAutomationFromResponse(response);
-      addToast({
-        title: enabled ? "Penalizaciones activadas" : "Penalizaciones desactivadas",
-        color: "success",
-      });
-    } catch (err: any) {
-      restoreBotAutomationSnapshot(previousSnapshot);
-      addToast({
-        title:
-          err?.response?.data?.error ||
-          err?.message ||
-          "No se pudo actualizar el estado de penalizaciones",
-        color: "danger",
-      });
-    } finally {
-      setIsSavingPenaltyToggle(false);
-    }
-  };
+    case "schedule":
+      return (
+        <ScheduleSettingsView
+          slots={schedule.slots}
+          newSlotStartTime={schedule.newSlotStartTime}
+          newSlotEndTime={schedule.newSlotEndTime}
+          newSlotPrice={schedule.newSlotPrice}
+          basePriceInput={schedule.basePriceInput}
+          createSlotPending={schedule.createSlotPending}
+          updateBasePricePending={schedule.updateBasePricePending}
+          slotTogglePendingId={schedule.slotTogglePendingId}
+          onBack={() => setView("menu")}
+          onSlotStartTimeChange={schedule.setNewSlotStartTime}
+          onSlotEndTimeChange={schedule.setNewSlotEndTime}
+          onSlotPriceChange={schedule.setNewSlotPrice}
+          onBasePriceChange={schedule.setBasePriceInput}
+          onCreateSlot={schedule.handleCreateSlot}
+          onSaveBasePrice={schedule.handleSaveBasePrice}
+          onToggleSlot={schedule.handleToggleSlot}
+        />
+      );
 
-  const handleSaveReminderMinutes = async () => {
-    const parsedLeadMinutes = Number(attendanceReminderLeadMinutesInput);
-    if (!Number.isInteger(parsedLeadMinutes) || parsedLeadMinutes < 5 || parsedLeadMinutes > 240) {
-      addToast({
-        title: "Minutos de aviso inválidos (usar entero entre 5 y 240).",
-        color: "danger",
-      });
-      return;
-    }
-
-    const previousSnapshot = getServerBotAutomationSnapshot();
-    setIsSavingReminderMinutes(true);
-    try {
-      const response = await updateBotAutomationSettings.mutateAsync({
-        attendanceReminderLeadMinutes: parsedLeadMinutes,
-      });
-      syncBotAutomationFromResponse(response);
-      addToast({ title: "Minutos de aviso actualizados", color: "success" });
-    } catch (err: any) {
-      restoreBotAutomationSnapshot(previousSnapshot);
-      addToast({
-        title:
-          err?.response?.data?.error ||
-          err?.message ||
-          "No se pudo actualizar los minutos de aviso",
-        color: "danger",
-      });
-    } finally {
-      setIsSavingReminderMinutes(false);
-    }
-  };
-
-  const handleSaveAttendanceResponseTimeoutMinutes = async () => {
-    const parsedTimeoutMinutes = Number(attendanceResponseTimeoutMinutesInput);
-    if (
-      !Number.isInteger(parsedTimeoutMinutes) ||
-      parsedTimeoutMinutes < 1 ||
-      parsedTimeoutMinutes > 240
-    ) {
-      addToast({
-        title: "Tiempo máximo de espera inválido (usar entero entre 1 y 240).",
-        color: "danger",
-      });
-      return;
-    }
-
-    const previousSnapshot = getServerBotAutomationSnapshot();
-    setIsSavingResponseTimeoutMinutes(true);
-    try {
-      const response = await updateBotAutomationSettings.mutateAsync({
-        attendanceResponseTimeoutMinutes: parsedTimeoutMinutes,
-      });
-      syncBotAutomationFromResponse(response);
-      addToast({
-        title: "Tiempo máximo de espera actualizado",
-        color: "success",
-      });
-    } catch (err: any) {
-      restoreBotAutomationSnapshot(previousSnapshot);
-      addToast({
-        title:
-          err?.response?.data?.error ||
-          err?.message ||
-          "No se pudo actualizar el tiempo máximo de espera",
-        color: "danger",
-      });
-    } finally {
-      setIsSavingResponseTimeoutMinutes(false);
-    }
-  };
-
-  const handleSaveCancellationLockHours = async () => {
-    const parsedHours = Number(cancellationLockHoursInput);
-    if (!Number.isInteger(parsedHours) || parsedHours < 0 || parsedHours > 72) {
-      addToast({
-        title: "Bloqueo de cancelación inválido (usar entero entre 0 y 72).",
-        color: "danger",
-      });
-      return;
-    }
-
-    const previousSnapshot = getServerBotAutomationSnapshot();
-    setIsSavingCancellationLockHours(true);
-    try {
-      const response = await updateBotAutomationSettings.mutateAsync({
-        cancellationLockHours: parsedHours,
-      });
-      syncBotAutomationFromResponse(response);
-      addToast({
-        title: "Bloqueo de cancelación actualizado",
-        color: "success",
-      });
-    } catch (err: any) {
-      restoreBotAutomationSnapshot(previousSnapshot);
-      addToast({
-        title:
-          err?.response?.data?.error ||
-          err?.message ||
-          "No se pudo actualizar el bloqueo de cancelación",
-        color: "danger",
-      });
-    } finally {
-      setIsSavingCancellationLockHours(false);
-    }
-  };
-
-  const handleSaveTrustedConfirmationCount = async () => {
-    const parsedTrustedCount = Number(trustedClientConfirmationCountInput);
-    if (!Number.isInteger(parsedTrustedCount) || parsedTrustedCount < 1 || parsedTrustedCount > 20) {
-      addToast({
-        title: "Confirmaciones para cliente confiable inválidas (1 a 20).",
-        color: "danger",
-      });
-      return;
-    }
-
-    const previousSnapshot = getServerBotAutomationSnapshot();
-    setIsSavingTrustedCount(true);
-    try {
-      const response = await updateBotAutomationSettings.mutateAsync({
-        trustedClientConfirmationCount: parsedTrustedCount,
-      });
-      syncBotAutomationFromResponse(response);
-      addToast({
-        title: "Umbral de cliente confiable actualizado",
-        color: "success",
-      });
-    } catch (err: any) {
-      restoreBotAutomationSnapshot(previousSnapshot);
-      addToast({
-        title:
-          err?.response?.data?.error ||
-          err?.message ||
-          "No se pudo actualizar el umbral de cliente confiable",
-        color: "danger",
-      });
-    } finally {
-      setIsSavingTrustedCount(false);
-    }
-  };
-
-  const handleSavePenaltyLimit = async () => {
-    const parsedPenalty = Number(penaltyLimitInput);
-    if (!Number.isInteger(parsedPenalty) || parsedPenalty < 1) {
-      addToast({
-        title: "Límite de penalizaciones inválido (entero mayor o igual a 1).",
-        color: "danger",
-      });
-      return;
-    }
-
-    const previousSnapshot = getServerBotAutomationSnapshot();
-    setIsSavingPenaltyLimit(true);
-    try {
-      const response = await updateBotAutomationSettings.mutateAsync({
-        penaltyLimit: parsedPenalty,
-      });
-      syncBotAutomationFromResponse(response);
-      addToast({ title: "Límite de penalizaciones actualizado", color: "success" });
-    } catch (err: any) {
-      restoreBotAutomationSnapshot(previousSnapshot);
-      addToast({
-        title:
-          err?.response?.data?.error ||
-          err?.message ||
-          "No se pudo actualizar el límite de penalizaciones",
-        color: "danger",
-      });
-    } finally {
-      setIsSavingPenaltyLimit(false);
-    }
-  };
-
-  const handleCreateCompany = () => {
-    const name = companyNameInput.trim();
-    if (!name) {
-      addToast({ title: "Ingresá nombre de empresa", color: "danger" });
-      return;
-    }
-
-    createCompany.mutate(
-      { name },
-      {
-        onSuccess: () => {
-          addToast({ title: "Empresa creada", color: "success" });
-          setCompanyNameInput("");
-        },
-        onError: (err: any) => {
-          addToast({
-            title: err?.response?.data?.error || "No se pudo crear la empresa",
-            color: "danger",
-          });
-        },
-      },
-    );
-  };
-
-  const handleCreateAdmin = () => {
-    if (!newAdminCompanyId) {
-      addToast({ title: "Seleccioná una empresa", color: "danger" });
-      return;
-    }
-    if (!newAdminUsername.trim() || !newAdminPassword.trim()) {
-      addToast({
-        title: "Usuario y contraseña son obligatorios",
-        color: "danger",
-      });
-      return;
-    }
-
-    createAdmin.mutate(
-      {
-        username: newAdminUsername.trim(),
-        password: newAdminPassword,
-        phone: newAdminPhone.trim(),
-        companyId: newAdminCompanyId,
-        role: "admin",
-      },
-      {
-        onSuccess: () => {
-          addToast({ title: "Admin creado", color: "success" });
-          setNewAdminUsername("");
-          setNewAdminPassword("");
-          setNewAdminPhone("");
-        },
-        onError: (err: any) => {
-          addToast({
-            title: err?.response?.data?.error || "No se pudo crear admin",
-            color: "danger",
-          });
-        },
-      },
-    );
-  };
-
-  const handleBootstrapTenant = () => {
-    const name = companyNameInput.trim() || "Club Principal";
-    bootstrapTenant.mutate(
-      {
-        name,
-        assignAllUnassignedData: true,
-        assignAllUnassignedAdmins: true,
-      },
-      {
-        onSuccess: (response: any) => {
-          const migrated =
-            response?.data?.summary?.data?.bookings ??
-            response?.data?.summary?.admins?.assigned ??
-            0;
-          addToast({
-            title: `Bootstrap listo (${migrated} registros movidos)`,
-            color: "success",
-          });
-          setCompanyNameInput("");
-        },
-        onError: (err: any) => {
-          addToast({
-            title: err?.response?.data?.error || "No se pudo hacer bootstrap",
-            color: "danger",
-          });
-        },
-      },
-    );
-  };
-
-  const handleCreateCourt = async ({
-    name: rawName,
-    courtType,
-    surface: rawSurface,
-  }: {
-    name: string;
-    courtType: string;
-    surface: string;
-  }): Promise<boolean> => {
-    const name = rawName.trim();
-    const surface = rawSurface.trim();
-    if (!name) {
-      addToast({ title: "Ingresá un nombre de cancha", color: "danger" });
-      return false;
-    }
-    if (!surface) {
-      addToast({ title: "Ingresá la superficie de la cancha", color: "danger" });
-      return false;
-    }
-
-    try {
-      await createCourt.mutateAsync({ name, courtType, surface });
-      addToast({ title: "Cancha creada", color: "success" });
-      return true;
-    } catch (err: any) {
-      addToast({
-        title: err?.response?.data?.error || "No se pudo crear la cancha",
-        color: "danger",
-      });
-      return false;
-    }
-  };
-
-  const handleToggleCourt = (id: string, isActive: boolean) => {
-    updateCourt.mutate(
-      { id, data: { isActive } },
-      {
-        onError: (err: any) => {
-          addToast({
-            title: err?.response?.data?.error || "No se pudo actualizar la cancha",
-            color: "danger",
-          });
-        },
-      },
-    );
-  };
-
-  const handleSaveCourtName = async (
-    id: string,
-    payload: {
-      name: string;
-      courtType: string;
-      surface: string;
-    },
-  ): Promise<boolean> => {
-    const name = payload.name.trim();
-    const surface = payload.surface.trim();
-    if (!name) {
-      addToast({ title: "Ingresá un nombre de cancha", color: "danger" });
-      return false;
-    }
-    if (!surface) {
-      addToast({ title: "Ingresá la superficie de la cancha", color: "danger" });
-      return false;
-    }
-
-    try {
-      await updateCourt.mutateAsync({
-        id,
-        data: { name, courtType: payload.courtType, surface },
-      });
-      addToast({ title: "Cancha actualizada", color: "success" });
-      return true;
-    } catch (err: any) {
-      addToast({
-        title: err?.response?.data?.error || "No se pudo actualizar la cancha",
-        color: "danger",
-      });
-      return false;
-    }
-  };
-
-  const handleDeleteCourt = async (id: string, courtName: string) => {
-    const normalizedName = courtName.trim() || "esta cancha";
-    const shouldDelete = await confirm(
-      `¿Seguro que querés eliminar ${normalizedName}? Esta acción no se puede deshacer.`,
-      { variant: "danger", title: "Eliminar cancha" },
-    );
-    if (!shouldDelete) return;
-
-    setDeleteCourtPendingId(id);
-    deleteCourt.mutate(id, {
-      onSuccess: () => {
-        addToast({ title: "Cancha eliminada", color: "success" });
-      },
-      onError: (err: any) => {
-        addToast({
-          title: err?.response?.data?.error || "No se pudo eliminar la cancha",
-          color: "danger",
-        });
-      },
-      onSettled: () => {
-        setDeleteCourtPendingId(null);
-      },
-    });
-  };
-
-  const handleCreateClubClosure = async (data: { startDate: string; endDate: string; reason: string }): Promise<boolean> => {
-    return new Promise((resolve) => {
-      createClubClosure.mutate(data, {
-        onSuccess: () => {
-          addToast({ title: "Cierre agregado", color: "success" });
-          resolve(true);
-        },
-        onError: (err: any) => {
-          addToast({
-            title: err?.response?.data?.error || "No se pudo agregar el cierre",
-            color: "danger",
-          });
-          resolve(false);
-        },
-      });
-    });
-  };
-
-  const handleUpdateClubClosure = async (id: string, data: { startDate: string; endDate: string; reason: string }): Promise<boolean> => {
-    return new Promise((resolve) => {
-      updateClubClosure.mutate({ id, data }, {
-        onSuccess: () => {
-          addToast({ title: "Cierre actualizado", color: "success" });
-          resolve(true);
-        },
-        onError: (err: any) => {
-          addToast({
-            title: err?.response?.data?.error || "No se pudo actualizar el cierre",
-            color: "danger",
-          });
-          resolve(false);
-        },
-      });
-    });
-  };
-
-  const handleDeleteClubClosure = async (id: string) => {
-    const shouldDelete = await confirm(
-      "¿Seguro que querés eliminar este cierre? Esta acción no se puede deshacer.",
-      { variant: "danger", title: "Eliminar cierre" },
-    );
-    if (!shouldDelete) return;
-
-    setDeletingClosureId(id);
-    deleteClubClosure.mutate(id, {
-      onSuccess: () => {
-        addToast({ title: "Cierre eliminado", color: "success" });
-      },
-      onError: (err: any) => {
-        addToast({
-          title: err?.response?.data?.error || "No se pudo eliminar el cierre",
-          color: "danger",
-        });
-      },
-      onSettled: () => {
-        setDeletingClosureId(null);
-      },
-    });
-  };
-
-  const handleCreateSlot = () => {
-    if (!newSlotStartTime || !newSlotEndTime) {
-      addToast({
-        title: "Completá hora inicio y fin",
-        color: "danger",
-      });
-      return;
-    }
-
-    const parsedPrice = Number(newSlotPrice);
-    if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
-      addToast({
-        title: "Ingresá un precio válido",
-        color: "danger",
-      });
-      return;
-    }
-
-    createSlot.mutate(
-      {
-        startTime: newSlotStartTime,
-        endTime: newSlotEndTime,
-        price: parsedPrice,
-      },
-      {
-        onSuccess: () => {
-          addToast({ title: "Turno creado", color: "success" });
-          setNewSlotStartTime("");
-          setNewSlotEndTime("");
-          setNewSlotPrice("");
-        },
-        onError: (err: any) => {
-          addToast({
-            title: err?.response?.data?.error || "No se pudo crear el turno",
-            color: "danger",
-          });
-        },
-      },
-    );
-  };
-
-  const handleToggleSlot = (id: string, isActive: boolean) => {
-    setSlotTogglePendingId(id);
-    updateSlot.mutate(
-      { id, data: { isActive } },
-      {
-        onError: (err: any) => {
-          addToast({
-            title: err?.response?.data?.error || "No se pudo actualizar el turno",
-            color: "danger",
-          });
-        },
-        onSettled: () => {
-          setSlotTogglePendingId((previousId) => (previousId === id ? null : previousId));
-        },
-      },
-    );
-  };
-
-  if (view === "whatsapp") {
-    return (
-      <WhatsappSettingsView
-        whatsappEnabled={whatsappEnabled}
-        whatsappStatus={whatsappStatus}
-        whatsappQr={whatsappQr}
-        whatsappState={whatsappState}
-        workerOnline={workerOnline}
-        workerHeartbeatAt={workerHeartbeatAt}
-        isLoadingWhatsapp={isLoadingWhatsapp}
-        updateWhatsappPending={
-          updateWhatsappStatus.isPending ||
-          closeWhatsappSession.isPending ||
-          resetWhatsappSession.isPending ||
-          isWaitingWhatsappCommand
-        }
-        whatsappChipColor={whatsappChipColor}
-        whatsappStatusLabelByKey={whatsappStatusLabelByKey}
-        cancellationGroupEnabled={whatsappCancellationGroupEnabled}
-        cancellationGroupIdInput={cancellationGroupIdInput}
-        cancellationGroupNameInput={cancellationGroupNameInput}
-        whatsappGroups={whatsappGroups}
-        isLoadingWhatsappGroups={isLoadingWhatsappGroups}
-        updateCancellationGroupPending={
-          updateWhatsappCancellationGroupSettings.isPending
-        }
-        onBack={() => setView("menu")}
-        onToggleWhatsapp={handleToggleWhatsapp}
-        onCloseWhatsappSession={handleCloseWhatsappSession}
-        onSwitchWhatsappDevice={handleSwitchWhatsappDevice}
-        onResetWhatsappSession={handleResetWhatsappSession}
-        onCancellationGroupEnabledChange={handleToggleCancellationGroup}
-        onSelectWhatsappGroup={handleSelectWhatsappGroup}
-      />
-    );
+    default:
+      return <ProfileMenuView {...menu} />;
   }
-
-  if (view === "tenants" && canManageClubData) {
-    return (
-      <TenantsView
-        isSuperAdmin={isSuperAdmin}
-        companies={companies}
-        admins={admins}
-        companyNameInput={companyNameInput}
-        newAdminUsername={newAdminUsername}
-        newAdminPassword={newAdminPassword}
-        newAdminPhone={newAdminPhone}
-        newAdminCompanyId={newAdminCompanyId}
-        createCompanyPending={createCompany.isPending}
-        updateCompanyPending={updateCompany.isPending || updateOwnCompany.isPending}
-        updateCompanyStatusPending={updateCompanyStatus.isPending}
-        bootstrapPending={bootstrapTenant.isPending}
-        createAdminPending={createAdmin.isPending}
-        updateAdminStatusPending={updateAdminStatus.isPending}
-        onBack={() => setView("menu")}
-        onCompanyNameChange={setCompanyNameInput}
-        onAdminUsernameChange={setNewAdminUsername}
-        onAdminPasswordChange={setNewAdminPassword}
-        onAdminPhoneChange={setNewAdminPhone}
-        onAdminCompanyChange={setNewAdminCompanyId}
-        onCreateCompany={handleCreateCompany}
-        onBootstrapTenant={handleBootstrapTenant}
-        onCreateAdmin={handleCreateAdmin}
-        onUpdateCompanyStatus={(id, isActive) =>
-          isSuperAdmin
-            ? updateCompanyStatus.mutate({ id, isActive })
-            : addToast({
-                title: "Solo superadmin puede activar/desactivar empresas",
-                color: "warning",
-              })
-        }
-        onUpdateCompany={(id, data) =>
-          isSuperAdmin
-            ? updateCompany.mutate(
-                { id, data },
-                {
-                  onSuccess: () => {
-                    addToast({ title: "Empresa actualizada", color: "success" });
-                  },
-                  onError: (err: any) => {
-                    addToast({
-                      title:
-                        err?.response?.data?.error || "No se pudo actualizar la empresa",
-                      color: "danger",
-                    });
-                  },
-                },
-              )
-            : updateOwnCompany.mutate(data, {
-                onSuccess: (response: any) => {
-                  if (response?.data?.user) {
-                    updateUser(response.data.user);
-                  }
-                  addToast({ title: "Datos del club actualizados", color: "success" });
-                },
-                onError: (err: any) => {
-                  addToast({
-                    title:
-                      err?.response?.data?.error || "No se pudo actualizar el club",
-                    color: "danger",
-                  });
-                },
-              })
-        }
-        onUpdateAdminStatus={(id, isActive) =>
-          updateAdminStatus.mutate({ id, isActive })
-        }
-      />
-    );
-  }
-
-  if (view === "bot-automation") {
-    return (
-      <BotAutomationSettingsView
-        oneHourReminderEnabled={botOneHourReminderEnabledInput}
-        penaltyEnabled={penaltyEnabledInput}
-        attendanceReminderLeadMinutesInput={attendanceReminderLeadMinutesInput}
-        attendanceResponseTimeoutMinutesInput={
-          attendanceResponseTimeoutMinutesInput
-        }
-        cancellationLockHoursInput={cancellationLockHoursInput}
-        trustedClientConfirmationCountInput={trustedClientConfirmationCountInput}
-        penaltyLimitInput={penaltyLimitInput}
-        dailyAvailabilityDigestEnabled={dailyAvailabilityDigestEnabledInput}
-        dailyAvailabilityDigestHourInput={dailyAvailabilityDigestHourInput}
-        dailyAvailabilityDigestNextDayEnabled={
-          dailyAvailabilityDigestNextDayEnabledInput
-        }
-        cancellationGroupConfigured={Boolean(cancellationGroupIdInput.trim())}
-        isSavingReminderToggle={isSavingReminderToggle}
-        isSavingPenaltyToggle={isSavingPenaltyToggle}
-        isSavingReminderMinutes={isSavingReminderMinutes}
-        isSavingResponseTimeoutMinutes={isSavingResponseTimeoutMinutes}
-        isSavingCancellationLockHours={isSavingCancellationLockHours}
-        isSavingTrustedCount={isSavingTrustedCount}
-        isSavingPenaltyLimit={isSavingPenaltyLimit}
-        isSavingDailyAvailabilityDigestSettings={
-          isSavingDailyAvailabilityDigestSettings
-        }
-        onBack={() => setView("menu")}
-        onToggleOneHourReminder={handleToggleBotOneHourReminderRealtime}
-        onTogglePenaltyEnabled={handleTogglePenaltyEnabledRealtime}
-        onAttendanceReminderLeadMinutesChange={setAttendanceReminderLeadMinutesInput}
-        onAttendanceResponseTimeoutMinutesChange={
-          setAttendanceResponseTimeoutMinutesInput
-        }
-        onCancellationLockHoursChange={setCancellationLockHoursInput}
-        onTrustedClientConfirmationCountChange={
-          setTrustedClientConfirmationCountInput
-        }
-        onPenaltyLimitChange={setPenaltyLimitInput}
-        onToggleDailyAvailabilityDigest={handleToggleDailyAvailabilityDigestFromBot}
-        onDailyAvailabilityDigestHourChange={setDailyAvailabilityDigestHourInput}
-        onToggleDailyAvailabilityDigestNextDay={
-          handleToggleDailyAvailabilityDigestNextDayFromBot
-        }
-        dailyAvailabilityDigestFormat={dailyAvailabilityDigestFormatInput}
-        onDailyAvailabilityDigestFormatChange={setDailyAvailabilityDigestFormatInput}
-        onSaveReminderMinutes={handleSaveReminderMinutes}
-        onSaveAttendanceResponseTimeoutMinutes={
-          handleSaveAttendanceResponseTimeoutMinutes
-        }
-        onSaveCancellationLockHours={handleSaveCancellationLockHours}
-        onSaveTrustedCount={handleSaveTrustedConfirmationCount}
-        onSavePenaltyLimit={handleSavePenaltyLimit}
-        onSaveDailyAvailabilityDigestSettings={
-          handleSaveDailyAvailabilityDigestSchedule
-        }
-        digestBackgrounds={digestBackgroundsData ?? []}
-        isUploadingBackground={uploadDigestBackground.isPending}
-        isDeletingBackground={deleteDigestBackground.isPending}
-        onUploadBackground={(file, order) =>
-          uploadDigestBackground.mutate({ file, order }, {
-            onSuccess: () => addToast({ title: "Imagen guardada", color: "success" }),
-            onError: () => addToast({ title: "Error al subir la imagen", color: "danger" }),
-          })
-        }
-        onDeleteBackground={(id) => deleteDigestBackground.mutate(id, {
-          onSuccess: () => addToast({ title: "Imagen eliminada", color: "success" }),
-          onError: () => addToast({ title: "Error al eliminar la imagen", color: "danger" }),
-        })}
-        onSendDigestNow={() =>
-          sendDigestNow.mutate(undefined, {
-            onSuccess: () =>
-              addToast({ title: "Digest en cola — se enviará en segundos", color: "success" }),
-            onError: (err: any) =>
-              addToast({ title: err?.response?.data?.error || "Error al enviar el digest", color: "danger" }),
-          })
-        }
-        isSendingDigestNow={sendDigestNow.isPending}
-      />
-    );
-  }
-
-  if (view === "club-closures") {
-    return (
-      <ClubClosuresView
-        closures={clubClosures}
-        createPending={createClubClosure.isPending}
-        updatePending={updateClubClosure.isPending}
-        deletePendingId={deletingClosureId}
-        onBack={() => setView("menu")}
-        onCreate={handleCreateClubClosure}
-        onUpdate={handleUpdateClubClosure}
-        onDelete={handleDeleteClubClosure}
-      />
-    );
-  }
-
-  if (view === "courts") {
-    return (
-      <CourtsView
-        courts={courts}
-        createCourtPending={createCourt.isPending}
-        updateCourtPending={updateCourt.isPending}
-        deleteCourtPendingId={deleteCourtPendingId}
-        onBack={() => setView("menu")}
-        onCreateCourt={handleCreateCourt}
-        onToggleCourt={handleToggleCourt}
-        onSaveCourtName={handleSaveCourtName}
-        onDeleteCourt={handleDeleteCourt}
-      />
-    );
-  }
-
-  if (view === "schedule") {
-    return (
-      <ScheduleSettingsView
-        slots={slots}
-        newSlotStartTime={newSlotStartTime}
-        newSlotEndTime={newSlotEndTime}
-        newSlotPrice={newSlotPrice}
-        basePriceInput={basePriceInput}
-        createSlotPending={createSlot.isPending}
-        updateBasePricePending={updateBasePrice.isPending}
-        slotTogglePendingId={slotTogglePendingId}
-        onBack={() => setView("menu")}
-        onSlotStartTimeChange={setNewSlotStartTime}
-        onSlotEndTimeChange={setNewSlotEndTime}
-        onSlotPriceChange={setNewSlotPrice}
-        onBasePriceChange={setBasePriceInput}
-        onCreateSlot={handleCreateSlot}
-        onSaveBasePrice={handleSaveBasePrice}
-        onToggleSlot={handleToggleSlot}
-      />
-    );
-  }
-
-  return (
-    <ProfileMenuView
-      user={user}
-      isSuperAdmin={isSuperAdmin}
-      canManageClubData={canManageClubData}
-      courtsCount={courts.length}
-      phoneNumber={phoneNumber}
-      savedPhoneNumber={String(user?.phone || "")}
-      whatsappEnabled={whatsappEnabled}
-      whatsappStatus={whatsappStatus}
-      whatsappStatusLabelByKey={whatsappStatusLabelByKey}
-      updateProfilePending={updateProfile.isPending}
-      isDarkMode={isDark}
-      onPhoneChange={setPhoneNumber}
-      onSavePhone={handleUpdatePhone}
-      onToggleTheme={toggleTheme}
-      onGoToCourts={() => setView("courts")}
-      onGoToWhatsapp={() => setView("whatsapp")}
-      onGoToSchedule={() => setView("schedule")}
-      onGoToBotAutomation={() => setView("bot-automation")}
-      onGoToTenants={() => setView("tenants")}
-      onGoToClubClosures={() => setView("club-closures")}
-      onLogout={logout}
-    />
-  );
 };

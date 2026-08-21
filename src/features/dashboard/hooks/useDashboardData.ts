@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useBookings, useSlots } from "../../../hooks/useData";
 import { getTodayIsoLocal, toIsoDateKey } from "../../../utils/formatters";
 
+type Court = { _id: string;[key: string]: any };
+
 const DASHBOARD_SELECTED_DATE_KEY = "padexa:dashboard-selected-date";
 const DASHBOARD_ACTIVE_FILTER_KEY = "padexa:dashboard-active-filter";
 const ALLOWED_DASHBOARD_FILTERS = new Set([
@@ -33,7 +35,7 @@ const readStoredDashboardFilter = () => {
   return "all";
 };
 
-export const useDashboardData = () => {
+export const useDashboardData = (courts: Court[] = []) => {
   const [selectedDate, setSelectedDate] = useState(readStoredDashboardDate);
   const [activeFilter, setActiveFilter] = useState(readStoredDashboardFilter);
   const { data: slotsData, isLoading: isLoadingSlots } = useSlots();
@@ -70,6 +72,43 @@ export const useDashboardData = () => {
     return counts;
   }, [slots]);
 
+  const getSlotBookings = (slotId: string, courtId: string) => {
+    return dashboardBookings.filter(
+      (booking: any) =>
+        toIsoDateKey(booking.date) === selectedDate &&
+        booking.court?._id === courtId &&
+        booking.timeSlot?._id === slotId,
+    );
+  };
+
+  const stats = useMemo(() => {
+    const totalSlots = courts.length * filteredSlots.length;
+    let takenSlots = 0;
+    let suspendedSlots = 0;
+
+    courts.forEach((court) => {
+      filteredSlots.forEach((slot) => {
+        const bookings = getSlotBookings(slot._id, court._id);
+        const activeBooking = bookings.find(
+          (booking: any) => booking.status !== "cancelado",
+        );
+        if (!activeBooking) return;
+        if (activeBooking.status === "suspendido") {
+          suspendedSlots += 1;
+          return;
+        }
+        takenSlots += 1;
+      });
+    });
+
+    const availableSlots = Math.max(0, totalSlots - takenSlots - suspendedSlots);
+    const occupancy =
+      totalSlots > 0 ? Math.round((takenSlots / totalSlots) * 100) : 0;
+
+    return { totalSlots, takenSlots, suspendedSlots, availableSlots, occupancy };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courts, filteredSlots, dashboardBookings, selectedDate]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(DASHBOARD_SELECTED_DATE_KEY, selectedDate);
@@ -80,15 +119,6 @@ export const useDashboardData = () => {
     window.localStorage.setItem(DASHBOARD_ACTIVE_FILTER_KEY, activeFilter);
   }, [activeFilter]);
 
-  const getSlotBookings = (slotId: string, courtId: string) => {
-    return dashboardBookings.filter(
-      (booking: any) =>
-        toIsoDateKey(booking.date) === selectedDate &&
-        booking.court?._id === courtId &&
-        booking.timeSlot?._id === slotId,
-    );
-  };
-
   return {
     selectedDate,
     setSelectedDate,
@@ -96,6 +126,7 @@ export const useDashboardData = () => {
     setActiveFilter,
     filteredSlots,
     slotCounts,
+    stats,
     isLoading: isLoadingSlots || isLoadingBookings,
     getSlotBookings,
   };

@@ -33,7 +33,8 @@ type FinanceDesktopViewProps = {
   };
 };
 
-const barHeights = [18, 34, 50, 28, 54, 68, 58];
+const DAY_LABELS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+const BAR_MAX_PX = 96;
 
 export const FinanceDesktopView = ({
   months,
@@ -59,6 +60,30 @@ export const FinanceDesktopView = ({
     const start = (currentPage - 1) * PAGE_SIZE;
     return metrics.movements.slice(start, start + PAGE_SIZE);
   }, [metrics.movements, currentPage]);
+
+  const { dailyRevenue, dayLabels, maxRevenue } = useMemo(() => {
+    const today = new Date();
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today);
+      d.setUTCDate(d.getUTCDate() - (6 - i));
+      return d;
+    });
+
+    const labels = days.map((d) => DAY_LABELS[d.getUTCDay()]);
+    const dateKeys = days.map((d) => toIsoDateKey(d));
+
+    const revenue = dateKeys.map((key) => {
+      const dayMovements = metrics.movements.filter(
+        (m) => toIsoDateKey(m.date) === key && m.paymentStatus === "pagado",
+      );
+      return dayMovements.reduce((sum, m) => sum + (Number(m.finalPrice) || 0), 0);
+    });
+
+    return { dailyRevenue: revenue, dayLabels: labels, maxRevenue: Math.max(...revenue, 1) };
+  }, [metrics.movements]);
+
+  const normalizedHeights = dailyRevenue.map((v) => (v / maxRevenue) * BAR_MAX_PX);
+  const hasRevenue = dailyRevenue.some((v) => v > 0);
 
   const exportCsv = () => {
     const rows = [
@@ -129,15 +154,30 @@ export const FinanceDesktopView = ({
             </h2>
           </div>
 
-          <div className="mt-8 flex items-end gap-2 h-24">
-            {barHeights.map((height, index) => (
-              <div
-                key={`caja-bar-${index}`}
-                className={`rounded-sm w-14 ${index === barHeights.length - 2 ? "bg-primary shadow-[0_0_16px_rgba(13,181,219,0.45)]" : "bg-primary/70"}`}
-                style={{ height }}
-              />
-            ))}
-          </div>
+          {hasRevenue ? (
+            <div className="mt-8 flex items-end gap-2 h-28">
+              {dailyRevenue.map((value, index) => (
+                <div key={`caja-bar-${index}`} className="flex flex-col items-center flex-1 min-w-0">
+                  {value > 0 && (
+                    <span className="text-[9px] font-bold text-primary mb-1">
+                      ${Math.round(value).toLocaleString("es-AR")}
+                    </span>
+                  )}
+                  <div
+                    className="w-full max-w-14 rounded-t-md bg-primary hover:opacity-80 transition-opacity cursor-default"
+                    style={{ height: normalizedHeights[index] || 2 }}
+                  />
+                  <span className="text-[10px] font-semibold text-gray-500 mt-1">
+                    {dayLabels[index]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-8 flex items-center justify-center h-28">
+              <p className="text-gray-500 font-semibold text-sm">Sin ingresos en los últimos 7 días</p>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">

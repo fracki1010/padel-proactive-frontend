@@ -2,17 +2,13 @@ import { Button, Chip, Input } from "@heroui/react";
 import { useMemo } from "react";
 import {
   CalendarDays,
-  CheckCircle2,
-  Clock3,
   MapPin,
-  MapPinned,
-  PauseCircle,
   UserRound,
 } from "lucide-react";
 
 import { toIsoDateKey } from "../../../utils/formatters";
 import { SectionHeader } from "../../../components/ui/SectionHeader";
-import { StatCard } from "../../../components/ui/StatCard";
+import { DashboardStats } from "../components/DashboardStats";
 import { useDashboardData } from "../hooks/useDashboardData";
 import { SkeletonTable } from "../../../components/ui/SkeletonTable";
 
@@ -32,33 +28,10 @@ export const DashboardDesktopView = ({
     setActiveFilter,
     slotCounts,
     filteredSlots,
+    stats,
     isLoading,
     getSlotBookings,
-  } = useDashboardData();
-
-  const stats = useMemo(() => {
-    const totalSlots = courts.length * filteredSlots.length;
-    let takenSlots = 0;
-    let suspendedSlots = 0;
-
-    courts.forEach((court) => {
-      filteredSlots.forEach((slot) => {
-        const bookings = getSlotBookings(slot._id, court._id);
-        const activeBooking = bookings.find((booking: any) => booking.status !== "cancelado");
-        if (!activeBooking) return;
-        if (activeBooking.status === "suspendido") {
-          suspendedSlots += 1;
-          return;
-        }
-        takenSlots += 1;
-      });
-    });
-
-    const availableSlots = Math.max(0, totalSlots - takenSlots - suspendedSlots);
-    const occupancy = totalSlots > 0 ? Math.round((takenSlots / totalSlots) * 100) : 0;
-
-    return { totalSlots, takenSlots, suspendedSlots, availableSlots, occupancy };
-  }, [courts, filteredSlots, getSlotBookings]);
+  } = useDashboardData(courts);
 
   const monthLabel = useMemo(() => {
     const date = new Date(`${selectedDate}T12:00:00`);
@@ -122,12 +95,13 @@ export const DashboardDesktopView = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard icon={<MapPinned size={15} />} label="Canchas" value={courts.length} iconColor="primary" />
-            <StatCard icon={<CheckCircle2 size={15} />} label="Ocupación" value={`${stats.occupancy}%`} iconColor="emerald" />
-            <StatCard icon={<Clock3 size={15} />} label="Libres" value={stats.availableSlots} iconColor="primary" />
-            <StatCard icon={<PauseCircle size={15} />} label="Suspendidos" value={stats.suspendedSlots} iconColor="amber" />
-          </div>
+          <DashboardStats
+            courts={courts.length}
+            occupancy={stats.occupancy}
+            availableSlots={stats.availableSlots}
+            suspendedSlots={stats.suspendedSlots}
+            variant="desktop"
+          />
         </div>
       </section>
 
