@@ -1,4 +1,5 @@
 import { Spinner, Tab, Tabs } from "@heroui/react";
+import { SkeletonTable } from "../../../components/ui/SkeletonTable";
 import { DashboardControls } from "../../../components/FilterSidebar";
 import { BookingCard } from "../../../components/BookingCard";
 import { formatDate, getTodayIsoLocal, toIsoDateKey } from "../../../utils/formatters";
@@ -168,9 +169,7 @@ export const Bookings = ({
 
         <div className="space-y-12 w-full mt-8 xl:mt-0">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center min-h-[300px]">
-              <Spinner size="lg" color="primary" />
-            </div>
+            <SkeletonTable rows={5} columns={3} />
           ) : groupedBookings.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[300px] text-center p-8 bg-dark-200 rounded-md border border-black/5 dark:border-white/5">
               <HelpCircle size={48} className="text-gray-600 mb-4" />

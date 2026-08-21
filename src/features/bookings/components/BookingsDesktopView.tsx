@@ -3,6 +3,9 @@ import { Calendar, ChevronDown, Filter, MoreVertical, Search } from "lucide-reac
 import { useMemo, useState } from "react";
 
 import { formatCurrency, formatPhoneForDisplay, toIsoDateKey } from "../../../utils/formatters";
+import { Pagination } from "../../../components/ui/Pagination";
+import { StatCard } from "../../../components/ui/StatCard";
+import { SectionHeader } from "../../../components/ui/SectionHeader";
 
 type BookingsDesktopViewProps = {
   bookings: any[];
@@ -52,16 +55,11 @@ export const BookingsDesktopView = ({
   return (
     <div className="hidden lg:block space-y-5 animate-in fade-in duration-500">
       <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200/70 p-5">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-primary/80 mb-2">
-              Reservas
-            </p>
-            <h2 className="text-3xl xl:text-4xl font-black text-foreground tracking-tight">
-              Gestión de Turnos
-            </h2>
-          </div>
-          <div className="flex items-center gap-2">
+        <SectionHeader
+          eyebrow="Reservas"
+          title="Gestión de Turnos"
+          headingLevel="h2"
+          actions={
             <Button
               variant="flat"
               className="bg-black/10 dark:bg-white/10 text-gray-300 uppercase font-black text-[11px] tracking-wider"
@@ -71,8 +69,8 @@ export const BookingsDesktopView = ({
             >
               Filtros
             </Button>
-          </div>
-        </div>
+          }
+        />
 
         <div className="mt-5 grid grid-cols-[1fr_240px_auto] gap-3">
           <Input
@@ -134,22 +132,10 @@ export const BookingsDesktopView = ({
         </div>
 
         <div className="mt-4 grid grid-cols-2 xl:grid-cols-4 gap-2">
-          <div className="rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-4 py-3">
-            <p className="text-[10px] uppercase tracking-widest font-black text-gray-500">Total</p>
-            <p className="text-xl font-black text-foreground leading-tight">{bookings.length}</p>
-          </div>
-          <div className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
-            <p className="text-[10px] uppercase tracking-widest font-black text-emerald-300">Pagadas</p>
-            <p className="text-xl font-black text-emerald-200 leading-tight">{paidCount}</p>
-          </div>
-          <div className="rounded-md border border-rose-500/20 bg-rose-500/10 px-4 py-3">
-            <p className="text-[10px] uppercase tracking-widest font-black text-rose-300">Pendientes</p>
-            <p className="text-xl font-black text-rose-200 leading-tight">{pendingCount}</p>
-          </div>
-          <div className="rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-4 py-3">
-            <p className="text-[10px] uppercase tracking-widest font-black text-gray-500">Filtro actual</p>
-            <p className="text-sm font-black text-foreground truncate">{selectedCourtLabel}</p>
-          </div>
+          <StatCard label="Total" value={bookings.length} variant="mini" />
+          <StatCard label="Pagadas" value={paidCount} variant="mini" />
+          <StatCard label="Pendientes" value={pendingCount} variant="mini" />
+          <StatCard label="Filtro actual" value={selectedCourtLabel} variant="mini" />
         </div>
       </div>
 
@@ -203,31 +189,14 @@ export const BookingsDesktopView = ({
         </div>
 
         {bookings.length > 0 && (
-          <div className="px-6 py-4 border-t border-black/10 dark:border-white/10 flex items-center justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">
-              {bookings.length} reservas • página {activePage}/{totalPages}
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="flat"
-                className="bg-black/10 dark:bg-white/10 font-black uppercase text-[11px]"
-                isDisabled={activePage === 1}
-                onPress={() => setCurrentPage(Math.max(1, activePage - 1))}
-              >
-                Anterior
-              </Button>
-              <Button
-                size="sm"
-                variant="flat"
-                className="bg-primary/20 text-primary border border-primary/30 font-black uppercase text-[11px]"
-                isDisabled={activePage >= totalPages}
-                onPress={() => setCurrentPage(Math.min(totalPages, activePage + 1))}
-              >
-                Siguiente
-              </Button>
-            </div>
-          </div>
+          <Pagination
+            currentPage={activePage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={bookings.length}
+            pageSize={PAGE_SIZE}
+            itemsLabel="reservas"
+          />
         )}
       </div>
     </div>

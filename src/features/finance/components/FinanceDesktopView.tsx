@@ -12,6 +12,9 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { formatCurrency, formatPhoneForDisplay, toIsoDateKey } from "../../../utils/formatters";
+import { SectionHeader } from "../../../components/ui/SectionHeader";
+import { Pagination } from "../../../components/ui/Pagination";
+import { StatCard } from "../../../components/ui/StatCard";
 
 type FinanceDesktopViewProps = {
   months: string[];
@@ -138,83 +141,42 @@ export const FinanceDesktopView = ({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 p-5">
-            <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center text-primary mb-3">
-              <WalletCards size={16} />
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">
-              Cobrado Hoy
-            </p>
-              <p className="text-2xl font-black text-foreground mt-2">
-                {formatCurrency(metrics.totalPaidDaily)}
-              </p>
-          </div>
-          <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 p-5">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-300 mb-3">
-              <Calendar size={16} />
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">
-              Pendientes
-            </p>
-              <p className="text-2xl font-black text-foreground mt-2">
-                {metrics.countPendingMonth}
-              </p>
-          </div>
-          <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 p-5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-300 mb-3">
-              <Scale size={16} />
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">
-              Confirmados
-            </p>
-              <p className="text-2xl font-black text-foreground mt-2">
-                {metrics.countConfirmedMonth}
-              </p>
-          </div>
-          <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 p-5">
-            <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center text-violet-300 mb-3">
-              <WalletCards size={16} />
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">
-              Promedio
-            </p>
-              <p className="text-2xl font-black text-foreground mt-2">
-                {formatCurrency(metrics.avgPrice)}
-              </p>
-          </div>
+          <StatCard icon={<WalletCards size={15} />} label="Cobrado Hoy" value={formatCurrency(metrics.totalPaidDaily)} iconColor="primary" />
+          <StatCard icon={<Calendar size={15} />} label="Pendientes" value={metrics.countPendingMonth} iconColor="amber" />
+          <StatCard icon={<Scale size={15} />} label="Confirmados" value={metrics.countConfirmedMonth} iconColor="emerald" />
+          <StatCard icon={<WalletCards size={15} />} label="Promedio" value={formatCurrency(metrics.avgPrice)} iconColor="violet" />
         </div>
       </div>
 
       <div className="mt-6 rounded-md border border-black/10 dark:border-white/10 bg-dark-200 overflow-hidden">
-        <div className="px-6 py-5 border-b border-black/10 dark:border-white/10 flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-black text-foreground tracking-tight">
-              Movimientos Recientes
-            </h3>
-            <p className="text-xs font-semibold text-gray-500 mt-1">
-              Visualizando los últimos movimientos de facturación
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="flat"
-              className="uppercase font-black text-[11px] tracking-wider bg-black/10 dark:bg-white/10"
-              startContent={<Filter size={14} />}
-              isDisabled
-            >
-              Filtrar
-            </Button>
-            <Button
-              size="sm"
-              color="primary"
-              className="uppercase font-black text-[11px] tracking-wider text-black"
-              startContent={<Download size={14} />}
-              onPress={exportCsv}
-            >
-              Exportar
-            </Button>
-          </div>
+        <div className="px-6 py-5 border-b border-black/10 dark:border-white/10">
+          <SectionHeader
+            title="Movimientos Recientes"
+            subtitle="Visualizando los últimos movimientos de facturación"
+            headingLevel="h3"
+            actions={
+              <>
+                <Button
+                  size="sm"
+                  variant="flat"
+                  className="uppercase font-black text-[11px] tracking-wider bg-black/10 dark:bg-white/10"
+                  startContent={<Filter size={14} />}
+                  isDisabled
+                >
+                  Filtrar
+                </Button>
+                <Button
+                  size="sm"
+                  color="primary"
+                  className="uppercase font-black text-[11px] tracking-wider text-black"
+                  startContent={<Download size={14} />}
+                  onPress={exportCsv}
+                >
+                  Exportar
+                </Button>
+              </>
+            }
+          />
         </div>
 
         <div className="grid grid-cols-[1.7fr_1.1fr_1fr_1fr_0.9fr_64px] px-6 py-3 bg-black/10 dark:bg-white/5 text-[11px] font-black uppercase tracking-[0.16em] text-gray-500">
@@ -281,31 +243,14 @@ export const FinanceDesktopView = ({
         </div>
 
         {metrics.movements.length > 0 && (
-          <div className="px-6 py-4 border-t border-black/10 dark:border-white/10 flex items-center justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">
-              {metrics.movements.length} movimientos • página {currentPage}/{totalPages}
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="flat"
-                className="bg-black/10 dark:bg-white/10 font-black uppercase text-[11px]"
-                isDisabled={currentPage === 1}
-                onPress={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              >
-                Anterior
-              </Button>
-              <Button
-                size="sm"
-                variant="flat"
-                className="bg-primary/20 text-primary border border-primary/30 font-black uppercase text-[11px]"
-                isDisabled={currentPage >= totalPages}
-                onPress={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              >
-                Siguiente
-              </Button>
-            </div>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={metrics.movements.length}
+            pageSize={PAGE_SIZE}
+            itemsLabel="movimientos"
+          />
         )}
       </div>
     </div>

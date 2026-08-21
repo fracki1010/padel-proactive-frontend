@@ -7,7 +7,6 @@ import {
   Input,
   Select,
   SelectItem,
-  Spinner,
   addToast,
   useDisclosure,
 } from "@heroui/react";
@@ -21,6 +20,10 @@ import {
   Trash2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+import { Pagination } from "../../../components/ui/Pagination";
+import { SkeletonCard } from "../../../components/ui/SkeletonCard";
+import { SkeletonTable } from "../../../components/ui/SkeletonTable";
 
 import {
   useAdjustAttendanceCount,
@@ -40,6 +43,7 @@ import {
   toIsoDateKey,
 } from "../../../utils/formatters";
 import { UserModal } from "../components/UserModal";
+import { StatCard } from "../../../components/ui/StatCard";
 import type { Booking, Court, TimeSlot, User } from "../../../types";
 
 type ClientDetailPageProps = {
@@ -440,8 +444,13 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
 
   if (isLoadingUser) {
     return (
-      <div className="flex justify-center py-16">
-        <Spinner color="primary" size="lg" />
+      <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+        <SkeletonTable rows={5} columns={4} />
       </div>
     );
   }
@@ -516,22 +525,10 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="rounded-md bg-black/10 dark:bg-white/5 p-4">
-              <p className="text-[11px] font-semibold text-gray-500 tracking-wider">Asistencias</p>
-              <p className="text-2xl font-black text-foreground mt-1">{attendanceCount}</p>
-            </div>
-            <div className="rounded-md bg-black/10 dark:bg-white/5 p-4">
-              <p className="text-[11px] font-semibold text-gray-500 tracking-wider">Umbral</p>
-              <p className="text-2xl font-black text-foreground mt-1">{trustedThreshold}</p>
-            </div>
-            <div className="rounded-md bg-black/10 dark:bg-white/5 p-4">
-              <p className="text-[11px] font-semibold text-gray-500 tracking-wider">Penalizaciones</p>
-              <p className="text-2xl font-black text-foreground mt-1">{Number(user.penalties || 0)}</p>
-            </div>
-            <div className="rounded-md bg-black/10 dark:bg-white/5 p-4">
-              <p className="text-[11px] font-semibold text-gray-500 tracking-wider">Turnos fijos</p>
-              <p className="text-2xl font-black text-foreground mt-1">{Array.isArray(user.fixedTurns) ? user.fixedTurns.length : 0}</p>
-            </div>
+            <StatCard label="Asistencias" value={attendanceCount} variant="mini" />
+            <StatCard label="Umbral" value={trustedThreshold} variant="mini" />
+            <StatCard label="Penalizaciones" value={Number(user.penalties || 0)} variant="mini" />
+            <StatCard label="Turnos fijos" value={Array.isArray(user.fixedTurns) ? user.fixedTurns.length : 0} variant="mini" />
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -612,33 +609,14 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="rounded-md bg-black/10 dark:bg-white/5 p-3">
-              <p className="text-[10px] font-semibold text-gray-500 tracking-wider">
-                Mostrando
-              </p>
-              <p className="text-xl font-black mt-1">
-                {filteredHistory.length === 0 ? 0 : startIndex + 1}-
-                {Math.min(startIndex + pageSize, filteredHistory.length)}
-              </p>
-            </div>
-            <div className="rounded-md bg-black/10 dark:bg-white/5 p-3">
-              <p className="text-[10px] font-semibold text-gray-500 tracking-wider">
-                Pagados
-              </p>
-              <p className="text-xl font-black mt-1 text-success">{totalPaid}</p>
-            </div>
-            <div className="rounded-md bg-black/10 dark:bg-white/5 p-3">
-              <p className="text-[10px] font-semibold text-gray-500 tracking-wider">
-                Pendientes
-              </p>
-              <p className="text-xl font-black mt-1 text-warning">{totalPending}</p>
-            </div>
-            <div className="rounded-md bg-black/10 dark:bg-white/5 p-3">
-              <p className="text-[10px] font-semibold text-gray-500 tracking-wider">
-                Cancelados
-              </p>
-              <p className="text-xl font-black mt-1 text-danger">{totalCancelled}</p>
-            </div>
+            <StatCard
+              label="Mostrando"
+              value={filteredHistory.length === 0 ? "0" : `${startIndex + 1}-${Math.min(startIndex + pageSize, filteredHistory.length)}`}
+              variant="mini"
+            />
+            <StatCard label="Pagados" value={totalPaid} variant="mini" />
+            <StatCard label="Pendientes" value={totalPending} variant="mini" />
+            <StatCard label="Cancelados" value={totalCancelled} variant="mini" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
@@ -688,9 +666,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
           </div>
 
           {isLoadingHistory ? (
-            <div className="flex justify-center py-6">
-              <Spinner color="primary" size="sm" />
-            </div>
+            <SkeletonTable rows={5} columns={7} />
           ) : filteredHistory.length === 0 ? (
             <p className="text-gray-500">No hay historial para este socio.</p>
           ) : (
@@ -768,28 +744,14 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
                   </Select>
                 </div>
 
-                <p className="text-sm text-gray-500">
-                  Página {safePage} de {totalPages}
-                </p>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="flat"
-                    onPress={() => setHistoryPage((prev) => Math.max(1, prev - 1))}
-                    isDisabled={safePage <= 1}
-                  >
-                    Anterior
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="flat"
-                    onPress={() => setHistoryPage((prev) => Math.min(totalPages, prev + 1))}
-                    isDisabled={safePage >= totalPages}
-                  >
-                    Siguiente
-                  </Button>
-                </div>
+                <Pagination
+                  currentPage={safePage}
+                  totalPages={totalPages}
+                  onPageChange={setHistoryPage}
+                  totalItems={filteredHistory.length}
+                  pageSize={pageSize}
+                  itemsLabel="turnos"
+                />
               </div>
             </div>
           )}

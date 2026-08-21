@@ -9,6 +9,7 @@ import {
   CardBody,
   addToast,
 } from "@heroui/react";
+import { SkeletonTable } from "../../../components/ui/SkeletonTable";
 import {
   Plus,
   Smartphone,
@@ -197,8 +198,8 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {isLoadingUsers ? (
-            <div className="col-span-full flex justify-center p-12">
-              <Spinner color="primary" size="lg" />
+            <div className="col-span-full">
+              <SkeletonTable rows={6} columns={2} />
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="col-span-full bg-dark-200/50 rounded-md p-12 text-center border border-dashed border-black/10 dark:border-white/10">

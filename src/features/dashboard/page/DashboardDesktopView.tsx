@@ -1,4 +1,4 @@
-import { Button, Chip, Input, Spinner } from "@heroui/react";
+import { Button, Chip, Input } from "@heroui/react";
 import { useMemo } from "react";
 import {
   CalendarDays,
@@ -11,7 +11,10 @@ import {
 } from "lucide-react";
 
 import { toIsoDateKey } from "../../../utils/formatters";
+import { SectionHeader } from "../../../components/ui/SectionHeader";
+import { StatCard } from "../../../components/ui/StatCard";
 import { useDashboardData } from "../hooks/useDashboardData";
+import { SkeletonTable } from "../../../components/ui/SkeletonTable";
 
 type DashboardDesktopViewProps = {
   courts: any[];
@@ -76,14 +79,11 @@ export const DashboardDesktopView = ({
       <section className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200/75 p-5">
         <div className="grid grid-cols-[minmax(0,1fr)_420px] gap-5">
           <div className="space-y-4 min-w-0">
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-primary/80">
-                Operación Diaria
-              </p>
-              <h2 className="text-3xl xl:text-4xl font-black text-foreground tracking-tight mt-2">
-                Panel de Canchas
-              </h2>
-            </div>
+            <SectionHeader
+              eyebrow="Operación Diaria"
+              title="Panel de Canchas"
+              headingLevel="h2"
+            />
             <div className="grid grid-cols-[210px_minmax(0,1fr)] gap-3">
               <Input
                 type="date"
@@ -123,42 +123,10 @@ export const DashboardDesktopView = ({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center mb-2">
-                <MapPinned size={15} />
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-gray-500">
-                Canchas
-              </p>
-              <p className="text-2xl font-black text-foreground">{courts.length}</p>
-            </div>
-            <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-300 flex items-center justify-center mb-2">
-                <CheckCircle2 size={15} />
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-gray-500">
-                Ocupación
-              </p>
-              <p className="text-2xl font-black text-foreground">{stats.occupancy}%</p>
-            </div>
-            <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center mb-2">
-                <Clock3 size={15} />
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-gray-500">
-                Libres
-              </p>
-              <p className="text-2xl font-black text-foreground">{stats.availableSlots}</p>
-            </div>
-            <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-300 flex items-center justify-center mb-2">
-                <PauseCircle size={15} />
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-gray-500">
-                Suspendidos
-              </p>
-              <p className="text-2xl font-black text-foreground">{stats.suspendedSlots}</p>
-            </div>
+            <StatCard icon={<MapPinned size={15} />} label="Canchas" value={courts.length} iconColor="primary" />
+            <StatCard icon={<CheckCircle2 size={15} />} label="Ocupación" value={`${stats.occupancy}%`} iconColor="emerald" />
+            <StatCard icon={<Clock3 size={15} />} label="Libres" value={stats.availableSlots} iconColor="primary" />
+            <StatCard icon={<PauseCircle size={15} />} label="Suspendidos" value={stats.suspendedSlots} iconColor="amber" />
           </div>
         </div>
       </section>
@@ -168,9 +136,7 @@ export const DashboardDesktopView = ({
           Disponibilidad por Cancha
         </p>
         {isLoading ? (
-          <div className="py-16 flex justify-center">
-            <Spinner color="primary" />
-          </div>
+          <SkeletonTable rows={5} columns={4} />
         ) : (
           <div className="space-y-4 max-h-[680px] overflow-y-auto pr-1">
             {courts.map((court: any) => (

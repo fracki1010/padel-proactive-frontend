@@ -7,7 +7,6 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Input,
-  Spinner,
 } from "@heroui/react";
 import {
   AlertTriangle,
@@ -27,7 +26,10 @@ import { useEffect, useMemo, useState } from "react";
 
 import { getAvatarColor, getInitials } from "../../../utils/avatarUtils";
 import { formatPhoneForDisplay } from "../../../utils/formatters";
+import { SectionHeader } from "../../../components/ui/SectionHeader";
 import type { User } from "../../../types";
+import { Pagination } from "../../../components/ui/Pagination";
+import { SkeletonTable } from "../../../components/ui/SkeletonTable";
 
 type DesktopFilter = "all" | "fixed" | "debtors" | "inactive";
 
@@ -133,14 +135,11 @@ export const ClientsDesktopView = ({
             />
           </div>
 
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.26em] text-primary/80 mb-2">
-              Gestión de Comunidad
-            </p>
-            <h1 className="text-3xl xl:text-4xl font-black text-foreground tracking-tight">
-              Socios Registrados
-            </h1>
-          </div>
+          <SectionHeader
+            eyebrow="Gestión de Comunidad"
+            title="Socios Registrados"
+            headingLevel="h1"
+          />
 
           <div className="inline-flex items-center gap-2 p-2 rounded-md bg-dark-200/70 border border-black/10 dark:border-white/10">
             {[
@@ -199,9 +198,7 @@ export const ClientsDesktopView = ({
 
       <div className="space-y-3">
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <Spinner color="primary" size="lg" />
-          </div>
+          <SkeletonTable rows={8} columns={4} />
         ) : filteredUsers.length === 0 ? (
           <div className="rounded-md bg-dark-200/60 border border-black/10 dark:border-white/10 py-16 text-center">
             <p className="text-gray-500 font-bold">
@@ -424,31 +421,14 @@ export const ClientsDesktopView = ({
           })}
 
             {filteredUsers.length > 0 && (
-              <div className="pt-3 flex items-center justify-between">
-                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">
-                  {filteredUsers.length} socios • página {currentPage}/{totalPages}
-                </p>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="flat"
-                    className="bg-black/10 dark:bg-white/10 font-black uppercase text-[11px]"
-                    isDisabled={currentPage === 1}
-                    onPress={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                  >
-                    Anterior
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="flat"
-                    className="bg-primary/20 text-primary border border-primary/30 font-black uppercase text-[11px]"
-                    isDisabled={currentPage >= totalPages}
-                    onPress={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                  >
-                    Siguiente
-                  </Button>
-                </div>
-              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                totalItems={filteredUsers.length}
+                pageSize={PAGE_SIZE}
+                itemsLabel="socios"
+              />
             )}
           </>
         )}
