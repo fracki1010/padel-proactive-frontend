@@ -75,7 +75,7 @@ export const WhatsappSettingsView = ({
           isIconOnly
           variant="flat"
           onClick={onBack}
-          className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl"
+          className="bg-black/5 dark:bg-white/5 text-foreground rounded-md"
         >
           <ChevronLeft size={20} />
         </Button>
@@ -84,9 +84,9 @@ export const WhatsappSettingsView = ({
         </h3>
       </div>
 
-      <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[2rem]">
+      <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-lg">
         <CardBody className="p-6 space-y-5">
-          <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
                 Estado actual
@@ -126,7 +126,7 @@ export const WhatsappSettingsView = ({
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-4 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl p-4">
+          <div className="flex items-center justify-between gap-4 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md p-4">
             <div>
               <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
                 Activación Manual
@@ -201,7 +201,7 @@ export const WhatsappSettingsView = ({
             </Button>
           </div>
 
-          <div className="bg-black/5 dark:bg-white/5 rounded-2xl border border-black/10 dark:border-white/10 p-4">
+          <div className="bg-black/5 dark:bg-white/5 rounded-md border border-black/10 dark:border-white/10 p-4">
             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">
               Flujo recomendado
             </p>
@@ -236,7 +236,7 @@ export const WhatsappSettingsView = ({
             </div>
           </div>
 
-          <div className="bg-black/5 dark:bg-white/5 rounded-3xl p-5 border border-black/10 dark:border-white/10 space-y-4">
+          <div className="bg-black/5 dark:bg-white/5 rounded-md p-5 border border-black/10 dark:border-white/10 space-y-4">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
@@ -277,7 +277,7 @@ export const WhatsappSettingsView = ({
               }}
               isDisabled={isLoadingWhatsappGroups || !whatsappGroups.length}
               classNames={{
-                trigger: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                trigger: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                 label: "text-gray-400 font-bold mb-2",
                 value: "text-foreground font-bold",
                 popoverContent: "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
@@ -301,7 +301,7 @@ export const WhatsappSettingsView = ({
               * Seleccionando un grupo se guarda automáticamente la configuración.
             </p>
             {!whatsappGroups.length && !isLoadingWhatsappGroups && (
-              <div className="bg-warning-500/10 border border-warning-500/30 rounded-2xl p-3 flex items-start gap-2">
+              <div className="bg-warning-500/10 border border-warning-500/30 rounded-md p-3 flex items-start gap-2">
                 <TriangleAlert size={16} className="text-warning-300 mt-0.5 shrink-0" />
                 <p className="text-[11px] text-warning-200 font-bold">
                   Todavía no encontramos grupos. Abrí WhatsApp Web en el dispositivo vinculado
@@ -313,7 +313,7 @@ export const WhatsappSettingsView = ({
           </div>
 
           {!whatsappEnabled ? (
-            <div className="bg-black/5 dark:bg-white/5 rounded-3xl p-5 border border-black/10 dark:border-white/10">
+            <div className="bg-black/5 dark:bg-white/5 rounded-md p-5 border border-black/10 dark:border-white/10">
               <p className="text-xs text-gray-300 font-bold uppercase tracking-wide">
                 {whatsappStatus === "logged_out"
                   ? "La sesión se cerró desde el dispositivo. Activá el switch para volver a generar el QR."
@@ -321,19 +321,19 @@ export const WhatsappSettingsView = ({
               </p>
             </div>
           ) : isLockedElsewhere ? (
-            <div className="bg-danger-500/10 rounded-3xl p-5 border border-danger-500/30">
+            <div className="bg-danger-500/10 rounded-md p-5 border border-danger-500/30">
               <p className="text-xs text-danger-300 font-bold uppercase tracking-wide">
                 Esta empresa ya tiene WhatsApp activo en otro proceso del backend.
                 Cerrá la otra instancia y volvé a intentar desde acá.
               </p>
             </div>
           ) : whatsappStatus === "qr_pending" && whatsappQr ? (
-            <div className="bg-white rounded-3xl p-6 space-y-4">
+            <div className="bg-white rounded-md p-6 space-y-4">
               <p className="text-center text-dark-100 font-black uppercase text-xs tracking-wide">
                 Escaneá este QR desde WhatsApp en tu celular
               </p>
               {!allowExternalQrRender ? (
-                <div className="bg-warning-500/10 border border-warning-500/30 rounded-2xl p-4 space-y-3">
+                <div className="bg-warning-500/10 border border-warning-500/30 rounded-md p-4 space-y-3">
                   <p className="text-[11px] text-warning-200 font-bold">
                     Por seguridad, el QR no se renderiza automáticamente en servicios externos.
                   </p>
@@ -352,13 +352,13 @@ export const WhatsappSettingsView = ({
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(whatsappQr)}`}
                     alt="Código QR de WhatsApp"
-                    className="w-[220px] h-[220px] rounded-2xl"
+                    className="w-[220px] h-[220px] rounded-md"
                   />
                 </div>
               )}
             </div>
           ) : (
-            <div className="bg-black/5 dark:bg-white/5 rounded-3xl p-5 border border-black/10 dark:border-white/10">
+            <div className="bg-black/5 dark:bg-white/5 rounded-md p-5 border border-black/10 dark:border-white/10">
               <p className="text-xs text-gray-300 font-bold uppercase tracking-wide">
                 {whatsappStatus === "ready"
                   ? "WhatsApp ya está conectado. Si querés regenerar el QR, cerrá sesión del dispositivo actual."

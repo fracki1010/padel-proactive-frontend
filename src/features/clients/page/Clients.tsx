@@ -21,6 +21,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
+import { useConfirm } from "../../../hooks/useConfirm";
 import {
   useUsers,
   useUserHistory,
@@ -42,6 +43,7 @@ interface ClientsProps {
 
 export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const { data: usersData, isLoading: isLoadingUsers } = useUsers();
   const { data: penaltySettingsData } = usePenaltySettings();
   const users = usersData?.data || [];
@@ -111,7 +113,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
 
   const handleDelete = async (id: string) => {
     if (pendingDeleteUserId || pendingClearPenaltyUserId) return;
-    if (confirm("¿Estás seguro de eliminar este socio?")) {
+    if (await confirm("¿Estás seguro de eliminar este socio?", { variant: "danger", title: "Eliminar socio" })) {
       setPendingDeleteUserId(id);
       try {
         await deleteUser.mutateAsync(id);
@@ -126,7 +128,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
 
   const handleClearPenalties = async (id: string) => {
     if (pendingDeleteUserId || pendingClearPenaltyUserId) return;
-    if (confirm("¿Deseas limpiar las penalizaciones y rehabilitar a este socio?")) {
+    if (await confirm("¿Deseas limpiar las penalizaciones y rehabilitar a este socio?", { variant: "default", title: "Limpiar penalizaciones" })) {
       setPendingClearPenaltyUserId(id);
       try {
         await clearPenalties.mutateAsync(id);
@@ -169,7 +171,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
           </div>
           <Button
             color="primary"
-            className="rounded-2xl font-bold px-6 shadow-lg shadow-primary/20 w-full sm:w-auto"
+            className="rounded-md font-bold px-6 shadow-lg shadow-primary/20 w-full sm:w-auto"
             startContent={<Plus size={20} />}
             onClick={handleCreate}
           >
@@ -177,7 +179,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
           </Button>
         </div>
 
-        <div className="bg-dark-200 p-2 rounded-3xl border border-black/5 dark:border-white/5 shadow-2xl">
+        <div className="bg-dark-200 p-2 rounded-md border border-black/5 dark:border-white/5 shadow-2xl">
           <Input
             isClearable
             className="w-full"
@@ -199,7 +201,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
               <Spinner color="primary" size="lg" />
             </div>
           ) : filteredUsers.length === 0 ? (
-            <div className="col-span-full bg-dark-200/50 rounded-3xl p-12 text-center border border-dashed border-black/10 dark:border-white/10">
+            <div className="col-span-full bg-dark-200/50 rounded-md p-12 text-center border border-dashed border-black/10 dark:border-white/10">
               <UserIcon size={48} className="mx-auto text-gray-600 mb-4" />
               <p className="text-gray-400 font-medium">
                 No se encontraron socios que coincidan con la búsqueda.
@@ -210,7 +212,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
               {visibleUsers.map((client: User) => (
                 <Card
                   key={client._id}
-                  className="bg-dark-200 border-black/5 dark:border-white/5 hover:border-primary/30 transition-all duration-300 rounded-3xl group"
+                  className="bg-dark-200 border-black/5 dark:border-white/5 hover:border-primary/30 transition-all duration-300 rounded-md group"
                   shadow="sm"
                   isPressable
                   onPress={() => handleDetails(client)}
@@ -218,7 +220,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                   <CardBody className="p-5 flex flex-row items-center gap-4">
                     <Avatar
                       name={getInitials(client.name)}
-                      className="w-16 h-16 rounded-2xl text-foreground font-black text-xl shrink-0"
+                      className="w-16 h-16 rounded-md text-foreground font-black text-xl shrink-0"
                       style={{ backgroundColor: getAvatarColor(client.name) }}
                     />
 
@@ -232,7 +234,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                             size="sm"
                             color="success"
                             variant="flat"
-                            className="h-5 px-1 bg-success/10 text-[10px] font-black uppercase"
+                            className="h-5 px-1 bg-success/10 text-[10px] font-semibold uppercase"
                           >
                             Fijo
                           </Chip>
@@ -261,7 +263,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                               size="sm"
                               color={isTrustedClient ? "success" : "warning"}
                               variant="flat"
-                              className="h-5 px-1 text-[10px] font-black uppercase"
+                              className="h-5 px-1 text-[10px] font-semibold uppercase"
                               startContent={
                                 isTrustedClient ? (
                                   <CheckCircle2 size={9} className="ml-1" />
@@ -285,7 +287,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                                 : "default"
                           }
                           variant="flat"
-                          className="h-5 px-1 text-[10px] font-black uppercase"
+                          className="h-5 px-1 text-[10px] font-semibold uppercase"
                           startContent={<AlertTriangle size={9} className="ml-1" />}
                         >
                           PENAL. {client.penalties || 0}/{penaltyLimit}
@@ -295,7 +297,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                             size="sm"
                             color="danger"
                             variant="flat"
-                            className="h-5 px-1 text-[10px] font-black uppercase"
+                            className="h-5 px-1 text-[10px] font-semibold uppercase"
                             startContent={<ShieldOff size={9} className="ml-1" />}
                           >
                             SUSPENDIDO
@@ -314,7 +316,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                   </div>
                 )}
                 {!hasMore && filteredUsers.length > 12 && (
-                  <p className="text-center text-gray-600 text-xs font-bold uppercase tracking-widest py-4">
+                  <p className="text-center text-gray-600 text-xs font-bold uppercase tracking-wide py-4">
                     {filteredUsers.length} socios cargados
                   </p>
                 )}

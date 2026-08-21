@@ -54,7 +54,7 @@ type MenuItemButtonProps = {
 };
 
 const menuItemBaseClass =
-  "w-full bg-dark-100 p-4 rounded-2xl lg:rounded-xl border border-black/5 dark:border-white/5 flex items-center justify-between group cursor-pointer hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all";
+  "w-full bg-dark-100 p-4 rounded-md lg:rounded-xl border border-black/5 dark:border-white/5 flex items-center justify-between group cursor-pointer hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all";
 
 const MenuItemButton = ({
   icon,
@@ -125,9 +125,9 @@ export const ProfileMenuView = ({
           <div className="relative">
           <Avatar
             src={avatarSrc}
-            className="w-24 h-24 lg:w-16 lg:h-16 rounded-[2rem] lg:rounded-xl border-4 border-primary shadow-2xl shadow-primary/20"
+            className="w-24 h-24 lg:w-16 lg:h-16 rounded-lg lg:rounded-xl border-4 border-primary shadow-2xl shadow-primary/20"
           />
-          <div className="absolute -bottom-2 -right-2 bg-primary text-black p-2 rounded-2xl border-4 border-dark-200">
+          <div className="absolute -bottom-2 -right-2 bg-primary text-black p-2 rounded-md border-4 border-dark-200">
             <Shield size={16} fill="currentColor" />
           </div>
           </div>
@@ -141,7 +141,7 @@ export const ProfileMenuView = ({
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 w-full lg:w-auto lg:min-w-[260px]">
-        <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-3xl">
+        <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-md">
           <CardBody className="p-3 flex flex-col items-center border border-black/5 dark:border-white/5">
             <p className="text-[10px] font-black text-gray-500 uppercase">
               Canchas
@@ -149,7 +149,7 @@ export const ProfileMenuView = ({
             <p className="text-xl font-black text-foreground">{courtsCount}</p>
           </CardBody>
         </Card>
-        <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-3xl">
+        <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-md">
           <CardBody className="p-3 flex flex-col items-center border border-black/5 dark:border-white/5">
             <p className="text-[10px] font-black text-gray-500 uppercase">
               WhatsApp
@@ -167,7 +167,7 @@ export const ProfileMenuView = ({
         </div>
       </div>
 
-      <section className="bg-dark-100 p-5 rounded-[2rem] lg:rounded-xl border border-black/5 dark:border-white/5 space-y-4">
+      <section className="bg-dark-100 p-5 rounded-lg lg:rounded-xl border border-black/5 dark:border-white/5 space-y-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
             <Phone size={18} />
@@ -190,7 +190,7 @@ export const ProfileMenuView = ({
             }}
             className="w-full"
             classNames={{
-              trigger: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-2",
+              trigger: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-2",
               value: "text-foreground font-bold",
               popoverContent:
                 "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
@@ -213,12 +213,12 @@ export const ProfileMenuView = ({
             type="tel"
             inputMode="numeric"
             classNames={{
-              inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+              inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
               input: "text-foreground font-bold",
             }}
           />
           <Button
-            className="h-12 w-full sm:w-auto sm:min-w-28 bg-primary text-black rounded-2xl font-black uppercase"
+            className="h-12 w-full sm:w-auto sm:min-w-28 bg-primary text-black rounded-md font-black uppercase"
             onPress={onSavePhone}
             isDisabled={!canSavePhone}
             isLoading={updateProfilePending}
@@ -309,8 +309,8 @@ export const ProfileMenuView = ({
           <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] mb-4 px-2">
             Preferencias
           </h3>
-          <div className="bg-dark-100 p-2 rounded-2xl border border-black/5 dark:border-white/5 space-y-1">
-            <div className="flex items-center justify-between p-4 hover:bg-black/5 dark:hover:bg-white/5 rounded-2xl transition-colors">
+          <div className="bg-dark-100 p-2 rounded-md border border-black/5 dark:border-white/5 space-y-1">
+            <div className="flex items-center justify-between p-4 hover:bg-black/5 dark:hover:bg-white/5 rounded-md transition-colors">
               <div className="flex items-center gap-4">
                 <CreditCard size={18} className="text-gray-400" />
                 <div>
@@ -332,7 +332,7 @@ export const ProfileMenuView = ({
 
         <Button
           fullWidth
-          className="h-14 bg-red-500/10 text-red-500 font-black rounded-2xl uppercase tracking-widest border border-red-500/20"
+          className="h-14 bg-red-500/10 text-red-500 font-black rounded-md uppercase tracking-widest border border-red-500/20"
           startContent={<LogOut size={18} />}
           onPress={onLogout}
         >

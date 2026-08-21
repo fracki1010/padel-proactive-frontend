@@ -225,7 +225,7 @@ export const TenantsView = ({
           isIconOnly
           variant="flat"
           onClick={onBack}
-          className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl"
+          className="bg-black/5 dark:bg-white/5 text-foreground rounded-md"
         >
           <ChevronLeft size={20} />
         </Button>
@@ -242,7 +242,7 @@ export const TenantsView = ({
       </div>
 
       {isSuperAdmin && (
-        <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[2rem]">
+        <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-lg">
           <CardBody className="p-6 space-y-3">
             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
               Crear Empresa / Bootstrap
@@ -254,19 +254,19 @@ export const TenantsView = ({
                 placeholder="Nombre de empresa"
                 className="flex-grow"
                 classNames={{
-                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                   input: "text-foreground font-bold",
                 }}
               />
               <Button
-                className="h-12 bg-primary text-black font-black rounded-2xl uppercase text-[10px]"
+                className="h-12 bg-primary text-black font-black rounded-md uppercase text-[10px]"
                 onPress={onCreateCompany}
                 isLoading={createCompanyPending}
               >
                 Crear
               </Button>
               <Button
-                className="h-12 bg-blue-500 text-white font-black rounded-2xl uppercase text-[10px]"
+                className="h-12 bg-blue-500 text-white font-black rounded-md uppercase text-[10px]"
                 onPress={onBootstrapTenant}
                 isLoading={bootstrapPending}
               >
@@ -278,7 +278,7 @@ export const TenantsView = ({
       )}
 
       {isSuperAdmin && (
-        <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[2rem]">
+        <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-lg">
           <CardBody className="p-6 space-y-3">
             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
               Crear Admin de Empresa
@@ -288,7 +288,7 @@ export const TenantsView = ({
               onValueChange={onAdminUsernameChange}
               placeholder="Usuario admin"
               classNames={{
-                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                 input: "text-foreground font-bold",
               }}
             />
@@ -298,7 +298,7 @@ export const TenantsView = ({
               placeholder="Contraseña"
               type="password"
               classNames={{
-                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                 input: "text-foreground font-bold",
               }}
             />
@@ -307,14 +307,14 @@ export const TenantsView = ({
               onValueChange={onAdminPhoneChange}
               placeholder="Teléfono (opcional)"
               classNames={{
-                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                 input: "text-foreground font-bold",
               }}
             />
             <select
               value={newAdminCompanyId}
               onChange={(event) => onAdminCompanyChange(event.target.value)}
-              className="h-12 rounded-2xl bg-black/5 dark:bg-white/5 border-none px-4 text-foreground font-bold"
+              className="h-12 rounded-md bg-black/5 dark:bg-white/5 border-none px-4 text-foreground font-bold"
             >
               <option value="" disabled>
                 Seleccionar empresa
@@ -326,7 +326,7 @@ export const TenantsView = ({
               ))}
             </select>
             <Button
-              className="h-12 bg-primary text-black font-black rounded-2xl uppercase text-[10px]"
+              className="h-12 bg-primary text-black font-black rounded-md uppercase text-[10px]"
               onPress={onCreateAdmin}
               isLoading={createAdminPending}
             >

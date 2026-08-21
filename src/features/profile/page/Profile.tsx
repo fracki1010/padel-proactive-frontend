@@ -41,6 +41,7 @@ import {
 } from "../../../hooks/useData";
 import { useAuth } from "../../../context/AuthContext";
 import { useTheme } from "../../../context/ThemeContext";
+import { useConfirm } from "../../../hooks/useConfirm";
 import { configService } from "../../../services/api";
 import { ClubClosuresView } from "../components/ClubClosuresView";
 import { CourtsView } from "../components/CourtsView";
@@ -75,6 +76,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const queryClient = useQueryClient();
   const { logout, user, updateUser } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const confirm = useConfirm();
   const [view, setView] = useState<
     "menu" | "courts" | "schedule" | "whatsapp" | "bot-automation" | "tenants" | "club-closures"
   >("menu");
@@ -613,8 +615,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const handleCloseWhatsappSession = async () => {
     if (!ensureWhatsappWorkerOnline()) return;
 
-    const shouldClose = window.confirm(
+    const shouldClose = await confirm(
       "¿Seguro que querés cerrar la sesión de WhatsApp y dar de baja todas las sesiones/dispositivos activos?",
+      { variant: "danger", title: "Cerrar sesión de WhatsApp" },
     );
     if (!shouldClose) return;
 
@@ -683,8 +686,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const handleSwitchWhatsappDevice = async () => {
     if (!ensureWhatsappWorkerOnline()) return;
 
-    const shouldSwitch = window.confirm(
+    const shouldSwitch = await confirm(
       "¿Querés cambiar de dispositivo? Se va a cerrar la sesión actual y se regenerará un QR nuevo.",
+      { variant: "danger", title: "Cambiar dispositivo" },
     );
     if (!shouldSwitch) return;
 
@@ -779,8 +783,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const handleResetWhatsappSession = async () => {
     if (!ensureWhatsappWorkerOnline()) return;
 
-    const shouldReset = window.confirm(
+    const shouldReset = await confirm(
       "¿Querés cerrar la sesión actual y generar un QR nuevo? Se eliminarán los datos de sesión guardados.",
+      { variant: "danger", title: "Reiniciar sesión" },
     );
     if (!shouldReset) return;
 
@@ -1510,10 +1515,11 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     }
   };
 
-  const handleDeleteCourt = (id: string, courtName: string) => {
+  const handleDeleteCourt = async (id: string, courtName: string) => {
     const normalizedName = courtName.trim() || "esta cancha";
-    const shouldDelete = window.confirm(
+    const shouldDelete = await confirm(
       `¿Seguro que querés eliminar ${normalizedName}? Esta acción no se puede deshacer.`,
+      { variant: "danger", title: "Eliminar cancha" },
     );
     if (!shouldDelete) return;
 
@@ -1570,8 +1576,11 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
     });
   };
 
-  const handleDeleteClubClosure = (id: string) => {
-    const shouldDelete = window.confirm("¿Seguro que querés eliminar este cierre? Esta acción no se puede deshacer.");
+  const handleDeleteClubClosure = async (id: string) => {
+    const shouldDelete = await confirm(
+      "¿Seguro que querés eliminar este cierre? Esta acción no se puede deshacer.",
+      { variant: "danger", title: "Eliminar cierre" },
+    );
     if (!shouldDelete) return;
 
     setDeletingClosureId(id);

@@ -7,7 +7,7 @@ type SetupProgressProps = {
 
 export const SetupProgress = ({ step, progress }: SetupProgressProps) => {
   return (
-    <Card className="bg-dark-100/70 border border-black/10 dark:border-white/10 rounded-[2rem]">
+    <Card className="bg-dark-100/70 border border-black/10 dark:border-white/10 rounded-lg">
       <CardBody className="p-5 sm:p-6 space-y-4">
         <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
           <span className="text-gray-500">Paso {step} de 3</span>

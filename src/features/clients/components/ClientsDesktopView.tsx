@@ -127,7 +127,7 @@ export const ClientsDesktopView = ({
               className="max-w-xl"
               classNames={{
                 inputWrapper:
-                  "bg-dark-200/80 border border-black/10 dark:border-white/10 rounded-2xl h-12",
+                  "bg-dark-200/80 border border-black/10 dark:border-white/10 rounded-md h-12",
                 input: "text-foreground",
               }}
             />
@@ -142,7 +142,7 @@ export const ClientsDesktopView = ({
             </h1>
           </div>
 
-          <div className="inline-flex items-center gap-2 p-2 rounded-2xl bg-dark-200/70 border border-black/10 dark:border-white/10">
+          <div className="inline-flex items-center gap-2 p-2 rounded-md bg-dark-200/70 border border-black/10 dark:border-white/10">
             {[
               { id: "all", label: "Todos" },
               { id: "fixed", label: "Fijos" },
@@ -203,7 +203,7 @@ export const ClientsDesktopView = ({
             <Spinner color="primary" size="lg" />
           </div>
         ) : filteredUsers.length === 0 ? (
-          <div className="rounded-3xl bg-dark-200/60 border border-black/10 dark:border-white/10 py-16 text-center">
+          <div className="rounded-md bg-dark-200/60 border border-black/10 dark:border-white/10 py-16 text-center">
             <p className="text-gray-500 font-bold">
               No se encontraron socios para este filtro.
             </p>
@@ -234,11 +234,11 @@ export const ClientsDesktopView = ({
             return (
               <div
                 key={client._id}
-                className="rounded-3xl bg-dark-200/70 border border-black/10 dark:border-white/10 px-5 py-4 flex items-center gap-5"
+                className="rounded-md bg-dark-200/70 border border-black/10 dark:border-white/10 px-5 py-4 flex items-center gap-5"
               >
                 <Avatar
                   name={getInitials(client.name)}
-                  className="w-14 h-14 rounded-2xl text-foreground font-black text-lg shrink-0"
+                  className="w-14 h-14 rounded-md text-foreground font-black text-lg shrink-0"
                   style={{ backgroundColor: getAvatarColor(client.name) }}
                 />
 

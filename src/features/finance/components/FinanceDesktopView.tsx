@@ -89,7 +89,7 @@ export const FinanceDesktopView = ({
   return (
     <div className="hidden lg:block animate-in fade-in duration-500">
       <div className="grid grid-cols-[minmax(0,1fr)_290px] gap-6">
-        <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-gradient-to-br from-dark-300 to-dark-200 p-8">
+        <div className="rounded-md border border-black/10 dark:border-white/10 bg-gradient-to-br from-dark-300 to-dark-200 p-8">
           <div className="flex items-center justify-between">
             <p className="text-[11px] font-black uppercase tracking-[0.22em] text-primary/80">
               Efectivo en Caja Total
@@ -138,7 +138,7 @@ export const FinanceDesktopView = ({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-dark-200 p-5">
+          <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 p-5">
             <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center text-primary mb-3">
               <WalletCards size={16} />
             </div>
@@ -149,7 +149,7 @@ export const FinanceDesktopView = ({
                 {formatCurrency(metrics.totalPaidDaily)}
               </p>
           </div>
-          <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-dark-200 p-5">
+          <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 p-5">
             <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-300 mb-3">
               <Calendar size={16} />
             </div>
@@ -160,7 +160,7 @@ export const FinanceDesktopView = ({
                 {metrics.countPendingMonth}
               </p>
           </div>
-          <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-dark-200 p-5">
+          <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 p-5">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-300 mb-3">
               <Scale size={16} />
             </div>
@@ -171,7 +171,7 @@ export const FinanceDesktopView = ({
                 {metrics.countConfirmedMonth}
               </p>
           </div>
-          <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-dark-200 p-5">
+          <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 p-5">
             <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center text-violet-300 mb-3">
               <WalletCards size={16} />
             </div>
@@ -185,7 +185,7 @@ export const FinanceDesktopView = ({
         </div>
       </div>
 
-      <div className="mt-6 rounded-3xl border border-black/10 dark:border-white/10 bg-dark-200 overflow-hidden">
+      <div className="mt-6 rounded-md border border-black/10 dark:border-white/10 bg-dark-200 overflow-hidden">
         <div className="px-6 py-5 border-b border-black/10 dark:border-white/10 flex items-center justify-between">
           <div>
             <h3 className="text-xl font-black text-foreground tracking-tight">

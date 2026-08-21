@@ -32,6 +32,7 @@ import {
   useUserById,
   useUserHistory,
 } from "../../../hooks/useData";
+import { useConfirm } from "../../../hooks/useConfirm";
 import {
   formatCurrency,
   formatDate,
@@ -150,10 +151,10 @@ const FixedTurnsEditor = ({
   };
 
   return (
-    <Card className="bg-dark-200 border border-black/10 dark:border-white/10 rounded-3xl">
+    <Card className="bg-dark-200 border border-black/10 dark:border-white/10 rounded-md">
       <CardBody className="p-6 space-y-4">
         <div className="flex flex-wrap gap-2 items-center justify-between">
-          <h3 className="text-xl font-black text-foreground flex items-center gap-2">
+          <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Calendar size={18} /> Turnos Fijos
           </h3>
           <div className="flex gap-2">
@@ -161,7 +162,7 @@ const FixedTurnsEditor = ({
               size="sm"
               variant="flat"
               color="primary"
-              className="font-black"
+              className="font-bold"
               onPress={handleAddFixedTurn}
             >
               Agregar
@@ -169,7 +170,7 @@ const FixedTurnsEditor = ({
             <Button
               size="sm"
               color="primary"
-              className="font-black"
+              className="font-bold"
               onPress={() => onSave(fixedTurns)}
               isLoading={isSaving}
             >
@@ -185,7 +186,7 @@ const FixedTurnsEditor = ({
             {fixedTurns.map((fixedTurn, index) => (
               <div
                 key={`${fixedTurn.court}-${fixedTurn.timeSlot}-${index}`}
-                className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end bg-black/10 dark:bg-white/5 p-3 rounded-2xl border border-black/5 dark:border-white/5"
+                className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end bg-black/10 dark:bg-white/5 p-3 rounded-md border border-black/5 dark:border-white/5"
               >
                 <div className="sm:col-span-4">
                   <Select
@@ -289,6 +290,7 @@ const FixedTurnsEditor = ({
 
 export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const { data: userDetailData, isLoading: isLoadingUser } = useUserById(clientId);
   const { data: historyData, isLoading: isLoadingHistory } = useUserHistory(clientId);
   const adjustAttendanceCount = useAdjustAttendanceCount();
@@ -393,7 +395,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
 
   const handleClearPenalties = async () => {
     if (!user?._id) return;
-    if (!confirm("¿Deseas limpiar las penalizaciones y rehabilitar a este socio?")) {
+    if (!(await confirm("¿Deseas limpiar las penalizaciones y rehabilitar a este socio?", { variant: "default", title: "Limpiar penalizaciones" }))) {
       return;
     }
 
@@ -407,7 +409,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
 
   const handleDeleteUser = async () => {
     if (!user?._id) return;
-    if (!confirm("¿Estás seguro de eliminar este socio?")) return;
+    if (!(await confirm("¿Estás seguro de eliminar este socio?", { variant: "danger", title: "Eliminar socio" }))) return;
 
     try {
       await deleteUser.mutateAsync(user._id);
@@ -460,18 +462,18 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
           variant="flat"
           startContent={<ArrowLeft size={16} />}
           onPress={() => navigate("/socios")}
-          className="font-black"
+          className="font-bold"
         >
           Volver a socios
         </Button>
 
         <div className="flex flex-wrap gap-2">
-          <Button variant="flat" className="font-black" onPress={onEditModalOpen}>
+          <Button variant="flat" className="font-bold" onPress={onEditModalOpen}>
             Editar perfil
           </Button>
           <Button
             variant="flat"
-            className="font-black"
+            className="font-bold"
             startContent={<MessageSquare size={16} />}
             onPress={() =>
               window.open(`https://wa.me/${user.phoneNumber.replace(/\D/g, "")}`, "_blank")
@@ -482,7 +484,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
           <Button
             color="success"
             variant="flat"
-            className="font-black"
+            className="font-bold"
             isLoading={clearPenalties.isPending}
             isDisabled={deleteUser.isPending}
             onPress={handleClearPenalties}
@@ -492,7 +494,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
           <Button
             color="danger"
             variant="flat"
-            className="font-black"
+            className="font-bold"
             startContent={<Trash2 size={16} />}
             isLoading={deleteUser.isPending}
             isDisabled={clearPenalties.isPending}
@@ -503,10 +505,10 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
         </div>
       </div>
 
-      <Card className="bg-dark-200 border border-black/10 dark:border-white/10 rounded-3xl">
+      <Card className="bg-dark-200 border border-black/10 dark:border-white/10 rounded-md">
         <CardBody className="p-6 space-y-5">
           <div>
-            <p className="text-3xl font-black text-foreground">{user.name}</p>
+            <p className="text-3xl font-black text-foreground tracking-tight">{user.name}</p>
             <p className="text-gray-400 font-semibold flex items-center gap-2 mt-1">
               <Smartphone size={14} />
               {formatPhoneForDisplay(user.phoneNumber)}
@@ -514,20 +516,20 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="rounded-2xl bg-black/10 dark:bg-white/5 p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500">Asistencias</p>
+            <div className="rounded-md bg-black/10 dark:bg-white/5 p-4">
+              <p className="text-[11px] font-semibold text-gray-500 tracking-wider">Asistencias</p>
               <p className="text-2xl font-black text-foreground mt-1">{attendanceCount}</p>
             </div>
-            <div className="rounded-2xl bg-black/10 dark:bg-white/5 p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500">Umbral</p>
+            <div className="rounded-md bg-black/10 dark:bg-white/5 p-4">
+              <p className="text-[11px] font-semibold text-gray-500 tracking-wider">Umbral</p>
               <p className="text-2xl font-black text-foreground mt-1">{trustedThreshold}</p>
             </div>
-            <div className="rounded-2xl bg-black/10 dark:bg-white/5 p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500">Penalizaciones</p>
+            <div className="rounded-md bg-black/10 dark:bg-white/5 p-4">
+              <p className="text-[11px] font-semibold text-gray-500 tracking-wider">Penalizaciones</p>
               <p className="text-2xl font-black text-foreground mt-1">{Number(user.penalties || 0)}</p>
             </div>
-            <div className="rounded-2xl bg-black/10 dark:bg-white/5 p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500">Turnos fijos</p>
+            <div className="rounded-md bg-black/10 dark:bg-white/5 p-4">
+              <p className="text-[11px] font-semibold text-gray-500 tracking-wider">Turnos fijos</p>
               <p className="text-2xl font-black text-foreground mt-1">{Array.isArray(user.fixedTurns) ? user.fixedTurns.length : 0}</p>
             </div>
           </div>
@@ -536,13 +538,13 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
             <Chip
               color={isTrusted ? "success" : "warning"}
               variant="flat"
-              className="font-black uppercase"
+              className="font-semibold uppercase"
               startContent={isTrusted ? <CheckCircle2 size={14} /> : <ShieldAlert size={14} />}
             >
               {isTrusted ? "Cliente Confiable" : "En Seguimiento"}
             </Chip>
             {user.isSuspended && (
-              <Chip color="danger" variant="flat" className="font-black uppercase">
+              <Chip color="danger" variant="flat" className="font-semibold uppercase">
                 Suspendido
               </Chip>
             )}
@@ -551,10 +553,10 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
                 variant="flat"
                 className={
                   user.accountOrigin === "whatsapp"
-                    ? "bg-green-500/20 text-green-300 border border-green-500/30 font-black uppercase"
+                    ? "bg-green-500/20 text-green-300 border border-green-500/30 font-semibold uppercase"
                     : user.accountOrigin === "google"
-                    ? "bg-orange-500/20 text-orange-300 border border-orange-500/30 font-black uppercase"
-                    : "bg-blue-500/20 text-blue-300 border border-blue-500/30 font-black uppercase"
+                    ? "bg-orange-500/20 text-orange-300 border border-orange-500/30 font-semibold uppercase"
+                    : "bg-blue-500/20 text-blue-300 border border-blue-500/30 font-semibold uppercase"
                 }
               >
                 {user.accountOrigin === "whatsapp"
@@ -573,7 +575,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
               onPress={() => handleAdjustAttendance(-1)}
               isDisabled={attendanceCount <= 0 || isClientActionPending}
               isLoading={adjustAttendanceCount.isPending}
-              className="font-black"
+              className="font-bold"
             >
               Restar 1 asistencia
             </Button>
@@ -583,7 +585,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
               onPress={() => handleAdjustAttendance(1)}
               isDisabled={isClientActionPending}
               isLoading={adjustAttendanceCount.isPending}
-              className="font-black"
+              className="font-bold"
             >
               Sumar 1 asistencia
             </Button>
@@ -600,18 +602,18 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
         isSaving={updateUser.isPending}
       />
 
-      <Card className="bg-dark-200 border border-black/10 dark:border-white/10 rounded-3xl">
+      <Card className="bg-dark-200 border border-black/10 dark:border-white/10 rounded-md">
         <CardBody className="p-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-xl font-black text-foreground">Historial Detallado</h3>
-            <Chip variant="flat" className="font-black">
+            <h3 className="text-xl font-bold text-foreground">Historial Detallado</h3>
+            <Chip variant="flat" className="font-bold">
               {filteredHistory.length} turnos
             </Chip>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="rounded-2xl bg-black/10 dark:bg-white/5 p-3">
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-500">
+            <div className="rounded-md bg-black/10 dark:bg-white/5 p-3">
+              <p className="text-[10px] font-semibold text-gray-500 tracking-wider">
                 Mostrando
               </p>
               <p className="text-xl font-black mt-1">
@@ -619,20 +621,20 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
                 {Math.min(startIndex + pageSize, filteredHistory.length)}
               </p>
             </div>
-            <div className="rounded-2xl bg-black/10 dark:bg-white/5 p-3">
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-500">
+            <div className="rounded-md bg-black/10 dark:bg-white/5 p-3">
+              <p className="text-[10px] font-semibold text-gray-500 tracking-wider">
                 Pagados
               </p>
               <p className="text-xl font-black mt-1 text-success">{totalPaid}</p>
             </div>
-            <div className="rounded-2xl bg-black/10 dark:bg-white/5 p-3">
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-500">
+            <div className="rounded-md bg-black/10 dark:bg-white/5 p-3">
+              <p className="text-[10px] font-semibold text-gray-500 tracking-wider">
                 Pendientes
               </p>
               <p className="text-xl font-black mt-1 text-warning">{totalPending}</p>
             </div>
-            <div className="rounded-2xl bg-black/10 dark:bg-white/5 p-3">
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-500">
+            <div className="rounded-md bg-black/10 dark:bg-white/5 p-3">
+              <p className="text-[10px] font-semibold text-gray-500 tracking-wider">
                 Cancelados
               </p>
               <p className="text-xl font-black mt-1 text-danger">{totalCancelled}</p>
@@ -693,17 +695,17 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
             <p className="text-gray-500">No hay historial para este socio.</p>
           ) : (
             <div className="space-y-3">
-              <div className="overflow-x-auto rounded-2xl border border-black/10 dark:border-white/10">
+              <div className="overflow-x-auto rounded-md border border-black/10 dark:border-white/10">
                 <table className="w-full min-w-[860px]">
                   <thead className="bg-black/10 dark:bg-white/5">
                     <tr className="text-left">
-                      <th className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-gray-500">Fecha</th>
-                      <th className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-gray-500">Hora</th>
-                      <th className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-gray-500">Cancha</th>
-                      <th className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-gray-500">Turno</th>
-                      <th className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-gray-500">Pago</th>
-                      <th className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-gray-500">Monto</th>
-                      <th className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-gray-500">Origen</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Fecha</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Hora</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Cancha</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Turno</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Pago</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Monto</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Origen</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -719,7 +721,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
                           <Chip
                             size="sm"
                             variant="flat"
-                            className="font-black uppercase"
+                            className="font-semibold uppercase"
                             color={getStatusChipColor(booking.status)}
                           >
                             {booking.status}
@@ -729,15 +731,15 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
                           <Chip
                             size="sm"
                             variant="flat"
-                            className="font-black uppercase"
+                            className="font-semibold uppercase"
                             color={getPaymentChipColor(booking.paymentStatus)}
                           >
                             {booking.paymentStatus || "sin dato"}
                           </Chip>
                         </td>
-                        <td className="px-3 py-3 align-top font-black">{formatCurrency(Number(booking.finalPrice || 0))}</td>
+                        <td className="px-3 py-3 align-top font-bold">{formatCurrency(Number(booking.finalPrice || 0))}</td>
                         <td className="px-3 py-3 align-top">
-                          <Chip size="sm" variant="flat" className="font-black uppercase">
+                          <Chip size="sm" variant="flat" className="font-semibold uppercase">
                             {booking.isFixed ? "fijo" : "manual"}
                           </Chip>
                         </td>

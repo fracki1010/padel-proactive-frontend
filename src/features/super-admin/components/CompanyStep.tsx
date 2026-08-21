@@ -32,7 +32,7 @@ export const CompanyStep = ({
   onContinue,
 }: CompanyStepProps) => {
   return (
-    <Card className="bg-dark-100/70 border border-black/10 dark:border-white/10 rounded-[2rem]">
+    <Card className="bg-dark-100/70 border border-black/10 dark:border-white/10 rounded-lg">
       <CardBody className="p-5 sm:p-6 space-y-4">
         <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">
           Paso 1 • Empresa
@@ -46,7 +46,7 @@ export const CompanyStep = ({
             <select
               value={selectedCompanyId}
               onChange={(event) => onSelectCompany(event.target.value)}
-              className="h-12 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 px-4 text-foreground font-bold w-full"
+              className="h-12 rounded-md bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 px-4 text-foreground font-bold w-full"
             >
               <option value="" disabled>
                 Seleccionar empresa
@@ -69,7 +69,7 @@ export const CompanyStep = ({
           isInvalid={Boolean(companyNameError)}
           errorMessage={companyNameError}
           classNames={{
-            inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-2xl",
+            inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-md",
             input: "text-foreground font-bold",
             label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
           }}
@@ -85,7 +85,7 @@ export const CompanyStep = ({
           errorMessage={slugError}
           description={`Sugerido: ${normalizedSuggestedSlug || "(ingresá nombre)"}`}
           classNames={{
-            inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-2xl",
+            inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-md",
             input: "text-foreground font-bold",
             label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
             description: "text-gray-500 text-[10px]",
@@ -94,14 +94,14 @@ export const CompanyStep = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <Button
-            className="h-12 bg-primary text-black font-black uppercase rounded-2xl"
+            className="h-12 bg-primary text-black font-black uppercase rounded-md"
             isLoading={createCompanyPending}
             onPress={onCreateCompany}
           >
             Crear Empresa
           </Button>
           <Button
-            className="h-12 bg-black/10 dark:bg-white/10 text-foreground font-black uppercase rounded-2xl"
+            className="h-12 bg-black/10 dark:bg-white/10 text-foreground font-black uppercase rounded-md"
             onPress={onContinue}
             isDisabled={!selectedCompanyId}
           >

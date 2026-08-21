@@ -123,7 +123,7 @@ export const BotAutomationSettingsView = ({
           isIconOnly
           variant="flat"
           onClick={onBack}
-          className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl"
+          className="bg-black/5 dark:bg-white/5 text-foreground rounded-md"
         >
           <ChevronLeft size={20} />
         </Button>
@@ -132,9 +132,9 @@ export const BotAutomationSettingsView = ({
         </h3>
       </div>
 
-      <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[2rem]">
+      <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-lg">
         <CardBody className="p-6 space-y-5">
-          <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl p-4 space-y-4">
+          <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md p-4 space-y-4">
             <div className="flex items-center gap-3">
               <Timer size={18} className="text-primary" />
               <p className="text-sm font-black text-foreground uppercase tracking-wide">
@@ -170,13 +170,13 @@ export const BotAutomationSettingsView = ({
                 max={240}
                 className="flex-grow"
                 classNames={{
-                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                   input: "text-foreground font-bold",
                   label: "text-gray-400 font-bold mb-2",
                 }}
               />
               <Button
-                className="h-12 bg-primary text-black rounded-2xl font-black uppercase"
+                className="h-12 bg-primary text-black rounded-md font-black uppercase"
                 onPress={onSaveReminderMinutes}
                 isLoading={isSavingReminderMinutes}
                 startContent={<Save size={18} />}
@@ -199,13 +199,13 @@ export const BotAutomationSettingsView = ({
                 max={240}
                 className="flex-grow"
                 classNames={{
-                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                   input: "text-foreground font-bold",
                   label: "text-gray-400 font-bold mb-2",
                 }}
               />
               <Button
-                className="h-12 bg-primary text-black rounded-2xl font-black uppercase"
+                className="h-12 bg-primary text-black rounded-md font-black uppercase"
                 onPress={onSaveAttendanceResponseTimeoutMinutes}
                 isLoading={isSavingResponseTimeoutMinutes}
                 startContent={<Save size={18} />}
@@ -218,7 +218,7 @@ export const BotAutomationSettingsView = ({
             </p>
           </div>
 
-          <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl p-4 space-y-4">
+          <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md p-4 space-y-4">
             <div className="flex items-center gap-3">
               <CalendarClock size={18} className="text-sky-300" />
               <p className="text-sm font-black text-foreground uppercase tracking-wide">
@@ -275,7 +275,7 @@ export const BotAutomationSettingsView = ({
                   type="button"
                   onClick={() => onDailyAvailabilityDigestFormatChange("text")}
                   disabled={!cancellationGroupConfigured}
-                  className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-2xl font-black text-sm uppercase transition-colors ${
+                  className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-md font-black text-sm uppercase transition-colors ${
                     dailyAvailabilityDigestFormat === "text"
                       ? "bg-sky-300 text-black"
                       : "bg-black/5 dark:bg-white/5 text-gray-400 hover:bg-black/10 dark:hover:bg-white/10"
@@ -288,7 +288,7 @@ export const BotAutomationSettingsView = ({
                   type="button"
                   onClick={() => onDailyAvailabilityDigestFormatChange("image")}
                   disabled={!cancellationGroupConfigured}
-                  className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-2xl font-black text-sm uppercase transition-colors ${
+                  className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-md font-black text-sm uppercase transition-colors ${
                     dailyAvailabilityDigestFormat === "image"
                       ? "bg-sky-300 text-black"
                       : "bg-black/5 dark:bg-white/5 text-gray-400 hover:bg-black/10 dark:hover:bg-white/10"
@@ -323,13 +323,13 @@ export const BotAutomationSettingsView = ({
                 isDisabled={!cancellationGroupConfigured}
                 className="flex-grow"
                 classNames={{
-                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                   input: "text-foreground font-bold",
                   label: "text-gray-400 font-bold mb-2",
                 }}
               />
               <Button
-                className="h-12 bg-sky-300 text-black rounded-2xl font-black uppercase"
+                className="h-12 bg-sky-300 text-black rounded-md font-black uppercase"
                 onPress={onSaveDailyAvailabilityDigestSettings}
                 isLoading={isSavingDailyAvailabilityDigestSettings}
                 isDisabled={!canSaveDailyAvailabilityDigest}
@@ -338,7 +338,7 @@ export const BotAutomationSettingsView = ({
                 Guardar horario
               </Button>
               <Button
-                className="h-12 bg-primary/10 text-primary border border-primary/30 rounded-2xl font-black uppercase"
+                className="h-12 bg-primary/10 text-primary border border-primary/30 rounded-md font-black uppercase"
                 onPress={onSendDigestNow}
                 isLoading={isSendingDigestNow}
                 isDisabled={!cancellationGroupConfigured || isSendingDigestNow}
@@ -359,7 +359,7 @@ export const BotAutomationSettingsView = ({
             )}
           </div>
 
-          <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl p-4 space-y-4">
+          <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md p-4 space-y-4">
             <div className="flex items-center gap-3">
               <Timer size={18} className="text-cyan-300" />
               <p className="text-sm font-black text-foreground uppercase tracking-wide">
@@ -378,13 +378,13 @@ export const BotAutomationSettingsView = ({
                 max={72}
                 className="flex-grow"
                 classNames={{
-                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                   input: "text-foreground font-bold",
                   label: "text-gray-400 font-bold mb-2",
                 }}
               />
               <Button
-                className="h-12 bg-cyan-300 text-black rounded-2xl font-black uppercase"
+                className="h-12 bg-cyan-300 text-black rounded-md font-black uppercase"
                 onPress={onSaveCancellationLockHours}
                 isLoading={isSavingCancellationLockHours}
                 startContent={<Save size={18} />}
@@ -413,13 +413,13 @@ export const BotAutomationSettingsView = ({
                 max={20}
                 className="flex-grow"
                 classNames={{
-                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                   input: "text-foreground font-bold",
                   label: "text-gray-400 font-bold mb-2",
                 }}
               />
               <Button
-                className="h-12 bg-emerald-400 text-black rounded-2xl font-black uppercase"
+                className="h-12 bg-emerald-400 text-black rounded-md font-black uppercase"
                 onPress={onSaveTrustedCount}
                 isLoading={isSavingTrustedCount}
                 startContent={<Save size={18} />}
@@ -432,7 +432,7 @@ export const BotAutomationSettingsView = ({
             </p>
           </div>
 
-          <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl p-4 space-y-4">
+          <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md p-4 space-y-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <ShieldAlert size={18} className="text-orange-400" />
@@ -476,13 +476,13 @@ export const BotAutomationSettingsView = ({
                 isDisabled={!penaltyEnabled}
                 className="flex-grow"
                 classNames={{
-                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                   input: "text-foreground font-bold",
                   label: "text-gray-400 font-bold mb-2",
                 }}
               />
               <Button
-                className="h-12 bg-orange-400 text-black rounded-2xl font-black uppercase"
+                className="h-12 bg-orange-400 text-black rounded-md font-black uppercase"
                 onPress={onSavePenaltyLimit}
                 isLoading={isSavingPenaltyLimit}
                 isDisabled={!penaltyEnabled}

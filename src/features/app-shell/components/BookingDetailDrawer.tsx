@@ -74,10 +74,10 @@ export const BookingDetailDrawer = ({
                 </h2>
               </DrawerHeader>
               <DrawerBody className="p-4 sm:p-8 pb-10 sm:pb-12 space-y-6 sm:space-y-8">
-                <div className="flex gap-4 p-4 bg-dark-100 rounded-3xl border border-black/5 dark:border-white/5 items-center">
+                <div className="flex gap-4 p-4 bg-dark-100 rounded-md border border-black/5 dark:border-white/5 items-center">
                   <Avatar
                     name={getInitials(selectedBooking?.clientName)}
-                    className="w-20 h-20 rounded-2xl shadow-xl shadow-black/40 text-2xl font-black text-foreground"
+                    className="w-20 h-20 rounded-md shadow-xl shadow-black/40 text-2xl font-black text-foreground"
                     style={{
                       backgroundColor: getAvatarColor(selectedBooking?.clientName),
                     }}
@@ -93,7 +93,7 @@ export const BookingDetailDrawer = ({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 bg-dark-100 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-1">
+                  <div className="p-4 bg-dark-100 rounded-md border border-black/5 dark:border-white/5 flex flex-col gap-1">
                     <Calendar size={18} className="text-gray-500 mb-1" />
                     <span className="text-[10px] text-gray-500 font-black uppercase">
                       FECHA
@@ -102,7 +102,7 @@ export const BookingDetailDrawer = ({
                       {selectedBooking && formatDate(selectedBooking.date)}
                     </span>
                   </div>
-                  <div className="p-4 bg-dark-100 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-1">
+                  <div className="p-4 bg-dark-100 rounded-md border border-black/5 dark:border-white/5 flex flex-col gap-1">
                     <Clock size={18} className="text-gray-500 mb-1" />
                     <span className="text-[10px] text-gray-500 font-black uppercase">
                       HORARIO
@@ -111,7 +111,7 @@ export const BookingDetailDrawer = ({
                       {selectedBooking?.timeSlot?.startTime} - {selectedBooking?.timeSlot?.endTime}
                     </span>
                   </div>
-                  <div className="p-4 bg-dark-100 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col gap-1 sm:col-span-2">
+                  <div className="p-4 bg-dark-100 rounded-md border border-black/5 dark:border-white/5 flex flex-col gap-1 sm:col-span-2">
                     <MapPin size={18} className="text-gray-500 mb-1" />
                     <span className="text-[10px] text-gray-500 font-black uppercase">
                       CANCHA
@@ -121,10 +121,10 @@ export const BookingDetailDrawer = ({
                     </span>
                   </div>
 
-                  <div className="p-4 bg-dark-100 rounded-3xl border border-black/5 dark:border-white/5 flex items-center justify-between sm:col-span-2">
+                  <div className="p-4 bg-dark-100 rounded-md border border-black/5 dark:border-white/5 flex items-center justify-between sm:col-span-2">
                     <div className="flex gap-4 items-center">
                       <div
-                        className={`w-12 h-12 ${selectedBooking?.paymentStatus === "pagado" ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-gray-500"} rounded-2xl flex items-center justify-center`}
+                        className={`w-12 h-12 ${selectedBooking?.paymentStatus === "pagado" ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-gray-500"} rounded-md flex items-center justify-center`}
                       >
                         <CreditCard size={20} />
                       </div>
@@ -174,7 +174,7 @@ export const BookingDetailDrawer = ({
                 <div className="flex flex-col gap-4">
                   {selectedBooking?.status === "suspendido" ? (
                     <Button
-                      className="h-16 bg-red-500 text-white font-black text-lg rounded-2xl shadow-xl shadow-red-500/20"
+                      className="h-16 bg-red-500 text-white font-black text-lg rounded-md shadow-xl shadow-red-500/20"
                       isLoading={deleteBooking.isPending}
                       isDisabled={updateBooking.isPending}
                       onPress={() => {
@@ -199,7 +199,7 @@ export const BookingDetailDrawer = ({
                     </Button>
                   ) : (
                     <Button
-                      className="h-16 bg-primary text-black font-black text-lg rounded-2xl shadow-xl shadow-primary/20"
+                      className="h-16 bg-primary text-black font-black text-lg rounded-md shadow-xl shadow-primary/20"
                       onPress={() =>
                         window.open(
                           `https://wa.me/${selectedBooking?.clientPhone.replace(/\D/g, "")}`,
@@ -214,7 +214,7 @@ export const BookingDetailDrawer = ({
                   {selectedBooking?.status !== "suspendido" &&
                   selectedBooking?.status !== "cancelado" ? (
                     <Button
-                      className="h-16 bg-red-500/90 text-white font-black text-lg rounded-2xl"
+                      className="h-16 bg-red-500/90 text-white font-black text-lg rounded-md"
                       onPress={() => {
                         setApplyPenalty(true);
                         setIsCancelModalOpen(true);
@@ -228,7 +228,7 @@ export const BookingDetailDrawer = ({
 
                   <Button
                     variant="flat"
-                    className="h-16 text-foreground bg-black/5 dark:bg-white/5 rounded-2xl font-bold"
+                    className="h-16 text-foreground bg-black/5 dark:bg-white/5 rounded-md font-bold"
                     isDisabled={updateBooking.isPending || deleteBooking.isPending}
                     onPress={() => {
                       onClose();
@@ -262,7 +262,7 @@ export const BookingDetailDrawer = ({
                 <p className="text-sm text-gray-300">
                   ¿Querés cancelar este turno y aplicar penalización al cliente?
                 </p>
-                <div className="flex items-center justify-between rounded-2xl border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
+                <div className="flex items-center justify-between rounded-md border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
                   <div>
                     <p className="text-sm font-bold text-foreground">
                       Aplicar penalización

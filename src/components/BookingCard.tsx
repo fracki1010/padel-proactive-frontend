@@ -28,14 +28,14 @@ export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
       <Card
         isPressable
         onPress={() => onClick?.(booking)}
-        className="w-full border-none rounded-[1.6rem] bg-gradient-to-br from-primary via-primary to-amber-300 shadow-2xl shadow-primary/20 hover:scale-[1.01] transition-all duration-300"
+        className="w-full border-none rounded-md bg-gradient-to-br from-primary via-primary to-amber-300 shadow-2xl shadow-primary/20 hover:scale-[1.01] transition-all duration-300"
       >
         <CardBody className="p-5 flex flex-row items-center gap-4 sm:gap-6 min-w-0">
-          <div className="flex flex-col items-center bg-black/10 rounded-2xl px-3 py-2 min-w-[76px]">
+          <div className="flex flex-col items-center bg-black/10 rounded-md px-3 py-2 min-w-[76px]">
             <span className="text-xl font-black text-black leading-none">
               {booking.timeSlot?.startTime || "00:00"}
             </span>
-            <span className="text-[10px] font-bold text-black/60 uppercase">
+            <span className="text-[10px] font-semibold text-black/60">
               90 MIN
             </span>
           </div>
@@ -43,7 +43,7 @@ export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
           <div className="w-[1px] h-12 bg-black/15"></div>
 
           <div className="flex-grow flex flex-col min-w-0">
-            <span className="font-black text-black text-lg tracking-tight">
+            <span className="font-bold text-black text-lg tracking-tight">
               DISPONIBLE
             </span>
             <span className="text-xs text-black/70 font-semibold">
@@ -59,26 +59,26 @@ export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
     <Card
       isPressable
       onPress={() => onClick?.(booking)}
-      className="w-full rounded-[1.6rem] bg-dark-200/90 border border-black/10 dark:border-white/10 hover:border-primary/40 transition-all duration-300 shadow-2xl shadow-black/20"
+      className="w-full rounded-md bg-dark-200/90 border border-black/10 dark:border-white/10 hover:border-primary/40 transition-all duration-300 shadow-2xl shadow-black/20"
     >
       <CardBody className="p-5 flex flex-wrap sm:flex-nowrap items-center gap-4 sm:gap-6 min-w-0">
-        <div className="flex flex-col items-center min-w-[72px] rounded-2xl bg-black/[0.04] dark:bg-white/[0.04] border border-black/10 dark:border-white/10 px-2.5 py-2">
+        <div className="flex flex-col items-center min-w-[72px] rounded-md bg-black/[0.04] dark:bg-white/[0.04] border border-black/10 dark:border-white/10 px-2.5 py-2">
           <span className="text-xl font-black text-foreground leading-none">
             {booking.timeSlot?.startTime}
           </span>
-          <span className="text-[10px] font-bold text-foreground/40 uppercase">
+          <span className="text-[10px] font-semibold text-foreground/40">
             90 MIN
           </span>
         </div>
 
         <div className="flex flex-col flex-grow min-w-0">
           <div className="flex items-center gap-2 mb-0.5 flex-wrap min-w-0">
-            <span className="font-black text-foreground text-lg truncate min-w-0 flex-1 tracking-tight">
+            <span className="font-bold text-foreground text-lg truncate min-w-0 flex-1 tracking-tight">
               {booking.clientName}
             </span>
             <Chip
               size="sm"
-              className={`${statusColorMap[booking.status] || "bg-gray-600"} h-5 px-2 text-[10px] font-black tracking-wide shrink-0 rounded-lg`}
+              className={`${statusColorMap[booking.status] || "bg-gray-600"} h-5 px-2 text-[10px] font-semibold tracking-wide shrink-0 rounded-lg`}
               radius="sm"
             >
               {statusLabelMap[booking.status] || booking.status.toUpperCase()}
@@ -86,7 +86,7 @@ export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
             {booking.isFixed && (
               <Chip
                 size="sm"
-                className="bg-success/20 text-success border border-success/30 h-5 px-2 text-[10px] font-black shrink-0 rounded-lg"
+                className="bg-success/20 text-success border border-success/30 h-5 px-2 text-[10px] font-semibold shrink-0 rounded-lg"
                 radius="sm"
               >
                 FIJO

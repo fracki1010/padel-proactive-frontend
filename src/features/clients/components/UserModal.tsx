@@ -121,14 +121,14 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
           <Button
             variant="light"
             onPress={onClose}
-            className="rounded-2xl font-bold"
+            className="rounded-md font-bold"
           >
             Cancelar
           </Button>
           <Button
             color="primary"
             onPress={handleSave}
-            className="rounded-2xl font-black px-8"
+            className="rounded-md font-black px-8"
             isLoading={createUser.isPending || updateUser.isPending}
           >
             {mode === "create" ? "Crear" : "Guardar Cambios"}

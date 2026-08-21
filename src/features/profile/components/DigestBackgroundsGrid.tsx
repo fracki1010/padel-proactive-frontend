@@ -66,7 +66,7 @@ export const DigestBackgroundsGrid = ({
           return (
             <div
               key={order}
-              className="relative aspect-video rounded-2xl overflow-hidden border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5"
+              className="relative aspect-video rounded-md overflow-hidden border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5"
             >
               {bg ? (
                 <>

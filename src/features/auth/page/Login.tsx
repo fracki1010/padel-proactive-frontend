@@ -42,7 +42,7 @@ export const Login = () => {
     <div className="min-h-[100dvh] bg-background flex items-center justify-center px-4 py-6 sm:p-6 bg-[radial-gradient(circle_at_top_right,rgba(126,169,236,0.1),transparent),radial-gradient(circle_at_bottom_left,rgba(126,169,236,0.08),transparent)]">
       <div className="w-full max-w-md lg:max-w-lg space-y-6 sm:space-y-8 animate-in fade-in zoom-in duration-500">
         <div className="text-center space-y-2">
-          <div className="mx-auto w-16 h-16 bg-primary/20 rounded-[2rem] flex items-center justify-center border border-primary/20 mb-6 group">
+          <div className="mx-auto w-16 h-16 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/20 mb-6 group">
             <Activity
               className="text-primary group-hover:scale-110 transition-transform duration-500"
               size={32}
@@ -56,7 +56,7 @@ export const Login = () => {
           </p>
         </div>
 
-        <Card className="bg-dark-100/50 backdrop-blur-xl border border-black/5 dark:border-white/5 rounded-[2.5rem] shadow-2xl p-4">
+        <Card className="bg-dark-100/50 backdrop-blur-xl border border-black/5 dark:border-white/5 rounded-lg shadow-2xl p-4">
           <CardBody className="p-4">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
@@ -70,7 +70,7 @@ export const Login = () => {
                   onChange={(e) => setUsername(e.target.value)}
                   classNames={{
                     inputWrapper:
-                      "bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 group-data-[focus=true]:border-primary/50 transition-all h-14 rounded-2xl",
+                      "bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 group-data-[focus=true]:border-primary/50 transition-all h-14 rounded-md",
                     label:
                       "text-gray-400 font-bold uppercase text-[10px] tracking-widest pl-1",
                     input: "text-foreground font-bold",
@@ -89,7 +89,7 @@ export const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   classNames={{
                     inputWrapper:
-                      "bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 group-data-[focus=true]:border-primary/50 transition-all h-14 rounded-2xl",
+                      "bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 group-data-[focus=true]:border-primary/50 transition-all h-14 rounded-md",
                     label:
                       "text-gray-400 font-bold uppercase text-[10px] tracking-widest pl-1",
                     input: "text-foreground font-bold",
@@ -112,7 +112,7 @@ export const Login = () => {
               </div>
 
               {error && (
-                <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl text-red-500 text-xs font-bold text-center">
+                <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-md text-red-500 text-xs font-bold text-center">
                   {error}
                 </div>
               )}
@@ -123,7 +123,7 @@ export const Login = () => {
                 size="lg"
                 fullWidth
                 isLoading={isLoading}
-                className="h-16 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                className="h-16 bg-primary text-black font-black uppercase tracking-widest rounded-md shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
               >
                 Ingresar al Sistema
               </Button>

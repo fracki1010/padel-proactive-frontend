@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(xargs basename *)",
+      "Bash(node --test src/tests/extractPersonName.test.js)",
+      "Bash(node --test src/tests/bookingStateMachine.test.js)",
+      "Bash(node --test src/tests/messageInterpreter.test.js)",
+      "Bash(node --test src/tests/**/*.test.js)",
+      "Bash(node --test src/tests/comprehensive.test.js)",
+      "Bash(redis-cli -h 127.0.0.1 -p 6379 ping)",
+      "Bash(docker exec *)",
+      "Bash(npx tsc *)",
+      "Bash(docker compose *)",
+      "Bash(docker-compose ps *)",
+      "Bash(redis-cli ping *)",
+      "Bash(git -C /home/franco-galdame-linux/Apps/padel-proactive/padel-proactive-backend diff --stat)",
+      "Bash(git -C /home/franco-galdame-linux/Apps/padel-proactive/padel-proactive-backend status)",
+      "Bash(grep -r -i \"disconnect\\\\|logout\\\\|reset.*session\\\\|new.*session\" /home/franco-galdame-linux/Apps/padel-proactive --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.js\" --include=\"*.jsx\" ! -path \"*/node_modules/*\")",
+      "Bash(xargs cat *)",
+      "Bash(grep \"Teléfono\\\\|teléfono\\\\|\\\\bphoneNumber\\\\b.*\\\\`\\\\|\\\\bclientPhone\\\\b.*\\\\`\")",
+      "Bash(node -e ' *)",
+      "Bash(grep -E \"\\\\.\\(js|ts\\)$\")",
+      "Bash(python3 -c ' *)",
+      "Read(//tmp/**)",
+      "Bash(awk '/^# SECCIÓN 12/,/^# SECCIÓN 13/' /home/franco-galdame-linux/Apps/padel-proactive/padel-proactive-backend/docs/qa-master-test-suite.txt)",
+      "Bash(awk '/^# SECCIÓN 14/,/^# SECCIÓN 15/' /home/franco-galdame-linux/Apps/padel-proactive/padel-proactive-backend/docs/qa-master-test-suite.txt)",
+      "Bash(timeout 120 node src/scripts/replayWhatsappDefensiveTests.js --section 15 --section-delay-ms 0 --delay-ms 0)",
+      "Bash(timeout 60 node src/scripts/replayWhatsappDefensiveTests.js --section 13 --section-delay-ms 0 --delay-ms 0)",
+      "Bash(timeout 300 node src/scripts/replayWhatsappDefensiveTests.js --section 12 --section-delay-ms 0 --delay-ms 0)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(timeout 120 node src/scripts/replayWhatsappDefensiveTests.js --section 3 --section-delay-ms 0 --delay-ms 0)",
+      "Bash(env WHATSAPP_QUEUE_DRIVER=mongo WHATSAPP_ALLOW_MONGO_FALLBACK=true node src/scripts/replayWhatsappDefensiveTests.js --section 11 --section-delay-ms 0 --delay-ms 0)",
+      "Bash(awk '/^# SECCIÓN 16/,/^# SECCIÓN 19/' /home/franco-galdame-linux/Apps/padel-proactive/padel-proactive-backend/docs/qa-master-test-suite.txt)",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); const mongoose=require\\('mongoose'\\); mongoose.connect\\(process.env.MONGODB_URI\\).then\\(\\(\\)=>mongoose.connection.db.collection\\('companies'\\).findOne\\({},{projection:{slug:1,name:1,_id:1}}\\).then\\(c=>{console.log\\(JSON.stringify\\(c\\)\\);process.exit\\(0\\)}\\)\\).catch\\(e=>{console.error\\(e.message\\);process.exit\\(1\\)}\\)\")",
+      "Bash(dpkg -l)",
+      "Bash(awk '{print $2, $3}')",
+      "Bash(sudo apt-get *)"
+    ]
+  }
+}

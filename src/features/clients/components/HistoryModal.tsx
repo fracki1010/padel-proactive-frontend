@@ -45,7 +45,7 @@ export const HistoryModal = ({
           <div className="flex items-center gap-3">
             <Avatar
               name={getInitials(user?.name || "")}
-              className="w-12 h-12 rounded-2xl"
+              className="w-12 h-12 rounded-md"
               style={{ backgroundColor: getAvatarColor(user?.name || "") }}
             />
             <div>
@@ -62,7 +62,7 @@ export const HistoryModal = ({
               <Spinner color="primary" />
             </div>
           ) : history.length === 0 ? (
-            <div className="text-center py-12 bg-dark-200 rounded-3xl border border-black/5 dark:border-white/5">
+            <div className="text-center py-12 bg-dark-200 rounded-md border border-black/5 dark:border-white/5">
               <Info size={32} className="mx-auto text-gray-600 mb-2" />
               <p className="text-gray-500">
                 Este socio aún no tiene actividad registrada.
@@ -76,11 +76,11 @@ export const HistoryModal = ({
                   return (
                     <div
                       key={item._id}
-                      className="bg-dark-200/50 p-4 rounded-3xl border border-black/5 dark:border-white/5 hover:border-primary/20 transition-all group"
+                      className="bg-dark-200/50 p-4 rounded-md border border-black/5 dark:border-white/5 hover:border-primary/20 transition-all group"
                     >
                     <div className="flex flex-col sm:flex-row justify-between gap-4">
                       <div className="flex items-start gap-4">
-                        <div className="bg-black/5 dark:bg-white/5 p-2 rounded-2xl flex flex-col items-center min-w-[55px] font-black">
+                        <div className="bg-black/5 dark:bg-white/5 p-2 rounded-md flex flex-col items-center min-w-[55px] font-black">
                           <span className="text-[10px] text-primary uppercase">
                             {format(stableDate, "EEE", { locale: es })}
                           </span>

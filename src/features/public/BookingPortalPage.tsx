@@ -453,7 +453,7 @@ export const BookingPortalPage = () => {
                 key={iso}
                 onClick={() => setSelectedDate(iso)}
                 className={`
-                  flex flex-col items-center py-4 px-4 rounded-2xl shrink-0 transition-all border
+                  flex flex-col items-center py-4 px-4 rounded-md shrink-0 transition-all border
                   ${isActive
                     ? "bg-primary/10 border-primary text-primary"
                     : "bg-default-100 border-default-200 text-default-500 hover:border-default-400"}
@@ -474,7 +474,7 @@ export const BookingPortalPage = () => {
 
         {/* Cierre del club */}
         {availability?.closed && (
-          <div className="mx-2 p-4 rounded-2xl border border-warning-200 bg-warning-50 dark:bg-warning-900/20 text-center mb-6">
+          <div className="mx-2 p-4 rounded-md border border-warning-200 bg-warning-50 dark:bg-warning-900/20 text-center mb-6">
             <p className="font-bold text-warning-600 dark:text-warning-400">El club está cerrado ese día</p>
             {availability.closureReason && (
               <p className="text-xs text-warning-500 mt-1">{availability.closureReason}</p>
@@ -532,7 +532,7 @@ export const BookingPortalPage = () => {
                       return (
                         <div
                           key={slot._id}
-                          className="bg-default-50 border border-default-100 rounded-2xl p-5 flex items-center justify-between opacity-40"
+                          className="bg-default-50 border border-default-100 rounded-md p-5 flex items-center justify-between opacity-40"
                         >
                           <span className="text-2xl font-black text-default-400">
                             {slot.startTime}
@@ -551,7 +551,7 @@ export const BookingPortalPage = () => {
                       return (
                         <div
                           key={slot._id}
-                          className="bg-default-50 border border-default-100 rounded-2xl p-5 flex items-center justify-between opacity-50"
+                          className="bg-default-50 border border-default-100 rounded-md p-5 flex items-center justify-between opacity-50"
                         >
                           <span className="text-2xl font-black text-default-400">
                             {slot.startTime}
@@ -571,7 +571,7 @@ export const BookingPortalPage = () => {
                         key={slot._id}
                         onClick={() => handleSlotClick(court, slot)}
                         className={`
-                          rounded-2xl p-5 text-left flex flex-col gap-3 border transition-all
+                          rounded-md p-5 text-left flex flex-col gap-3 border transition-all
                           ${sel
                             ? "bg-primary/10 border-primary shadow-sm shadow-primary/20"
                             : "bg-default-100 border-default-200 hover:border-primary/40 hover:bg-primary/5"}

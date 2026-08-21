@@ -26,7 +26,7 @@ export const BootstrapStep = ({
   onContinue,
 }: BootstrapStepProps) => {
   return (
-    <Card className="bg-dark-100/70 border border-black/10 dark:border-white/10 rounded-[2rem]">
+    <Card className="bg-dark-100/70 border border-black/10 dark:border-white/10 rounded-lg">
       <CardBody className="p-5 sm:p-6 space-y-4">
         <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">
           Paso 2 • Migración inicial
@@ -37,7 +37,7 @@ export const BootstrapStep = ({
         </p>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 rounded-2xl p-3 border border-black/10 dark:border-white/10">
+          <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 rounded-md p-3 border border-black/10 dark:border-white/10">
             <p className="text-xs text-foreground font-bold">Asignar datos operativos sin empresa</p>
             <Switch
               isSelected={shouldAssignData}
@@ -46,7 +46,7 @@ export const BootstrapStep = ({
               size="sm"
             />
           </div>
-          <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 rounded-2xl p-3 border border-black/10 dark:border-white/10">
+          <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 rounded-md p-3 border border-black/10 dark:border-white/10">
             <p className="text-xs text-foreground font-bold">Asignar admins sin empresa</p>
             <Switch
               isSelected={shouldAssignAdmins}
@@ -59,7 +59,7 @@ export const BootstrapStep = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <Button
-            className="h-12 bg-blue-500 text-white font-black uppercase rounded-2xl"
+            className="h-12 bg-blue-500 text-white font-black uppercase rounded-md"
             isLoading={bootstrapPending}
             onPress={onRunBootstrap}
             isDisabled={!selectedCompanyId}
@@ -67,13 +67,13 @@ export const BootstrapStep = ({
             Ejecutar
           </Button>
           <Button
-            className="h-12 bg-black/10 dark:bg-white/10 text-foreground font-black uppercase rounded-2xl"
+            className="h-12 bg-black/10 dark:bg-white/10 text-foreground font-black uppercase rounded-md"
             onPress={onBack}
           >
             Volver
           </Button>
           <Button
-            className="h-12 bg-primary text-black font-black uppercase rounded-2xl"
+            className="h-12 bg-primary text-black font-black uppercase rounded-md"
             onPress={onContinue}
           >
             Continuar

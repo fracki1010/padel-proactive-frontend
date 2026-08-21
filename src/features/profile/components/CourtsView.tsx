@@ -131,7 +131,7 @@ export const CourtsView = ({
           isIconOnly
           variant="flat"
           onClick={onBack}
-          className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl"
+          className="bg-black/5 dark:bg-white/5 text-foreground rounded-md"
         >
           <ChevronLeft size={20} />
         </Button>
@@ -139,7 +139,7 @@ export const CourtsView = ({
           Mis Canchas
         </h3>
         <Button
-          className="ml-auto bg-primary text-black font-black rounded-2xl uppercase"
+          className="ml-auto bg-primary text-black font-black rounded-md uppercase"
           onPress={() => setIsCreateDrawerOpen(true)}
           startContent={<Plus size={16} />}
         >
@@ -151,13 +151,13 @@ export const CourtsView = ({
         {courts.map((court: any) => (
           <Card
             key={court._id}
-            className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[2rem]"
+            className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-lg"
           >
             <CardBody className="p-6 space-y-4">
               <div className="flex flex-row items-start justify-between gap-3">
                 <div className="flex items-center gap-4 min-w-0">
                   <div
-                    className={`w-12 h-12 ${court.isActive ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-gray-500"} rounded-2xl flex items-center justify-center transition-colors`}
+                    className={`w-12 h-12 ${court.isActive ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-gray-500"} rounded-md flex items-center justify-center transition-colors`}
                   >
                     <MapPin size={24} />
                   </div>
@@ -253,7 +253,7 @@ export const CourtsView = ({
                     label="Nombre"
                     classNames={{
                       inputWrapper:
-                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-2xl px-4",
+                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-md px-4",
                       input: "text-foreground font-bold",
                     }}
                   />
@@ -267,7 +267,7 @@ export const CourtsView = ({
                     }}
                     classNames={{
                       trigger:
-                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-2xl px-4",
+                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-md px-4",
                       value: "text-foreground font-bold",
                       popoverContent:
                         "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
@@ -290,7 +290,7 @@ export const CourtsView = ({
                     }}
                     classNames={{
                       trigger:
-                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-2xl px-4",
+                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-md px-4",
                       value: "text-foreground font-bold",
                       popoverContent:
                         "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
@@ -307,7 +307,7 @@ export const CourtsView = ({
               </DrawerBody>
               <DrawerFooter className="p-6 pt-0">
                 <Button
-                  className="w-full h-12 bg-primary text-black rounded-2xl font-black uppercase"
+                  className="w-full h-12 bg-primary text-black rounded-md font-black uppercase"
                   onPress={handleCreateFromDrawer}
                   isLoading={createCourtPending}
                 >
@@ -363,7 +363,7 @@ export const CourtsView = ({
                     label="Nombre"
                     classNames={{
                       inputWrapper:
-                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-2xl px-4",
+                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-md px-4",
                       input: "text-foreground font-bold",
                     }}
                   />
@@ -377,7 +377,7 @@ export const CourtsView = ({
                     }}
                     classNames={{
                       trigger:
-                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-2xl px-4",
+                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-md px-4",
                       value: "text-foreground font-bold",
                       popoverContent:
                         "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
@@ -400,7 +400,7 @@ export const CourtsView = ({
                     }}
                     classNames={{
                       trigger:
-                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-2xl px-4",
+                        "bg-black/5 dark:bg-white/5 border-none h-14 rounded-md px-4",
                       value: "text-foreground font-bold",
                       popoverContent:
                         "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
@@ -417,7 +417,7 @@ export const CourtsView = ({
               </DrawerBody>
               <DrawerFooter className="p-6 pt-0">
                 <Button
-                  className="w-full h-12 bg-primary text-black rounded-2xl font-black uppercase"
+                  className="w-full h-12 bg-primary text-black rounded-md font-black uppercase"
                   onPress={handleSaveFromDrawer}
                   isLoading={updateCourtPending}
                   startContent={<Save size={16} />}

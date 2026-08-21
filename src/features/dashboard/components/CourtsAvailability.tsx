@@ -76,7 +76,7 @@ export const CourtsAvailability = ({
                   >
                     <CardBody className="p-4 flex flex-row items-center gap-4">
                       <div
-                        className={`flex flex-col items-center min-w-[60px] p-2 bg-dark-200 rounded-2xl border ${isSuspended ? "border-red-500/20" : "border-black/5 dark:border-white/5"}`}
+                        className={`flex flex-col items-center min-w-[60px] p-2 bg-dark-200 rounded-md border ${isSuspended ? "border-red-500/20" : "border-black/5 dark:border-white/5"}`}
                       >
                         <span
                           className={`text-lg font-black ${isSuspended ? "text-red-500" : "text-foreground"}`}

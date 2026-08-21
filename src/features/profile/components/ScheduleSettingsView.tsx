@@ -98,7 +98,7 @@ export const ScheduleSettingsView = ({
           isIconOnly
           variant="flat"
           onClick={onBack}
-          className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl"
+          className="bg-black/5 dark:bg-white/5 text-foreground rounded-md"
         >
           <ChevronLeft size={20} />
         </Button>
@@ -107,7 +107,7 @@ export const ScheduleSettingsView = ({
         </h3>
       </div>
 
-      <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-[2rem] p-4 sm:p-5 flex flex-wrap gap-2">
+      <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg p-4 sm:p-5 flex flex-wrap gap-2">
         <Chip size="sm" className="bg-primary/20 text-primary font-bold border border-primary/30">
           {sortedSlots.length} turnos
         </Chip>
@@ -119,7 +119,7 @@ export const ScheduleSettingsView = ({
         </Chip>
       </div>
 
-      <section className="lg:hidden bg-dark-100 p-3 rounded-[2rem] border border-black/5 dark:border-white/5">
+      <section className="lg:hidden bg-dark-100 p-3 rounded-lg border border-black/5 dark:border-white/5">
         <p className="text-[10px] uppercase tracking-widest font-black text-gray-500 px-2 pb-2">
           Secciones
         </p>
@@ -160,7 +160,7 @@ export const ScheduleSettingsView = ({
         </div>
       </section>
 
-      <section className="hidden lg:block bg-dark-100 p-3 rounded-[2rem] border border-black/5 dark:border-white/5">
+      <section className="hidden lg:block bg-dark-100 p-3 rounded-lg border border-black/5 dark:border-white/5">
         <p className="text-[10px] uppercase tracking-widest font-black text-gray-500 px-2 pb-2">
           Atajos de configuración
         </p>
@@ -168,7 +168,7 @@ export const ScheduleSettingsView = ({
           <button
             type="button"
             onClick={() => goToSection(createSectionRef)}
-            className="rounded-2xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4 text-left hover:border-primary/40 hover:bg-primary/10 transition-colors"
+            className="rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4 text-left hover:border-primary/40 hover:bg-primary/10 transition-colors"
           >
             <p className="text-[10px] uppercase tracking-widest font-black text-gray-500">1</p>
             <p className="text-sm font-black text-foreground uppercase">Crear turno</p>
@@ -177,7 +177,7 @@ export const ScheduleSettingsView = ({
           <button
             type="button"
             onClick={() => goToSection(configureSectionRef)}
-            className="rounded-2xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4 text-left hover:border-primary/40 hover:bg-primary/10 transition-colors"
+            className="rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4 text-left hover:border-primary/40 hover:bg-primary/10 transition-colors"
           >
             <p className="text-[10px] uppercase tracking-widest font-black text-gray-500">2</p>
             <p className="text-sm font-black text-foreground uppercase">Configurar turnos</p>
@@ -186,7 +186,7 @@ export const ScheduleSettingsView = ({
           <button
             type="button"
             onClick={() => goToSection(basePriceSectionRef)}
-            className="rounded-2xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4 text-left hover:border-primary/40 hover:bg-primary/10 transition-colors"
+            className="rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4 text-left hover:border-primary/40 hover:bg-primary/10 transition-colors"
           >
             <p className="text-[10px] uppercase tracking-widest font-black text-gray-500">3</p>
             <p className="text-sm font-black text-foreground uppercase">Precio base</p>
@@ -207,7 +207,7 @@ export const ScheduleSettingsView = ({
           </Chip>
           <p className="text-xs uppercase tracking-widest font-bold text-gray-500">Crear turno</p>
         </div>
-        <div className="bg-dark-100 p-6 rounded-[2.5rem] border border-black/5 dark:border-white/5 space-y-4">
+        <div className="bg-dark-100 p-6 rounded-lg border border-black/5 dark:border-white/5 space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <Clock className="text-primary" size={20} />
@@ -226,7 +226,7 @@ export const ScheduleSettingsView = ({
               onValueChange={onSlotStartTimeChange}
               placeholder="Inicio"
               classNames={{
-                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                 input: "text-foreground font-bold",
               }}
             />
@@ -236,7 +236,7 @@ export const ScheduleSettingsView = ({
               onValueChange={onSlotEndTimeChange}
               placeholder="Fin"
               classNames={{
-                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                 input: "text-foreground font-bold",
               }}
             />
@@ -246,13 +246,13 @@ export const ScheduleSettingsView = ({
               onValueChange={onSlotPriceChange}
               placeholder="Precio"
               classNames={{
-                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                 input: "text-foreground font-bold",
               }}
             />
           </div>
           <Button
-            className="h-12 bg-primary text-black font-black rounded-2xl uppercase text-[10px] w-full sm:w-auto px-8"
+            className="h-12 bg-primary text-black font-black rounded-md uppercase text-[10px] w-full sm:w-auto px-8"
             onPress={onCreateSlot}
             isLoading={createSlotPending}
           >
@@ -281,7 +281,7 @@ export const ScheduleSettingsView = ({
           </p>
         </div>
         {sortedSlots.length === 0 ? (
-          <Card className="bg-dark-100 border border-dashed border-black/15 dark:border-white/15 rounded-[2rem]">
+          <Card className="bg-dark-100 border border-dashed border-black/15 dark:border-white/15 rounded-lg">
             <CardBody className="p-8 text-center">
               <p className="font-bold text-foreground">Todavía no hay turnos creados.</p>
               <p className="text-sm text-gray-500 mt-1">
@@ -294,12 +294,12 @@ export const ScheduleSettingsView = ({
             {sortedSlots.map((slot: any) => (
             <Card
               key={slot._id}
-              className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[2rem]"
+              className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-lg"
             >
               <CardBody className="p-5 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-4">
                   <div
-                    className={`w-12 h-12 ${slot.isActive ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-gray-500"} rounded-2xl flex items-center justify-center`}
+                    className={`w-12 h-12 ${slot.isActive ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-gray-500"} rounded-md flex items-center justify-center`}
                   >
                     <Clock size={20} />
                   </div>
@@ -346,7 +346,7 @@ export const ScheduleSettingsView = ({
           </Chip>
           <p className="text-xs uppercase tracking-widest font-bold text-gray-500">Precio base</p>
         </div>
-        <div className="bg-primary/10 p-6 rounded-[2.5rem] border border-primary/20 space-y-4">
+        <div className="bg-primary/10 p-6 rounded-lg border border-primary/20 space-y-4">
           <div className="flex items-center gap-3">
             <CreditCard className="text-primary" size={20} />
             <p className="font-bold text-primary uppercase text-xs tracking-widest">
@@ -364,12 +364,12 @@ export const ScheduleSettingsView = ({
               type="number"
               className="flex-grow"
               classNames={{
-                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-2xl px-4",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                 input: "text-foreground font-bold",
               }}
             />
             <Button
-              className="h-12 bg-primary text-black font-black rounded-2xl uppercase text-[10px] w-full sm:w-auto"
+              className="h-12 bg-primary text-black font-black rounded-md uppercase text-[10px] w-full sm:w-auto"
               onPress={onSaveBasePrice}
               isLoading={updateBasePricePending}
             >

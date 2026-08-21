@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useIsDesktop } from "../../../hooks/useIsDesktop";
 
 import { DashboardDesktopView } from "./DashboardDesktopView";
 import { DashboardMobileView } from "./DashboardMobileView";
@@ -9,24 +9,7 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ courts, onBookingClick }: DashboardProps) => {
-  const [isDesktop, setIsDesktop] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(min-width: 1024px)").matches;
-  });
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(min-width: 1024px)");
-    const handleChange = (event: MediaQueryListEvent) => {
-      setIsDesktop(event.matches);
-    };
-
-    setIsDesktop(mediaQuery.matches);
-    mediaQuery.addEventListener("change", handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, []);
+  const isDesktop = useIsDesktop();
 
   if (isDesktop) {
     return <DashboardDesktopView courts={courts} onBookingClick={onBookingClick} />;

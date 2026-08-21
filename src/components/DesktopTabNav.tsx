@@ -22,7 +22,7 @@ export const DesktopTabNav = ({
 }: DesktopTabNavProps) => {
   return (
     <div className="hidden lg:flex items-center justify-between gap-4 w-full max-w-[1520px] mx-auto px-8 pt-5 pb-4 border-b border-black/5 dark:border-white/5">
-      <div className="flex items-center gap-2 rounded-2xl border border-black/5 dark:border-white/5 bg-dark-100/70 p-1.5 overflow-x-auto">
+      <div className="flex items-center gap-2 rounded-md border border-black/5 dark:border-white/5 bg-dark-100/70 p-1.5 overflow-x-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

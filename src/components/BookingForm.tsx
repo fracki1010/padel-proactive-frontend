@@ -190,11 +190,11 @@ export const BookingForm = ({
       </div>
 
       {/* Hero Card */}
-      <Card className="bg-dark-200 border border-black/5 dark:border-white/5 overflow-hidden rounded-[2rem]">
+      <Card className="bg-dark-200 border border-black/5 dark:border-white/5 overflow-hidden rounded-lg">
         <div className="relative h-40 bg-[url('https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
           <CardBody className="relative z-10 p-5 sm:p-6 flex flex-col justify-end h-full">
-            <span className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">
+            <span className="text-[10px] font-semibold text-primary tracking-wider mb-1">
               ID RESERVA: #PDL-882
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-foreground">
@@ -220,12 +220,12 @@ export const BookingForm = ({
         <section className="space-y-6">
           <div className="flex items-center gap-2 px-1">
             <UserIcon size={16} className="text-primary" />
-            <h3 className="text-xs font-black text-foreground uppercase tracking-widest">
+            <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">
               Información del Cliente
             </h3>
           </div>
 
-          <div className="space-y-6 bg-dark-100/30 p-4 sm:p-6 rounded-3xl border border-black/5 dark:border-white/5">
+          <div className="space-y-6 bg-dark-100/30 p-4 sm:p-6 rounded-md border border-black/5 dark:border-white/5">
             <Autocomplete
               label="Nombre del Socio"
               placeholder="Escribe o selecciona un socio"
@@ -345,12 +345,12 @@ export const BookingForm = ({
         <section className="space-y-6">
           <div className="flex items-center gap-2 px-1">
             <Calendar size={16} className="text-primary" />
-            <h3 className="text-xs font-black text-foreground uppercase tracking-widest">
+            <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">
               Cancha y Horario
             </h3>
           </div>
 
-          <div className="space-y-6 bg-dark-100/30 p-4 sm:p-6 rounded-3xl border border-black/5 dark:border-white/5">
+          <div className="space-y-6 bg-dark-100/30 p-4 sm:p-6 rounded-md border border-black/5 dark:border-white/5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Select
                 label="Cancha de Padel"
@@ -425,14 +425,14 @@ export const BookingForm = ({
         <section className="space-y-6">
           <div className="flex items-center gap-2 px-1">
             <CheckCircle2 size={16} className="text-primary" />
-            <h3 className="text-xs font-black text-foreground uppercase tracking-widest">
+            <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">
               Estado del Pago
             </h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-dark-100/30 p-4 rounded-[2rem] border border-black/5 dark:border-white/5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-dark-100/30 p-4 rounded-lg border border-black/5 dark:border-white/5">
             <Button
               type="button"
-              className={`h-14 rounded-2xl font-bold transition-all ${
+              className={`h-14 rounded-md font-bold transition-all ${
                 paymentStatus === "pagado"
                   ? "bg-primary text-black shadow-lg shadow-primary/20"
                   : "bg-dark-100/50 text-gray-500 border border-black/5 dark:border-white/5"
@@ -443,7 +443,7 @@ export const BookingForm = ({
             </Button>
             <Button
               type="button"
-              className={`h-14 rounded-2xl font-bold transition-all ${
+              className={`h-14 rounded-md font-bold transition-all ${
                 paymentStatus === "pendiente"
                   ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
                   : "bg-dark-100/50 text-gray-500 border border-black/5 dark:border-white/5"
@@ -458,7 +458,7 @@ export const BookingForm = ({
         <Button
           type="submit"
           isLoading={createMutation.isPending}
-          className="w-full h-16 bg-primary text-black font-black text-lg rounded-2xl shadow-xl shadow-primary/20 mt-8"
+          className="w-full h-16 bg-primary text-black font-bold text-lg rounded-md shadow-xl shadow-primary/20 mt-8"
         >
           <Save size={20} /> Guardar Reserva
         </Button>

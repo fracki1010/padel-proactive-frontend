@@ -73,7 +73,7 @@ export const DashboardDesktopView = ({
 
   return (
     <div className="space-y-5 pb-10 animate-in fade-in duration-700 overflow-x-hidden">
-      <section className="rounded-3xl border border-black/10 dark:border-white/10 bg-dark-200/75 p-5">
+      <section className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200/75 p-5">
         <div className="grid grid-cols-[minmax(0,1fr)_420px] gap-5">
           <div className="space-y-4 min-w-0">
             <div>
@@ -92,11 +92,11 @@ export const DashboardDesktopView = ({
                 startContent={<CalendarDays size={16} className="text-gray-500" />}
                 classNames={{
                   inputWrapper:
-                    "h-12 rounded-2xl bg-dark-300 border border-black/10 dark:border-white/10",
+                    "h-12 rounded-md bg-dark-300 border border-black/10 dark:border-white/10",
                   input: "text-sm text-foreground font-semibold",
                 }}
               />
-              <div className="rounded-2xl bg-dark-300 border border-black/10 dark:border-white/10 px-4 flex items-center">
+              <div className="rounded-md bg-dark-300 border border-black/10 dark:border-white/10 px-4 flex items-center">
                 <span className="text-xs font-bold text-gray-300 capitalize">
                   {monthLabel}
                 </span>
@@ -123,7 +123,7 @@ export const DashboardDesktopView = ({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
+            <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
               <div className="w-8 h-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center mb-2">
                 <MapPinned size={15} />
               </div>
@@ -132,7 +132,7 @@ export const DashboardDesktopView = ({
               </p>
               <p className="text-2xl font-black text-foreground">{courts.length}</p>
             </div>
-            <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
+            <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-300 flex items-center justify-center mb-2">
                 <CheckCircle2 size={15} />
               </div>
@@ -141,7 +141,7 @@ export const DashboardDesktopView = ({
               </p>
               <p className="text-2xl font-black text-foreground">{stats.occupancy}%</p>
             </div>
-            <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
+            <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
               <div className="w-8 h-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center mb-2">
                 <Clock3 size={15} />
               </div>
@@ -150,7 +150,7 @@ export const DashboardDesktopView = ({
               </p>
               <p className="text-2xl font-black text-foreground">{stats.availableSlots}</p>
             </div>
-            <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
+            <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
               <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-300 flex items-center justify-center mb-2">
                 <PauseCircle size={15} />
               </div>
@@ -163,7 +163,7 @@ export const DashboardDesktopView = ({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-black/10 dark:border-white/10 bg-dark-200/70 p-5">
+      <section className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200/70 p-5">
         <p className="text-[11px] font-black uppercase tracking-[0.22em] text-primary/80 mb-4">
           Disponibilidad por Cancha
         </p>
@@ -176,7 +176,7 @@ export const DashboardDesktopView = ({
             {courts.map((court: any) => (
               <div
                 key={court._id}
-                className="rounded-2xl border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-4"
+                className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-4"
               >
                 <div className="flex items-center gap-2 mb-3">
                   <MapPin size={14} className="text-primary" />

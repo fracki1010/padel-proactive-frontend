@@ -96,7 +96,7 @@ export const ClubClosuresView = ({
         <Button
           isIconOnly
           variant="flat"
-          className="rounded-2xl"
+          className="rounded-md"
           onPress={onBack}
         >
           <ChevronLeft size={20} />
@@ -112,7 +112,7 @@ export const ClubClosuresView = ({
       </div>
 
       <Button
-        className="w-full h-12 bg-primary text-black rounded-2xl font-black uppercase tracking-widest"
+        className="w-full h-12 bg-primary text-black rounded-md font-black uppercase tracking-widest"
         startContent={<Plus size={18} />}
         onPress={() => setIsCreateOpen(true)}
       >
@@ -120,7 +120,7 @@ export const ClubClosuresView = ({
       </Button>
 
       {closures.length === 0 ? (
-        <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-2xl">
+        <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-md">
           <CardBody className="flex flex-col items-center gap-3 py-10 text-center">
             <CalendarOff size={32} className="text-gray-500" />
             <p className="text-sm font-bold text-gray-500 uppercase">
@@ -133,7 +133,7 @@ export const ClubClosuresView = ({
           {closures.map((closure) => (
             <Card
               key={closure._id}
-              className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-2xl"
+              className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-md"
             >
               <CardBody className="p-4 flex flex-row items-center justify-between gap-3">
                 <div className="flex items-center gap-4 min-w-0">
@@ -197,7 +197,7 @@ export const ClubClosuresView = ({
                 value={createStart}
                 onValueChange={setCreateStart}
                 classNames={{
-                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-2xl",
+                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                   input: "text-foreground font-bold",
                   label: "text-[10px] font-black uppercase text-gray-500",
                 }}
@@ -208,7 +208,7 @@ export const ClubClosuresView = ({
                 value={createEnd}
                 onValueChange={setCreateEnd}
                 classNames={{
-                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-2xl",
+                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                   input: "text-foreground font-bold",
                   label: "text-[10px] font-black uppercase text-gray-500",
                 }}
@@ -223,7 +223,7 @@ export const ClubClosuresView = ({
               value={createReason}
               onValueChange={setCreateReason}
               classNames={{
-                inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-2xl",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                 input: "text-foreground font-bold",
                 label: "text-[10px] font-black uppercase text-gray-500",
               }}
@@ -232,14 +232,14 @@ export const ClubClosuresView = ({
           <DrawerFooter className="gap-3">
             <Button
               variant="flat"
-              className="rounded-2xl font-black uppercase"
+              className="rounded-md font-black uppercase"
               startContent={<X size={16} />}
               onPress={() => setIsCreateOpen(false)}
             >
               Cancelar
             </Button>
             <Button
-              className="bg-primary text-black rounded-2xl font-black uppercase"
+              className="bg-primary text-black rounded-md font-black uppercase"
               startContent={<Save size={16} />}
               isDisabled={!createStart || !createEnd || Boolean(createDateError)}
               isLoading={createPending}
@@ -265,7 +265,7 @@ export const ClubClosuresView = ({
                 value={editStart}
                 onValueChange={setEditStart}
                 classNames={{
-                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-2xl",
+                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                   input: "text-foreground font-bold",
                   label: "text-[10px] font-black uppercase text-gray-500",
                 }}
@@ -276,7 +276,7 @@ export const ClubClosuresView = ({
                 value={editEnd}
                 onValueChange={setEditEnd}
                 classNames={{
-                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-2xl",
+                  inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                   input: "text-foreground font-bold",
                   label: "text-[10px] font-black uppercase text-gray-500",
                 }}
@@ -291,7 +291,7 @@ export const ClubClosuresView = ({
               value={editReason}
               onValueChange={setEditReason}
               classNames={{
-                inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-2xl",
+                inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                 input: "text-foreground font-bold",
                 label: "text-[10px] font-black uppercase text-gray-500",
               }}
@@ -300,14 +300,14 @@ export const ClubClosuresView = ({
           <DrawerFooter className="gap-3">
             <Button
               variant="flat"
-              className="rounded-2xl font-black uppercase"
+              className="rounded-md font-black uppercase"
               startContent={<X size={16} />}
               onPress={() => setIsEditOpen(false)}
             >
               Cancelar
             </Button>
             <Button
-              className="bg-primary text-black rounded-2xl font-black uppercase"
+              className="bg-primary text-black rounded-md font-black uppercase"
               startContent={<Save size={16} />}
               isDisabled={!editStart || !editEnd || Boolean(editDateError)}
               isLoading={updatePending}

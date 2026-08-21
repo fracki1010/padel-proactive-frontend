@@ -28,7 +28,7 @@ export const DashboardControls = ({
   const courts = courtsData?.data || [];
 
   return (
-    <div className="space-y-6 w-full xl:bg-dark-200/70 xl:border xl:border-black/5 xl:dark:border-white/5 xl:rounded-[2rem] xl:p-5">
+    <div className="space-y-6 w-full xl:bg-dark-200/70 xl:border xl:border-black/5 xl:dark:border-white/5 xl:rounded-lg xl:p-5">
       {/* Search Bar */}
       <Input
         isClearable
@@ -38,7 +38,7 @@ export const DashboardControls = ({
         onValueChange={onFilterChange}
         className="max-w-full"
         classNames={{
-          inputWrapper: "bg-dark-100/50 border-none h-14 rounded-2xl",
+          inputWrapper: "bg-dark-100/50 border-none h-14 rounded-md",
           input: "text-foreground placeholder:text-gray-500",
         }}
       />
@@ -52,7 +52,7 @@ export const DashboardControls = ({
               className="bg-dark-200 border border-black/5 dark:border-white/5 h-24"
             >
               <CardBody className="p-4 flex flex-col justify-center">
-                <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">
+                <p className="text-[10px] font-semibold text-primary tracking-wider mb-1">
                   {stat.label}
                 </p>
                 <p className="text-3xl font-black text-foreground">{stat.value}</p>

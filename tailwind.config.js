@@ -74,6 +74,11 @@ export default {
         sans: ["Plus Jakarta Sans", "Inter", "sans-serif"],
         heading: ["Outfit", "sans-serif"],
       },
+      borderRadius: {
+        sm: "0.75rem",   // inputs, chips, small elements
+        md: "1.25rem",   // cards, buttons, standard containers
+        lg: "2rem",      // modals, large containers, hero sections
+      },
     },
   },
   darkMode: "class",

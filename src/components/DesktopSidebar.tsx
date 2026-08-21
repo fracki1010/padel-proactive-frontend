@@ -35,7 +35,7 @@ export const DesktopSidebar = ({
         <h2 className="text-2xl font-black text-primary italic tracking-tight uppercase">
           PADEXA
         </h2>
-        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.22em] mt-2">
+        <p className="text-[11px] font-semibold text-gray-500 tracking-wider mt-2">
           Admin Console
         </p>
       </div>

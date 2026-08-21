@@ -54,7 +54,7 @@ export const BottomNav = ({
             )}
           >
             <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">
+            <span className="text-[10px] font-semibold tracking-wide">
               {tab.label}
             </span>
             {isActive && (

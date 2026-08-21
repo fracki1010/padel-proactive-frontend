@@ -80,7 +80,7 @@ export const NotificationsDrawer = ({
                 <Button
                   isIconOnly
                   variant="flat"
-                  className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl"
+                  className="bg-black/5 dark:bg-white/5 text-foreground rounded-md"
                   onPress={() => markAllRead.mutate()}
                   isLoading={markAllRead.isPending}
                   isDisabled={markAllRead.isPending}
@@ -90,7 +90,7 @@ export const NotificationsDrawer = ({
                 <Button
                   isIconOnly
                   variant="flat"
-                  className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl"
+                  className="bg-black/5 dark:bg-white/5 text-foreground rounded-md"
                   onPress={onClose}
                 >
                   <X size={20} />
@@ -114,7 +114,7 @@ export const NotificationsDrawer = ({
                   return (
                   <div
                     key={notification._id}
-                    className={`p-6 rounded-[2rem] border transition-all ${
+                    className={`p-6 rounded-lg border transition-all ${
                       notification.isRead
                         ? "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 opacity-60"
                         : "bg-primary/10 border-primary/20 shadow-[0_0_20px_rgba(126,169,236,0.18)]"

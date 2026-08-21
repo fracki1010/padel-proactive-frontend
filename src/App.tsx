@@ -25,6 +25,7 @@ import {
   useNotifications,
   useUpdateBooking,
 } from "./hooks/useData";
+import { useIsDesktop } from "./hooks/useIsDesktop";
 
 const APP_ACTIVE_TAB_KEY = "padexa:last-active-tab";
 const APP_FILTER_VALUE_KEY = "padexa:last-filter-value";
@@ -105,10 +106,7 @@ export default function App() {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [isSuspendingBooking, setIsSuspendingBooking] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(min-width: 1024px)").matches;
-  });
+  const isDesktop = useIsDesktop();
   const activeTab = useMemo(() => {
     const routeTab = getTabFromPathname(location.pathname);
     return routeTab ?? readStoredTab();
@@ -286,20 +284,6 @@ export default function App() {
     });
     navigate("/reservas", { replace: true });
   }, [bookingIdFromPath, bookings, isBookingsLoading, navigate]);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(min-width: 1024px)");
-    const handleChange = (event: MediaQueryListEvent) => {
-      setIsDesktop(event.matches);
-    };
-
-    setIsDesktop(mediaQuery.matches);
-    mediaQuery.addEventListener("change", handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

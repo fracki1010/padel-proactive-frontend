@@ -172,7 +172,7 @@ export const Bookings = ({
               <Spinner size="lg" color="primary" />
             </div>
           ) : groupedBookings.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[300px] text-center p-8 bg-dark-200 rounded-3xl border border-black/5 dark:border-white/5">
+            <div className="flex flex-col items-center justify-center min-h-[300px] text-center p-8 bg-dark-200 rounded-md border border-black/5 dark:border-white/5">
               <HelpCircle size={48} className="text-gray-600 mb-4" />
               <h3 className="text-xl font-bold mb-1 text-foreground">
                 {hasActiveFilters ? "Sin resultados para tu filtro" : "No hay turnos"}
@@ -185,7 +185,7 @@ export const Bookings = ({
               {hasActiveFilters && (
                 <button
                   type="button"
-                  className="mt-4 text-xs font-black uppercase tracking-wider text-primary hover:opacity-80 transition-opacity"
+                  className="mt-4 text-xs font-bold uppercase tracking-wide text-primary hover:opacity-80 transition-opacity"
                   onClick={() => {
                     onFilterChange("");
                     onCourtChange("all");
@@ -201,7 +201,7 @@ export const Bookings = ({
               {visibleGroups.map(([dateKey, group]) => (
                 <div key={dateKey} className="space-y-6 w-full">
                   <div className="flex items-center gap-4">
-                    <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                    <h2 className="text-[10px] font-semibold text-gray-500 tracking-wider">
                       {formatDate(dateKey)}
                     </h2>
                     <div className="h-[1px] flex-grow bg-black/5 dark:bg-white/5"></div>
@@ -225,7 +225,7 @@ export const Bookings = ({
                   </div>
                 )}
                 {!hasMore && groupedBookings.length > 5 && (
-                  <p className="text-center text-gray-600 text-xs font-bold uppercase tracking-widest py-4">
+                  <p className="text-center text-gray-600 text-xs font-bold uppercase tracking-wide py-4">
                     {filteredBookings.length} reservas cargadas
                   </p>
                 )}

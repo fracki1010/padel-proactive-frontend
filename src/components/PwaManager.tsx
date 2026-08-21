@@ -94,7 +94,7 @@ export const PwaManager = () => {
         <div className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+5.75rem)] z-[120]">
           <Button
             color="primary"
-            className="h-12 rounded-2xl font-black shadow-xl shadow-primary/25"
+            className="h-12 rounded-md font-black shadow-xl shadow-primary/25"
             startContent={<Download size={16} />}
             onPress={handleInstall}
           >
@@ -105,7 +105,7 @@ export const PwaManager = () => {
 
       {needRefresh && (
         <div className="fixed left-4 right-4 bottom-[calc(env(safe-area-inset-bottom)+5.2rem)] z-[120]">
-          <Card className="bg-dark-100 border border-primary/30 rounded-3xl shadow-2xl">
+          <Card className="bg-dark-100 border border-primary/30 rounded-md shadow-2xl">
             <CardBody className="p-4 flex flex-col gap-3">
               <div>
                 <p className="text-foreground font-black text-sm">Nueva versión disponible</p>
@@ -137,7 +137,7 @@ export const PwaManager = () => {
 
       {offlineReady && (
         <div className="fixed left-4 right-4 bottom-[calc(env(safe-area-inset-bottom)+5.2rem)] z-[110] pointer-events-none">
-          <Card className="bg-dark-100/95 border border-black/10 dark:border-white/10 rounded-3xl">
+          <Card className="bg-dark-100/95 border border-black/10 dark:border-white/10 rounded-md">
             <CardBody className="p-3">
               <p className="text-xs text-foreground font-bold text-center">
                 App lista para funcionar sin conexión

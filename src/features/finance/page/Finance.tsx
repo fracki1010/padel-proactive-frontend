@@ -148,7 +148,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
 
       <div className="lg:hidden space-y-8">
       {/* Selector de Mes */}
-      <div className="flex items-center justify-between bg-dark-200 p-2 rounded-2xl border border-black/5 dark:border-white/5">
+      <div className="flex items-center justify-between bg-dark-200 p-2 rounded-md border border-black/5 dark:border-white/5">
         <Button
           isIconOnly
           variant="light"
@@ -158,10 +158,10 @@ export const Finance = ({ bookings }: FinanceProps) => {
           <ChevronLeft size={20} />
         </Button>
         <div className="text-center">
-          <h2 className="text-lg font-black text-foreground uppercase tracking-tighter">
+          <h2 className="text-lg font-black text-foreground tracking-tighter">
             {months[selectedMonth]} {selectedYear}
           </h2>
-          <p className="text-[10px] font-bold text-primary uppercase tracking-widest">
+          <p className="text-[10px] font-semibold text-primary tracking-wider">
             Periodo de Facturación
           </p>
         </div>
@@ -179,25 +179,25 @@ export const Finance = ({ bookings }: FinanceProps) => {
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-4">
         <Card className="bg-primary shadow-[0_0_30px_rgba(126,169,236,0.22)] border-none overflow-hidden relative group">
           <CardBody className="p-6 sm:p-8">
-            <p className="text-[10px] font-black text-black/60 uppercase tracking-[0.2em] mb-1">
+            <p className="text-[10px] font-semibold text-black/60 tracking-wider mb-1">
               Efectivo en Caja (Mes)
             </p>
             <h3 className="text-4xl sm:text-5xl font-black text-black tracking-tighter break-words">
               {formatCurrency(metrics.totalPaidMonth)}
             </h3>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-[12px] font-black text-black/50 uppercase tracking-tight">
+              <span className="text-[12px] font-semibold text-black/50 tracking-tight">
                 {metrics.countPaidMonth} Cobros realizados
               </span>
               <div className="w-1 h-1 bg-black/20 rounded-full"></div>
-              <span className="text-[12px] font-black text-black/30 uppercase tracking-tight">
+              <span className="text-[12px] font-semibold text-black/30 tracking-tight">
                 {formatCurrency(metrics.totalMonth - metrics.totalPaidMonth)}{" "}
                 Pendiente de cobro
               </span>
             </div>
             <div className="flex gap-4 mt-8">
               <div className="flex flex-col">
-                <span className="text-[10px] font-black text-black/40 uppercase">
+                <span className="text-[10px] font-semibold text-black/40">
                   Confirmados
                 </span>
                 <span className="text-xl font-black text-black">
@@ -206,7 +206,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
               </div>
               <div className="w-px h-8 bg-black/10 my-auto"></div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-black text-black/40 uppercase">
+                <span className="text-[10px] font-semibold text-black/40">
                   Promedio
                 </span>
                 <span className="text-xl font-black text-black">
@@ -218,38 +218,38 @@ export const Finance = ({ bookings }: FinanceProps) => {
         </Card>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4">
-          <Card className="bg-dark-200 border border-black/5 dark:border-white/5 rounded-[2rem]">
+          <Card className="bg-dark-200 border border-black/5 dark:border-white/5 rounded-lg">
             <CardBody className="p-6">
               <div className="flex flex-col gap-1">
                 <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center mb-2">
                   <Calendar size={18} className="text-blue-500" />
                 </div>
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                <p className="text-[10px] font-semibold text-gray-500 tracking-wider">
                   Cobrado Hoy
                 </p>
                 <h4 className="text-2xl font-black text-foreground">
                   {formatCurrency(metrics.totalPaidDaily)}
                 </h4>
-                <p className="text-[10px] font-bold text-gray-600 uppercase mt-1">
+                <p className="text-[10px] font-bold text-gray-600 mt-1">
                   TOTAL: {formatCurrency(metrics.totalDaily)}
                 </p>
               </div>
             </CardBody>
           </Card>
 
-          <Card className="bg-dark-200 border border-black/5 dark:border-white/5 rounded-[2rem]">
+          <Card className="bg-dark-200 border border-black/5 dark:border-white/5 rounded-lg">
             <CardBody className="p-6">
               <div className="flex flex-col gap-1">
                 <div className="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center mb-2">
                   <Clock size={18} className="text-orange-500" />
                 </div>
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                <p className="text-[10px] font-semibold text-gray-500 tracking-wider">
                   Pendientes
                 </p>
                 <h4 className="text-2xl font-black text-foreground">
                   {metrics.countPendingMonth}
                 </h4>
-                <p className="text-[10px] font-bold text-gray-600 uppercase mt-1">
+                <p className="text-[10px] font-bold text-gray-600 mt-1">
                   {formatCurrency(metrics.totalPendingMonth)} POR COBRAR
                 </p>
               </div>
@@ -261,10 +261,10 @@ export const Finance = ({ bookings }: FinanceProps) => {
       {/* Últimos Movimientos */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
-          <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">
+          <h3 className="text-xs font-bold text-gray-500 tracking-tight">
             Movimientos del Mes
           </h3>
-          <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-lg">
+          <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-1 rounded-lg">
             {metrics.movements.length} OPERACIONES
           </span>
         </div>
@@ -275,11 +275,11 @@ export const Finance = ({ bookings }: FinanceProps) => {
               {visibleMobileMovements.map((b) => (
               <div
                 key={b._id}
-                className="bg-dark-200 p-4 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col sm:flex-row justify-between sm:items-center gap-3 hover:border-black/10 dark:border-white/10 transition-colors group"
+                className="bg-dark-200 p-4 rounded-md border border-black/5 dark:border-white/5 flex flex-col sm:flex-row justify-between sm:items-center gap-3 hover:border-black/10 dark:border-white/10 transition-colors group"
               >
                 <div className="flex items-center gap-4">
                   <div
-                    className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
+                    className={`w-12 h-12 rounded-md flex items-center justify-center transition-colors ${
                       b.status === "confirmado"
                         ? "bg-primary/10 text-primary"
                         : "bg-orange-500/10 text-orange-500"
@@ -295,7 +295,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
                     <p className="font-bold text-foreground group-hover:text-primary transition-colors">
                       {b.clientName}
                     </p>
-                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">
+                    <p className="text-[10px] text-gray-500 font-semibold tracking-wider mt-0.5">
                       {formatDate(b.date)} • {b.court?.name}
                     </p>
                   </div>
@@ -307,7 +307,7 @@ export const Finance = ({ bookings }: FinanceProps) => {
                     {formatCurrency(b.finalPrice)}
                   </p>
                   <p
-                    className={`text-[8px] font-bold uppercase ${b.paymentStatus === "pagado" ? "text-primary" : "text-orange-500"}`}
+                    className={`text-[8px] font-semibold ${b.paymentStatus === "pagado" ? "text-primary" : "text-orange-500"}`}
                   >
                     {b.paymentStatus === "pagado" ? "COBRADO" : "PENDIENTE"}
                   </p>
@@ -317,13 +317,13 @@ export const Finance = ({ bookings }: FinanceProps) => {
               <div ref={mobileSentinelRef} className="py-2">
                 {mobileHasMore && (
                   <div className="flex justify-center py-6">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gray-500">
+                    <p className="text-[10px] font-semibold tracking-wider text-gray-500">
                       Cargando más...
                     </p>
                   </div>
                 )}
                 {!mobileHasMore && metrics.movements.length > 12 && (
-                  <p className="text-center text-gray-600 text-xs font-bold uppercase tracking-widest py-4">
+                  <p className="text-center text-gray-600 text-xs font-bold uppercase tracking-wide py-4">
                     {metrics.movements.length} movimientos cargados
                   </p>
                 )}
