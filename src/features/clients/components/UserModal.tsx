@@ -13,6 +13,7 @@ import {
 import { useState } from "react";
 
 import { useCreateUser, useUpdateUser } from "../../../hooks/useData";
+import { useKeyboardScroll } from "../../../hooks/useKeyboardScroll";
 import type { User } from "../../../types";
 import {
   composePhoneForStorage,
@@ -36,6 +37,9 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
   const [phoneCountry, setPhoneCountry] = useState<PhoneCountryId>(
     initialPhone?.countryId || DEFAULT_PHONE_COUNTRY_ID,
   );
+
+  const nameInputRef = useKeyboardScroll<HTMLInputElement>();
+  const phoneInputRef = useKeyboardScroll<HTMLInputElement>();
 
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
@@ -82,6 +86,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
         <ModalBody className="py-6 space-y-6 dark">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
+              ref={nameInputRef}
               label="Nombre Completo"
               placeholder="Ej: Juan Perez"
               value={name}
@@ -107,6 +112,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
                 ))}
               </Select>
               <Input
+                ref={phoneInputRef}
                 label="Teléfono"
                 placeholder="Ej: 351..."
                 value={phoneLocal}

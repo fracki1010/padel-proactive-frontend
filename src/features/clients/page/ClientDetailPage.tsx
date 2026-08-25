@@ -36,6 +36,7 @@ import {
   useUserHistory,
 } from "../../../hooks/useData";
 import { useConfirm } from "../../../hooks/useConfirm";
+import { useKeyboardScroll } from "../../../hooks/useKeyboardScroll";
 import {
   formatCurrency,
   formatDate,
@@ -323,6 +324,8 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
   const [historyPaymentFilter, setHistoryPaymentFilter] = useState<PaymentStatusFilter>("all");
   const [historyPageSize, setHistoryPageSize] = useState<"25" | "50" | "100">("25");
   const [historyPage, setHistoryPage] = useState(1);
+
+  const historySearchInputRef = useKeyboardScroll<HTMLInputElement>();
 
   const attendanceCount = Number(user?.attendanceConfirmedCount || 0);
   const trustedThreshold = Number(user?.trustedClientConfirmationCount || 3);
@@ -621,6 +624,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
             <Input
+              ref={historySearchInputRef}
               label="Buscar"
               placeholder="Fecha, cancha, hora, estado..."
               value={historyQuery}
