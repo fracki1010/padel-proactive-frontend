@@ -1,11 +1,11 @@
 import {
   Button,
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+  DrawerFooter,
   Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
   Select,
   SelectItem,
   addToast,
@@ -66,81 +66,96 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
   };
 
   return (
-    <Modal
+    <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      size="4xl"
-      className="bg-dark-300 text-foreground dark"
+      size="full"
+      placement="right"
       backdrop="blur"
-      scrollBehavior="inside"
     >
-      <ModalContent>
-        <ModalHeader className="flex flex-col gap-1 border-b border-black/5 dark:border-white/5 pb-4">
-          <h2 className="text-xl font-black">
+      <DrawerContent className="bg-dark-300 text-foreground dark">
+        <DrawerHeader className="flex flex-col gap-1 border-b border-black/5 dark:border-white/5 pb-4">
+          <h2 className="text-2xl font-black">
             {mode === "create" ? "Nuevo Socio" : "Editar Socio"}
           </h2>
           <p className="text-sm text-gray-500 font-normal">
             Completa la información del perfil del socio.
           </p>
-        </ModalHeader>
-        <ModalBody className="py-6 space-y-6 dark">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              ref={nameInputRef}
-              label="Nombre Completo"
-              placeholder="Ej: Juan Perez"
-              value={name}
-              onValueChange={setName}
-              variant="bordered"
-              className="dark"
-            />
-            <div className="flex gap-2">
-              <Select
-                label="País"
-                selectedKeys={[phoneCountry]}
-                onSelectionChange={(keys) => {
-                  const nextCountry = Array.from(keys)[0] as PhoneCountryId;
-                  if (nextCountry) setPhoneCountry(nextCountry);
-                }}
-                variant="bordered"
-                className="w-44"
-              >
-                {PHONE_COUNTRY_OPTIONS.map((country) => (
-                  <SelectItem key={country.id} textValue={`${country.label} (${country.dialCode})`}>
-                    {country.label} ({country.dialCode})
-                  </SelectItem>
-                ))}
-              </Select>
+        </DrawerHeader>
+        <DrawerBody className="py-8 space-y-8 dark">
+          <div className="max-w-2xl mx-auto space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+                Nombre Completo
+              </label>
               <Input
-                ref={phoneInputRef}
-                label="Teléfono"
-                placeholder="Ej: 351..."
-                value={phoneLocal}
-                onValueChange={(value) => setPhoneLocal(value.replace(/\D/g, ""))}
+                ref={nameInputRef}
+                placeholder="Ej: Juan Perez"
+                value={name}
+                onValueChange={setName}
                 variant="bordered"
-                className="flex-grow"
+                size="lg"
+                className="dark"
               />
             </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+                Teléfono
+              </label>
+              <div className="flex gap-3">
+                <Select
+                  label="País"
+                  selectedKeys={[phoneCountry]}
+                  onSelectionChange={(keys) => {
+                    const nextCountry = Array.from(keys)[0] as PhoneCountryId;
+                    if (nextCountry) setPhoneCountry(nextCountry);
+                  }}
+                  variant="bordered"
+                  size="lg"
+                  className="w-48"
+                >
+                  {PHONE_COUNTRY_OPTIONS.map((country) => (
+                    <SelectItem key={country.id} textValue={`${country.label} (${country.dialCode})`}>
+                      {country.label} ({country.dialCode})
+                    </SelectItem>
+                  ))}
+                </Select>
+                <Input
+                  ref={phoneInputRef}
+                  placeholder="Ej: 351..."
+                  value={phoneLocal}
+                  onValueChange={(value) => setPhoneLocal(value.replace(/\D/g, ""))}
+                  variant="bordered"
+                  size="lg"
+                  className="flex-grow"
+                />
+              </div>
+            </div>
           </div>
-        </ModalBody>
-        <ModalFooter className="border-t border-black/5 dark:border-white/5 pt-4">
-          <Button
-            variant="light"
-            onPress={onClose}
-            className="rounded-md font-bold"
-          >
-            Cancelar
-          </Button>
-          <Button
-            color="primary"
-            onPress={handleSave}
-            className="rounded-md font-black px-8"
-            isLoading={createUser.isPending || updateUser.isPending}
-          >
-            {mode === "create" ? "Crear" : "Guardar Cambios"}
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        </DrawerBody>
+        <DrawerFooter className="border-t border-black/5 dark:border-white/5 pt-4">
+          <div className="flex gap-3 w-full max-w-2xl mx-auto">
+            <Button
+              variant="light"
+              onPress={onClose}
+              className="rounded-md font-bold flex-1"
+              size="lg"
+            >
+              Cancelar
+            </Button>
+            <Button
+              color="primary"
+              onPress={handleSave}
+              className="rounded-md font-black flex-1"
+              size="lg"
+              isLoading={createUser.isPending || updateUser.isPending}
+            >
+              {mode === "create" ? "Crear Socio" : "Guardar Cambios"}
+            </Button>
+          </div>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 };
