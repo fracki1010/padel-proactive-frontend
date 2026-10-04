@@ -11,7 +11,9 @@
     "firebase:login": "npx firebase-tools login",
     "firebase:use": "npx firebase-tools use --add",
     "deploy:firebase": "npm run build && npx firebase-tools deploy --only hosting",
-    "preview:firebase": "npm run build && npx firebase-tools hosting:channel:deploy preview"
+    "preview:firebase": "npm run build && npx firebase-tools hosting:channel:deploy preview",
+    "typecheck": "tsc -b",
+    "lint:ci": "eslint src/services/config/"
   },
   "dependencies": {
     "@heroui/react": "^2.8.10",
