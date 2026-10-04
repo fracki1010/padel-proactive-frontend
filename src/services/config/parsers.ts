@@ -4,7 +4,6 @@ export const ONE_HOUR_REMINDER_KEY = "booking-reminder-one-hour-enabled";
 export const CANCELLATION_GROUP_SETTINGS_KEY = "whatsapp-cancellation-group-settings";
 export const WHATSAPP_GROUPS_CACHE_KEY = "whatsapp-groups-cache";
 export const WHATSAPP_GROUP_ID_REGEX = /^[A-Za-z0-9._:-]{6,80}@g\.us$/;
-export let isBotAutomationEndpointAvailable: boolean | null = null;
 export const DEFAULT_ATTENDANCE_REMINDER_LEAD_MINUTES = 60;
 export const DEFAULT_ATTENDANCE_RESPONSE_TIMEOUT_MINUTES = 15;
 export const DEFAULT_TRUSTED_CLIENT_CONFIRMATION_COUNT = 3;
