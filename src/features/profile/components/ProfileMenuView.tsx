@@ -8,6 +8,7 @@ import {
   CreditCard,
   LogOut,
   MapPin,
+  Megaphone,
   Phone,
   QrCode,
   Save,
@@ -42,6 +43,7 @@ type ProfileMenuViewProps = {
   onGoToBotAutomation: () => void;
   onGoToTenants: () => void;
   onGoToClubClosures: () => void;
+  onGoToAnnouncements: () => void;
   onLogout: () => void;
 };
 
@@ -96,6 +98,7 @@ export const ProfileMenuView = ({
   onGoToBotAutomation,
   onGoToTenants,
   onGoToClubClosures,
+  onGoToAnnouncements,
   onLogout,
 }: ProfileMenuViewProps) => {
   const adminName = (user?.name || user?.username || "Admin PADEXA").trim();
@@ -288,6 +291,14 @@ export const ProfileMenuView = ({
               subtitle="Días sin actividad"
               icon={<CalendarOff size={18} />}
               iconClassName="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center text-red-400 group-hover:bg-red-500 group-hover:text-white transition-all"
+            />
+
+            <MenuItemButton
+              onPress={onGoToAnnouncements}
+              title="Avisos del Club"
+              subtitle="Mensajes para tus clientes"
+              icon={<Megaphone size={18} />}
+              iconClassName="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-400 group-hover:bg-amber-500 group-hover:text-black transition-all"
             />
 
             {canManageClubData && (

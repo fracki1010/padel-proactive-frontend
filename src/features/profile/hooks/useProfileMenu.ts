@@ -17,7 +17,8 @@ type UseProfileMenuParams = {
       | "whatsapp"
       | "bot-automation"
       | "tenants"
-      | "club-closures",
+      | "club-closures"
+      | "announcements",
   ) => void;
 };
 
@@ -75,6 +76,7 @@ export const useProfileMenu = ({
     onGoToBotAutomation: () => setView("bot-automation"),
     onGoToTenants: () => setView("tenants"),
     onGoToClubClosures: () => setView("club-closures"),
+    onGoToAnnouncements: () => setView("announcements"),
     onLogout: logout,
   };
 };
