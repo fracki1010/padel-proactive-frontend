@@ -72,3 +72,29 @@ export interface ConfigResponse<T> {
   success: boolean;
   data: T[];
 }
+
+export type AnnouncementType = "info" | "important" | "promo";
+
+export interface Announcement {
+  _id: string;
+  companyId?: string;
+  title: string;
+  message: string;
+  type: AnnouncementType;
+  isActive: boolean;
+  startsAt: string | null;
+  endsAt: string | null;
+  order: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AnnouncementInput {
+  title: string;
+  message: string;
+  type: AnnouncementType;
+  isActive?: boolean;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  order?: number;
+}

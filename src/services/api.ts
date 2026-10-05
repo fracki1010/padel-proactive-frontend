@@ -5,3 +5,4 @@ export { configService } from "./configService";
 export { notificationService } from "./notificationService";
 export { userService } from "./userService";
 export { superAdminService } from "./superAdminService";
+export { announcementService } from "./announcementService";

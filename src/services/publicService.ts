@@ -47,6 +47,11 @@ export const publicService = {
     return res.data;
   },
 
+  getAnnouncements: async (slug: string) => {
+    const res = await publicApi.get(`/public/${slug}/announcements`);
+    return res.data;
+  },
+
   sendOtp: async (slug: string, countryCode: string, localNumber: string, googleFlow?: boolean) => {
     const res = await publicApi.post(`/public/${slug}/auth/send-otp`, { countryCode, localNumber, ...(googleFlow && { googleFlow: true }) });
     return res.data;

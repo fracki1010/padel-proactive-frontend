@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { useAnnouncementsManagement } from "../hooks/useAnnouncementsManagement";
 import { useClubClosuresManagement } from "../hooks/useClubClosuresManagement";
 import { useCourtsManagement } from "../hooks/useCourtsManagement";
 import { useScheduleManagement } from "../hooks/useScheduleManagement";
@@ -8,6 +9,7 @@ import { useProfileMenu } from "../hooks/useProfileMenu";
 import { useBotAutomationManagement } from "../hooks/useBotAutomationManagement";
 import { useWhatsappManagement } from "../hooks/useWhatsappManagement";
 
+import { AnnouncementsView } from "../components/AnnouncementsView";
 import { ClubClosuresView } from "../components/ClubClosuresView";
 import { CourtsView } from "../components/CourtsView";
 import { BotAutomationSettingsView } from "../components/BotAutomationSettingsView";
@@ -27,11 +29,13 @@ type ViewType =
   | "whatsapp"
   | "bot-automation"
   | "tenants"
-  | "club-closures";
+  | "club-closures"
+  | "announcements";
 
 export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const [view, setView] = useState<ViewType>("menu");
 
+  const announcements = useAnnouncementsManagement();
   const clubClosures = useClubClosuresManagement();
   const courts = useCourtsManagement(initialCourts);
   const schedule = useScheduleManagement();
@@ -225,6 +229,24 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           onDeleteBackground={botAutomation.onDeleteBackground}
           onSendDigestNow={botAutomation.onSendDigestNow}
           isSendingDigestNow={botAutomation.isSendingDigestNow}
+        />
+      );
+
+    case "announcements":
+      return (
+        <AnnouncementsView
+          announcements={announcements.announcements}
+          isLoading={announcements.isLoading}
+          isError={announcements.isError}
+          createPending={announcements.createPending}
+          updatePending={announcements.updatePending}
+          deletePendingId={announcements.deletePendingId}
+          togglePendingId={announcements.togglePendingId}
+          onBack={() => setView("menu")}
+          onCreate={announcements.handleCreate}
+          onUpdate={announcements.handleUpdate}
+          onToggle={announcements.handleToggle}
+          onDelete={announcements.handleDelete}
         />
       );
 
