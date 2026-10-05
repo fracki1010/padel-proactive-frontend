@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import logo from "../../assets/logo-8.svg";
 import { useClientAuth } from "../../context/ClientAuthContext";
 import { publicService } from "../../services/publicService";
+import { HAPTIC_BOOKING_CONFIRMED, HAPTIC_TAP, vibrate } from "../../utils/haptics";
 import { BookingConfirmModal } from "./components/BookingConfirmModal";
 import { ClientAuthModal } from "./components/ClientAuthModal";
 import { MyBookingsDrawer } from "./components/MyBookingsDrawer";
@@ -168,6 +169,7 @@ export const BookingPortalPage = () => {
     selectedSlot?.court._id === courtId && selectedSlot?.slot._id === slotId;
 
   const handleSlotClick = (court: Court, slot: Slot) => {
+    vibrate(HAPTIC_TAP);
     setSelectedSlot((prev) =>
       prev?.court._id === court._id && prev?.slot._id === slot._id ? null : { court, slot },
     );
@@ -193,6 +195,7 @@ export const BookingPortalPage = () => {
   };
 
   const handleBookingConfirmed = () => {
+    vibrate(HAPTIC_BOOKING_CONFIRMED);
     setSelectedSlot(null);
     refreshAvailability();
   };
