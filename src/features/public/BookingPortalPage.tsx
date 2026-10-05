@@ -235,7 +235,10 @@ export const BookingPortalPage = () => {
     <div className="min-h-screen bg-background text-foreground font-sans">
 
       {/* ── Navbar ────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-black/10 dark:border-white/10">
+      <header
+        className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-black/10 dark:border-white/10"
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+      >
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
 
           {/* Logo izquierda */}
@@ -636,6 +639,7 @@ export const BookingPortalPage = () => {
           px-4 py-4 transition-transform duration-300 ease-out
           ${selectedSlot ? "translate-y-0" : "translate-y-full"}
         `}
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
       >
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <div className="flex-1 min-w-0">
