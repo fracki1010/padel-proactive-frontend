@@ -52,13 +52,13 @@ export const publicService = {
     return res.data;
   },
 
-  register: async (slug: string, payload: { name: string; email: string; countryCode: string; localNumber: string; password: string; otp: string }) => {
-    const res = await publicApi.post(`/public/${slug}/auth/register`, payload);
+  verifyOtp: async (slug: string, payload: { countryCode: string; localNumber: string; otp: string }) => {
+    const res = await publicApi.post(`/public/${slug}/auth/verify-otp`, payload);
     return res.data;
   },
 
-  login: async (slug: string, payload: { email: string; password: string }) => {
-    const res = await publicApi.post(`/public/${slug}/auth/login`, payload);
+  completeRegistration: async (slug: string, payload: { name: string; countryCode: string; localNumber: string; otp: string }) => {
+    const res = await publicApi.post(`/public/${slug}/auth/complete-registration`, payload);
     return res.data;
   },
 
