@@ -10,6 +10,7 @@ import {
 } from "@heroui/react";
 import {
   AlertTriangle,
+  BadgeCheck,
   CheckCircle2,
   Edit2,
   Eye,
@@ -250,6 +251,15 @@ export const ClientsDesktopView = ({
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {client.isVerified && (
+                    <Chip
+                      size="sm"
+                      className="bg-green-500/20 text-green-300 border border-green-500/30 font-black uppercase"
+                      startContent={<BadgeCheck size={12} />}
+                    >
+                      Verificado
+                    </Chip>
+                  )}
                   {client.fixedTurns && client.fixedTurns.length > 0 && (
                     <Chip
                       size="sm"

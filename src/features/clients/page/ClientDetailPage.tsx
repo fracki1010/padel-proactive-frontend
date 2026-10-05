@@ -12,6 +12,7 @@ import {
 } from "@heroui/react";
 import {
   ArrowLeft,
+  BadgeCheck,
   Calendar,
   CheckCircle2,
   MessageSquare,
@@ -535,6 +536,16 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
           </div>
 
           <div className="flex flex-wrap gap-2">
+            {user.isVerified && (
+              <Chip
+                color="success"
+                variant="flat"
+                className="font-semibold uppercase bg-success/10"
+                startContent={<BadgeCheck size={14} />}
+              >
+                Verificado
+              </Chip>
+            )}
             <Chip
               color={isTrusted ? "success" : "warning"}
               variant="flat"

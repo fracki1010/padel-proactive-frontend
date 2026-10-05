@@ -16,6 +16,7 @@ import {
   User as UserIcon,
   AlertTriangle,
   CheckCircle2,
+  BadgeCheck,
   ShieldOff,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -247,6 +248,17 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                       </div>
 
                       <div className="flex flex-wrap gap-2 mt-2.5">
+                        {client.isVerified && (
+                          <Chip
+                            size="sm"
+                            color="success"
+                            variant="flat"
+                            className="h-5 px-1 bg-success/10 text-[10px] font-semibold uppercase"
+                            startContent={<BadgeCheck size={9} className="ml-1" />}
+                          >
+                            Verificado
+                          </Chip>
+                        )}
                         {(() => {
                           const attendanceCount = Number(
                             client.attendanceConfirmedCount || 0,

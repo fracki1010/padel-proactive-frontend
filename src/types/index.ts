@@ -32,6 +32,7 @@ export interface User {
   trustedClientConfirmationCount?: number;
   confirmationsToBeTrusted?: number;
   isTrustedClient?: boolean;
+  isVerified?: boolean;
   accountOrigin?: "whatsapp" | "sistema" | "google";
 }
 
