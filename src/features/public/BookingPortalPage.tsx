@@ -5,7 +5,9 @@ import { useParams } from "react-router-dom";
 import logo from "../../assets/logo-8.svg";
 import { useClientAuth } from "../../context/ClientAuthContext";
 import { publicService } from "../../services/publicService";
+import type { Announcement } from "../../types";
 import { HAPTIC_BOOKING_CONFIRMED, HAPTIC_TAP, vibrate } from "../../utils/haptics";
+import { Announcements } from "./components/Announcements";
 import { BookingConfirmModal } from "./components/BookingConfirmModal";
 import { ClientAuthModal } from "./components/ClientAuthModal";
 import { MyBookingsDrawer } from "./components/MyBookingsDrawer";
@@ -116,6 +118,7 @@ export const BookingPortalPage = () => {
     availability: AvailabilityItem[];
   } | null>(null);
 
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoadingInfo, setIsLoadingInfo] = useState(true);
   const [isLoadingAvail, setIsLoadingAvail] = useState(false);
 
@@ -146,6 +149,14 @@ export const BookingPortalPage = () => {
       })
       .catch(() => setClubInfo(null))
       .finally(() => setIsLoadingInfo(false));
+  }, [slug]);
+
+  useEffect(() => {
+    if (!slug) return;
+    publicService
+      .getAnnouncements(slug)
+      .then((r) => setAnnouncements(r.data || []))
+      .catch(() => setAnnouncements([]));
   }, [slug]);
 
   useEffect(() => {
@@ -475,6 +486,9 @@ export const BookingPortalPage = () => {
           })}
         </div>
       </section>
+
+      {/* ── Avisos del club ───────────────────────────────────────────────── */}
+      <Announcements announcements={announcements} />
 
       {/* ── Canchas y turnos ──────────────────────────────────────────────── */}
       <section className="max-w-2xl mx-auto px-4 pb-40">
