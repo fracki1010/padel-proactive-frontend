@@ -10,6 +10,7 @@ import {
   SelectItem,
   addToast,
 } from "@heroui/react";
+import { BadgeCheck } from "lucide-react";
 import { useState } from "react";
 
 import { useCreateUser, useUpdateUser } from "../../../hooks/useData";
@@ -44,12 +45,17 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
 
+  const isPhoneLocked = mode === "edit" && Boolean(user?.isVerified);
+
   const handleSave = async () => {
     try {
-      const data = {
-        name,
-        phoneNumber: composePhoneForStorage(phoneCountry, phoneLocal),
-      };
+      const data: { name: string; phoneNumber?: string } = { name };
+
+      // Verified clients have a phone verified via WhatsApp OTP; never resend
+      // it so the backend phone-lock guard is not triggered.
+      if (!isPhoneLocked) {
+        data.phoneNumber = composePhoneForStorage(phoneCountry, phoneLocal);
+      }
 
       if (mode === "create") {
         await createUser.mutateAsync(data);
@@ -114,6 +120,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
                   variant="bordered"
                   size="lg"
                   className="w-48"
+                  isDisabled={isPhoneLocked}
                 >
                   {PHONE_COUNTRY_OPTIONS.map((country) => (
                     <SelectItem key={country.id} textValue={`${country.label} (${country.dialCode})`}>
@@ -129,8 +136,15 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
                   variant="bordered"
                   size="lg"
                   className="flex-grow"
+                  isDisabled={isPhoneLocked}
                 />
               </div>
+              {isPhoneLocked && (
+                <p className="flex items-center gap-1.5 text-xs font-medium text-success">
+                  <BadgeCheck size={14} />
+                  Teléfono verificado por WhatsApp — no editable
+                </p>
+              )}
             </div>
           </div>
         </DrawerBody>
