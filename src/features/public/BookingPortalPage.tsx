@@ -5,9 +5,11 @@ import { useParams } from "react-router-dom";
 import logo from "../../assets/logo-8.svg";
 import { useClientAuth } from "../../context/ClientAuthContext";
 import { publicService } from "../../services/publicService";
+import { HAPTIC_BOOKING_CONFIRMED, HAPTIC_TAP, vibrate } from "../../utils/haptics";
 import { BookingConfirmModal } from "./components/BookingConfirmModal";
 import { ClientAuthModal } from "./components/ClientAuthModal";
 import { MyBookingsDrawer } from "./components/MyBookingsDrawer";
+import { SlotSkeleton } from "./components/SlotSkeleton";
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -167,6 +169,7 @@ export const BookingPortalPage = () => {
     selectedSlot?.court._id === courtId && selectedSlot?.slot._id === slotId;
 
   const handleSlotClick = (court: Court, slot: Slot) => {
+    vibrate(HAPTIC_TAP);
     setSelectedSlot((prev) =>
       prev?.court._id === court._id && prev?.slot._id === slot._id ? null : { court, slot },
     );
@@ -192,6 +195,7 @@ export const BookingPortalPage = () => {
   };
 
   const handleBookingConfirmed = () => {
+    vibrate(HAPTIC_BOOKING_CONFIRMED);
     setSelectedSlot(null);
     refreshAvailability();
   };
@@ -235,7 +239,10 @@ export const BookingPortalPage = () => {
     <div className="min-h-screen bg-background text-foreground font-sans">
 
       {/* ── Navbar ────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-black/10 dark:border-white/10">
+      <header
+        className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-black/10 dark:border-white/10"
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+      >
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
 
           {/* Logo izquierda */}
@@ -483,9 +490,7 @@ export const BookingPortalPage = () => {
         )}
 
         {isLoadingAvail ? (
-          <div className="flex justify-center py-20">
-            <Spinner color="primary" />
-          </div>
+          <SlotSkeleton />
         ) : courts.length === 0 && !availability?.closed ? (
           <div className="flex flex-col items-center gap-3 py-20 text-default-400">
             <span className="text-4xl">🎾</span>
@@ -636,6 +641,7 @@ export const BookingPortalPage = () => {
           px-4 py-4 transition-transform duration-300 ease-out
           ${selectedSlot ? "translate-y-0" : "translate-y-full"}
         `}
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
       >
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <div className="flex-1 min-w-0">
