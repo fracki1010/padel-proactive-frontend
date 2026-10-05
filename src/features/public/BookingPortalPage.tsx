@@ -8,6 +8,7 @@ import { publicService } from "../../services/publicService";
 import { BookingConfirmModal } from "./components/BookingConfirmModal";
 import { ClientAuthModal } from "./components/ClientAuthModal";
 import { MyBookingsDrawer } from "./components/MyBookingsDrawer";
+import { SlotSkeleton } from "./components/SlotSkeleton";
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -486,9 +487,7 @@ export const BookingPortalPage = () => {
         )}
 
         {isLoadingAvail ? (
-          <div className="flex justify-center py-20">
-            <Spinner color="primary" />
-          </div>
+          <SlotSkeleton />
         ) : courts.length === 0 && !availability?.closed ? (
           <div className="flex flex-col items-center gap-3 py-20 text-default-400">
             <span className="text-4xl">🎾</span>
