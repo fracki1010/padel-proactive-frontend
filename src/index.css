@@ -280,6 +280,38 @@
   box-shadow: none !important;
 }
 
+/* The native field element itself. HeroUI styles the wrapper, but the inner
+   <input>/<textarea> can still get a light background or a native focus
+   outline (seen as a white box "inside" the field). Force it transparent so
+   the wrapper owns the surface, and give it a cyan caret. */
+[data-slot="input"],
+[data-slot="textarea"] {
+  background-color: transparent !important;
+  color: rgb(var(--color-foreground)) !important;
+  caret-color: rgb(var(--color-primary-500)) !important;
+}
+
+[data-slot="input"]:focus,
+[data-slot="input"]:focus-visible,
+[data-slot="textarea"]:focus,
+[data-slot="textarea"]:focus-visible {
+  outline: none !important;
+}
+
+/* Chrome/Edge autofill paints the field with an opaque light background and
+   dark text, which looks broken on the dark theme. Re-tint it to our surface
+   and keep the theme text color (the huge transition delay keeps it stable). */
+[data-slot="input"]:-webkit-autofill,
+[data-slot="input"]:-webkit-autofill:hover,
+[data-slot="input"]:-webkit-autofill:focus,
+[data-slot="textarea"]:-webkit-autofill {
+  -webkit-text-fill-color: rgb(var(--color-foreground)) !important;
+  -webkit-box-shadow: 0 0 0 1000px rgb(var(--color-dark-200)) inset !important;
+  box-shadow: 0 0 0 1000px rgb(var(--color-dark-200)) inset !important;
+  caret-color: rgb(var(--color-foreground)) !important;
+  transition: background-color 600000s 0s, color 600000s 0s !important;
+}
+
 /* =========================================================================
    TOUCH TARGETS
    -------------------------------------------------------------------------
