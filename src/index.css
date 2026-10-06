@@ -366,3 +366,36 @@
     min-width: var(--touch-target-min);
   }
 }
+
+/* =========================================================================
+   MOBILE FOCUS ZOOM PREVENTION
+   -------------------------------------------------------------------------
+   iOS Safari / Android zoom into inputs whose font-size is <16px when they
+   receive focus, and the zoom stays (users don't know how to zoom back).
+   Fix: force 16px on fields for coarse pointers only (desktop untouched),
+   plus `touch-action: manipulation` to kill the double-tap zoom gesture on
+   interactive elements, and prevent the UA from auto-adjusting text size.
+   ========================================================================= */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (pointer: coarse) {
+  [data-slot="input"],
+  [data-slot="textarea"],
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  button,
+  [role="button"],
+  [data-react-aria-pressable="true"],
+  [data-slot="input-wrapper"],
+  [data-slot="trigger"] {
+    touch-action: manipulation;
+  }
+}
