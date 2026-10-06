@@ -5,7 +5,7 @@ import {
 } from "../../../components/ui/fieldStyles";
 
 const COUNTRIES = [
-  { code: "AR", name: "Argentina",  dial: "54",  placeholder: "9 11 1234-5678",  flag: "🇦🇷" },
+  { code: "AR", name: "Argentina",  dial: "54",  placeholder: "2622 547392",     flag: "🇦🇷" },
   { code: "UY", name: "Uruguay",    dial: "598", placeholder: "9 1234 5678",     flag: "🇺🇾" },
   { code: "CL", name: "Chile",      dial: "56",  placeholder: "9 1234 5678",     flag: "🇨🇱" },
   { code: "BR", name: "Brasil",     dial: "55",  placeholder: "11 91234-5678",   flag: "🇧🇷" },
