@@ -15,6 +15,10 @@ import { useState } from "react";
 
 import { useCreateUser, useUpdateUser } from "../../../hooks/useData";
 import { useKeyboardScroll } from "../../../hooks/useKeyboardScroll";
+import {
+  fieldInputClassNames,
+  fieldSelectClassNames,
+} from "../../../components/ui/fieldStyles";
 import type { User } from "../../../types";
 import {
   composePhoneForStorage,
@@ -101,6 +105,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
                 onValueChange={setName}
                 variant="bordered"
                 size="lg"
+                classNames={fieldInputClassNames.lg}
                 className="dark"
               />
             </div>
@@ -120,6 +125,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
                   variant="bordered"
                   size="lg"
                   className="w-48"
+                  classNames={fieldSelectClassNames.lg}
                   isDisabled={isPhoneLocked}
                 >
                   {PHONE_COUNTRY_OPTIONS.map((country) => (
@@ -136,6 +142,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
                   variant="bordered"
                   size="lg"
                   className="flex-grow"
+                  classNames={fieldInputClassNames.lg}
                   isDisabled={isPhoneLocked}
                 />
               </div>
