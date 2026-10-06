@@ -1,12 +1,29 @@
-import { Button, Drawer, DrawerBody, DrawerContent, DrawerHeader } from "@heroui/react";
+import {
+  Button,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+} from "@heroui/react";
 import { Bell, CheckCheck, X } from "lucide-react";
+
+import type {
+  NotificationItem,
+  NotificationsResponse,
+} from "../../notifications/hooks/useNotificationsData";
+
+type NotificationsMutation<Variables = void> = {
+  mutate: (variables: Variables) => void;
+};
 
 type NotificationsDrawerProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  notificationsData: any;
-  markAllRead: any;
-  onOpenRelatedBooking?: (notification: any) => void;
+  notificationsData?: NotificationsResponse;
+  markAllRead: NotificationsMutation;
+  markAsRead: NotificationsMutation<string>;
+  onOpenRelatedBooking?: (notification: NotificationItem) => void;
   isDesktop?: boolean;
 };
 
@@ -15,9 +32,13 @@ export const NotificationsDrawer = ({
   onOpenChange,
   notificationsData,
   markAllRead,
+  markAsRead,
   onOpenRelatedBooking,
   isDesktop = false,
 }: NotificationsDrawerProps) => {
+  const notifications = notificationsData?.data ?? [];
+  const unreadCount = notifications.filter((notification) => !notification.isRead).length;
+
   const getRelativeDateLabel = (createdAt: string) => {
     const date = new Date(createdAt);
     const now = new Date();
@@ -30,7 +51,7 @@ export const NotificationsDrawer = ({
     return date.toLocaleDateString();
   };
 
-  const hasRelatedBooking = (notification: any) =>
+  const hasRelatedBooking = (notification: NotificationItem) =>
     Boolean(
       notification?.bookingId ||
         notification?.booking?._id ||
@@ -46,6 +67,13 @@ export const NotificationsDrawer = ({
       return { label: "Turno Fijo", className: "bg-amber-500 text-black" };
     }
     return { label: "Sistema", className: "bg-blue-500 text-white" };
+  };
+
+  // Optimistic: the cache is updated instantly by the mutation, so this only
+  // fires the background sync — no loading state is awaited.
+  const handleMarkAsRead = (notification: NotificationItem) => {
+    if (notification.isRead) return;
+    markAsRead.mutate(notification._id);
   };
 
   return (
@@ -74,34 +102,22 @@ export const NotificationsDrawer = ({
                 </h2>
                 <p className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase">
                   Alertas del Sistema
+                  {unreadCount > 0 && ` · ${unreadCount} sin leer`}
                 </p>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  isIconOnly
-                  variant="flat"
-                  className="bg-black/5 dark:bg-white/5 text-foreground rounded-md"
-                  onPress={() => markAllRead.mutate()}
-                  isLoading={markAllRead.isPending}
-                  isDisabled={markAllRead.isPending}
-                >
-                  <CheckCheck size={20} />
-                </Button>
-                <Button
-                  isIconOnly
-                  variant="flat"
-                  className="bg-black/5 dark:bg-white/5 text-foreground rounded-md"
-                  onPress={onClose}
-                >
-                  <X size={20} />
-                </Button>
-              </div>
+              <Button
+                isIconOnly
+                variant="flat"
+                className="bg-black/5 dark:bg-white/5 text-foreground rounded-md"
+                aria-label="Cerrar notificaciones"
+                onPress={onClose}
+              >
+                <X size={20} />
+              </Button>
             </DrawerHeader>
-            <DrawerBody
-              className={`p-4 sm:p-8 overflow-y-auto ${isDesktop ? "pb-8" : "pb-28 sm:pb-32"}`}
-            >
+            <DrawerBody className="p-4 sm:p-8 overflow-y-auto pb-8">
               <div className="flex flex-col gap-4">
-                {!notificationsData?.data?.length && (
+                {!notifications.length && (
                   <div className="flex flex-col items-center justify-center py-20 text-center opacity-30">
                     <Bell size={48} className="mb-4" />
                     <p className="font-bold uppercase tracking-widest text-xs">
@@ -109,55 +125,82 @@ export const NotificationsDrawer = ({
                     </p>
                   </div>
                 )}
-                {notificationsData?.data?.map((notification: any) => {
+                {notifications.map((notification) => {
                   const badge = getNotificationBadge(notification.type);
+                  const isUnread = !notification.isRead;
+                  const canOpenBooking = hasRelatedBooking(notification) && onOpenRelatedBooking;
                   return (
-                  <div
-                    key={notification._id}
-                    className={`p-6 rounded-lg border transition-all ${
-                      notification.isRead
-                        ? "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 opacity-60"
-                        : "bg-primary/10 border-primary/20 shadow-[0_0_20px_rgba(126,169,236,0.18)]"
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <span
-                        className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${badge.className}`}
-                      >
-                        {badge.label}
-                      </span>
-                      <span className="text-[10px] font-bold text-foreground/30 text-right">
-                        {getRelativeDateLabel(notification.createdAt)}
-                        <br />
-                        {new Date(notification.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
+                    <div
+                      key={notification._id}
+                      className={`relative p-6 rounded-lg border transition-all ${
+                        isUnread
+                          ? "bg-primary/10 border-primary/20 shadow-[0_0_20px_rgba(126,169,236,0.18)]"
+                          : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 opacity-60"
+                      }`}
+                    >
+                      {isUnread && (
+                        <button
+                          type="button"
+                          aria-label={`Marcar como leída: ${notification.title}`}
+                          onClick={() => handleMarkAsRead(notification)}
+                          className="absolute inset-0 z-0 cursor-pointer rounded-lg transition-colors active:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                        />
+                      )}
+                      <div className="relative z-10 pointer-events-none">
+                        <div className="flex justify-between items-start mb-2">
+                          <span
+                            className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${badge.className}`}
+                          >
+                            {badge.label}
+                          </span>
+                          <span className="text-[10px] font-bold text-foreground/30 text-right">
+                            {getRelativeDateLabel(notification.createdAt)}
+                            <br />
+                            {new Date(notification.createdAt).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                        <h4 className="text-lg font-black text-foreground mb-1 tracking-tight">
+                          {notification.title}
+                        </h4>
+                        <p className="text-sm font-medium text-foreground/60 leading-relaxed whitespace-pre-line">
+                          {notification.message}
+                        </p>
+                        {canOpenBooking && (
+                          <Button
+                            size="sm"
+                            className="pointer-events-auto mt-4 bg-primary/20 text-primary border border-primary/30 font-black uppercase tracking-wide"
+                            onPress={() => {
+                              handleMarkAsRead(notification);
+                              onOpenRelatedBooking(notification);
+                              onClose();
+                            }}
+                          >
+                            Ver turno
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    <h4 className="text-lg font-black text-foreground mb-1 tracking-tight">
-                      {notification.title}
-                    </h4>
-                    <p className="text-sm font-medium text-foreground/60 leading-relaxed whitespace-pre-line">
-                      {notification.message}
-                    </p>
-                    {hasRelatedBooking(notification) && onOpenRelatedBooking && (
-                      <Button
-                        size="sm"
-                        className="mt-4 bg-primary/20 text-primary border border-primary/30 font-black uppercase tracking-wide"
-                        onPress={() => {
-                          onOpenRelatedBooking(notification);
-                          onClose();
-                        }}
-                      >
-                        Ver turno
-                      </Button>
-                    )}
-                  </div>
                   );
                 })}
               </div>
             </DrawerBody>
+            {unreadCount > 0 && (
+              <DrawerFooter className="px-4 sm:px-8 pt-3 pb-safe border-t border-black/10 dark:border-white/10">
+                <Button
+                  fullWidth
+                  size="lg"
+                  aria-label="Marcar todas las notificaciones como leídas"
+                  onPress={() => markAllRead.mutate()}
+                  className="h-control-lg min-h-control-lg bg-primary text-black font-black uppercase tracking-wide rounded-md"
+                  startContent={<CheckCheck size={20} />}
+                >
+                  Marcar todo como leído
+                </Button>
+              </DrawerFooter>
+            )}
           </>
         )}
       </DrawerContent>
