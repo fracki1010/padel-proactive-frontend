@@ -123,7 +123,6 @@ export const BookingPortalPage = () => {
 
   const [lock, setLock] = useState<ActiveLock | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
-  const [isLocking, setIsLocking] = useState(false);
   const holderId = useMemo(() => getHolderId(), []);
 
   const [clubInfo, setClubInfo] = useState<{
@@ -239,18 +238,23 @@ export const BookingPortalPage = () => {
     const isSame =
       selectedSlot?.court._id === court._id && selectedSlot?.slot._id === slot._id;
     if (isSame) {
-      await releaseLock(lock);
-      setLock(null);
+      // Deseleccionar optimista: el check se va al instante; el lock se libera en background.
       setSelectedSlot(null);
+      setLock(null);
+      setExpandedSlotId(null);
+      releaseLock(lock);
       return;
     }
 
-    if (!slug) {
-      setSelectedSlot({ court, slot });
-      return;
+    // Selección optimista: marca el check de inmediato; el lock se adquiere en paralelo.
+    setSelectedSlot({ court, slot });
+    setLock(null);
+    if (lock && (lock.courtId !== court._id || lock.slotId !== slot._id)) {
+      releaseLock(lock);
     }
 
-    setIsLocking(true);
+    if (!slug) return;
+
     try {
       const res = await publicService.acquireSlotLock(slug, {
         courtId: court._id,
@@ -264,23 +268,24 @@ export const BookingPortalPage = () => {
         courtId: court._id,
         slotId: slot._id,
       });
-      setSelectedSlot({ court, slot });
     } catch (err: unknown) {
       const response = (err as { response?: { status?: number; data?: { error?: string } } })?.response;
       if (response?.status === 409) {
+        // Otro lo tomó: si sigue siendo el turno que elegí, lo deselecciono.
+        setSelectedSlot((prev) =>
+          prev?.court._id === court._id && prev?.slot._id === slot._id ? null : prev,
+        );
+        setLock(null);
+        setExpandedSlotId(null);
         addToast({
           title: response.data?.error || "Ese turno lo está reservando otra persona, elegí otro",
           color: "warning",
         });
-        setSelectedSlot(null);
-        setExpandedSlotId(null);
         refreshAvailability();
       } else {
-        // The lock is best-effort UX; the booking unique index still protects the slot.
-        setSelectedSlot({ court, slot });
+        // Lock best-effort; el índice único de la reserva sigue protegiendo el turno.
+        setLock(null);
       }
-    } finally {
-      setIsLocking(false);
     }
   };
 
@@ -752,7 +757,6 @@ export const BookingPortalPage = () => {
                               key={court._id}
                               type="button"
                               onClick={() => handleCourtSelect(court, slot)}
-                              disabled={isLocking}
                               className={`
                                 w-full flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all
                                 ${sel
