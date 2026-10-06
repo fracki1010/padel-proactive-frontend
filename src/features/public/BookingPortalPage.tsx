@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import logo from "../../assets/logo-8.svg";
 import { useClientAuth } from "../../context/ClientAuthContext";
+import { useAdaptiveHero } from "../../hooks/useAdaptiveHero";
 import { publicService } from "../../services/publicService";
 import type { Announcement } from "../../types";
 import { HAPTIC_BOOKING_CONFIRMED, HAPTIC_TAP, vibrate } from "../../utils/haptics";
@@ -145,6 +146,7 @@ export const BookingPortalPage = () => {
   const [isLoadingAvail, setIsLoadingAvail] = useState(false);
 
   const dateScrollRef = useRef<HTMLDivElement>(null);
+  const setHeroRoot = useAdaptiveHero();
 
   const { isOpen: isAuthOpen, onOpen: openAuth, onClose: closeAuth } = useDisclosure();
   const { isOpen: isConfirmOpen, onOpen: openConfirm, onClose: closeConfirm } = useDisclosure();
@@ -364,7 +366,7 @@ export const BookingPortalPage = () => {
   // ─── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
+    <div ref={setHeroRoot} className="min-h-screen bg-background text-foreground font-sans">
 
       {/* ── Navbar ────────────────────────────────────────────────────────── */}
       <header
@@ -374,14 +376,27 @@ export const BookingPortalPage = () => {
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
 
           {/* Logo izquierda */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <img
               src={logo}
               alt="Logo"
-              className="w-10 h-10 rounded-xl object-cover"
+              className="w-10 h-10 rounded-xl object-cover shrink-0"
             />
-            <span className="font-black text-base tracking-widest uppercase text-foreground truncate max-w-[160px]">
-              PADEXA
+            {/* The brand mark yields to the club name once the hero collapses. */}
+            <span className="grid h-6 min-w-0 max-w-[160px]">
+              <span
+                aria-hidden="true"
+                className="col-start-1 row-start-1 min-w-0 font-black text-base tracking-widest uppercase text-foreground truncate"
+                style={{ opacity: "calc(1 - var(--hero-reveal, 0))" }}
+              >
+                PADEXA
+              </span>
+              <span
+                className="col-start-1 row-start-1 min-w-0 font-black text-base tracking-widest uppercase text-foreground truncate"
+                style={{ opacity: "var(--hero-reveal, 0)" }}
+              >
+                {clubInfo.club.name}
+              </span>
             </span>
           </div>
 
@@ -452,7 +467,10 @@ export const BookingPortalPage = () => {
       </header>
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="relative w-full overflow-hidden" style={{ minHeight: 260 }}>
+      <section
+        className="relative w-full overflow-hidden"
+        style={{ minHeight: "calc(260px - var(--hero-p, 0) * 112px)" }}
+      >
 
         {/* ── Fondo: imagen o gradiente de cancha ── */}
         <div className="absolute inset-0">
@@ -507,7 +525,13 @@ export const BookingPortalPage = () => {
         </div>
 
         {/* ── Contenido sobre el fondo ── */}
-        <div className="relative max-w-2xl mx-auto px-6 pt-10 pb-12">
+        <div
+          className="relative max-w-2xl mx-auto px-6"
+          style={{
+            paddingTop: "calc(2.5rem - var(--hero-p, 0) * 1.5rem)",
+            paddingBottom: "calc(3rem - var(--hero-p, 0) * 1.75rem)",
+          }}
+        >
 
           {/* Primera palabra del nombre */}
           {heroFirst && (
@@ -520,11 +544,15 @@ export const BookingPortalPage = () => {
           )}
 
           {/* Palabra principal */}
-          <h1 className="leading-none mb-5">
+          <h1
+            className="leading-none"
+            style={{ marginBottom: "calc(1.25rem - var(--hero-p, 0) * 0.5rem)" }}
+          >
             <span
               className="font-black uppercase block"
               style={{
-                fontSize: "clamp(3.8rem, 18vw, 6.5rem)",
+                fontSize:
+                  "calc(clamp(3.8rem, 18vw, 6.5rem) * (1 - var(--hero-p, 0)) + 1.75rem * var(--hero-p, 0))",
                 background: "linear-gradient(135deg, rgb(13,181,219) 0%, rgb(100,210,255) 50%, rgb(45,212,191) 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
@@ -539,7 +567,10 @@ export const BookingPortalPage = () => {
           </h1>
 
           {/* Línea decorativa */}
-          <div className="flex items-center gap-3 mb-4">
+          <div
+            className="flex items-center gap-3"
+            style={{ marginBottom: "calc(1rem - var(--hero-p, 0) * 0.5rem)" }}
+          >
             <div className="h-px bg-primary w-12 opacity-70" />
             <div className="h-[3px] bg-primary rounded-full w-3 opacity-50" />
           </div>
