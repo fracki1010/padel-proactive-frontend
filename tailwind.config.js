@@ -79,6 +79,26 @@ export default {
         md: "1.25rem",   // cards, buttons, standard containers
         lg: "2rem",      // modals, large containers, hero sections
       },
+      // Single source of truth for interactive control heights (WCAG 2.5.5).
+      // Mirrored as CSS vars in src/index.css (`--control-height-*`). The touch
+      // floor (44px) is also enforced globally for coarse pointers there.
+      height: {
+        "control-sm": "2.75rem", // 44px — minimum touch target
+        "control-md": "3rem",    // 48px
+        "control-lg": "3.5rem",  // 56px
+      },
+      minHeight: {
+        touch: "2.75rem",          // 44px
+        "control-sm": "2.75rem",   // 44px
+        "control-md": "3rem",      // 48px
+        "control-lg": "3.5rem",    // 56px
+      },
+      minWidth: {
+        touch: "2.75rem",          // 44px
+        "control-sm": "2.75rem",   // 44px
+        "control-md": "3rem",      // 48px
+        "control-lg": "3.5rem",    // 56px
+      },
     },
   },
   darkMode: "class",

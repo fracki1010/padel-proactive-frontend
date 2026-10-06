@@ -7,10 +7,11 @@
  * background, padding, height and muted placeholder for fields that do not
  * pass `classNames` of their own.
  *
- * Height scale (touch-safe, >= 44px):
- *   sm -> 44px (h-11)
- *   md -> 48px (h-12)
- *   lg -> 56px (h-14)
+ * Height scale (touch-safe, >= 44px) — shared with `tailwind.config.js`
+ * (`control-sm|md|lg`) and `src/index.css` (`--control-height-*`):
+ *   sm -> 44px (control-sm)
+ *   md -> 48px (control-md)
+ *   lg -> 56px (control-lg)
  */
 export type FieldSize = "sm" | "md" | "lg";
 
@@ -21,9 +22,9 @@ export type FieldSize = "sm" | "md" | "lg";
 const SURFACE = "!bg-black/5 dark:!bg-white/5 border-none px-4";
 
 const HEIGHT: Record<FieldSize, string> = {
-  sm: "!h-11 !min-h-11",
-  md: "!h-12 !min-h-12",
-  lg: "!h-14 !min-h-14",
+  sm: "!h-control-sm !min-h-control-sm",
+  md: "!h-control-md !min-h-control-md",
+  lg: "!h-control-lg !min-h-control-lg",
 };
 
 const INPUT_TEXT = "text-foreground placeholder:text-gray-500";

@@ -279,3 +279,58 @@
 [data-slot="trigger"][data-disabled="true"] {
   box-shadow: none !important;
 }
+
+/* =========================================================================
+   TOUCH TARGETS
+   -------------------------------------------------------------------------
+   WCAG 2.5.5 / Apple HIG recommend a minimum interactive area of 44x44 CSS px.
+   HeroUI v2's Button does NOT render `data-slot="base"` (only its Input/Select
+   slots do). A Button renders a native `<button>` (or `<a>` when `as` is
+   passed) and React Aria's `usePress` stamps `data-react-aria-pressable="true"`
+   on it — that attribute is the stable hook we target here.
+
+   Problem being fixed: `size="sm"` maps to `h-8` (32px) and icon-only buttons
+   map to `w-8 h-8` (sm) or `w-10 h-10` (md), all below 44px.
+
+   Strategy: enforce a 44px floor ONLY for coarse pointers (phones/tablets,
+   i.e. a finger as the primary input), so desktop mouse density is untouched.
+   `min-height`/`min-width` are distinct properties from HeroUI's `height`/
+   `width`, so they clamp the rendered box without `!important`; the `:not()`
+   in the selector lifts specificity above HeroUI's own `min-w-8` floor.
+
+   Control height scale (single source of truth; mirrored in tailwind.config.js
+   as `control-sm|md|lg`):
+     sm -> 2.75rem (44px)  = touch minimum
+     md -> 3rem    (48px)
+     lg -> 3.5rem  (56px)
+   ========================================================================= */
+
+:root {
+  --control-height-sm: 2.75rem; /* 44px — touch minimum */
+  --control-height-md: 3rem; /* 48px */
+  --control-height-lg: 3.5rem; /* 56px */
+  --touch-target-min: var(--control-height-sm);
+}
+
+@media (pointer: coarse) {
+  /* Native/HeroUI buttons and any React Aria pressable (button or anchor).
+     `:not([data-touch-target="off"])` raises specificity above HeroUI's
+     single-class utilities (`min-w-8`, ...) so the floor always wins, and
+     doubles as an explicit escape hatch for the rare control that must stay
+     compact even on touch. */
+  button:not([data-touch-target="off"]),
+  [role="button"]:not([data-touch-target="off"]),
+  [data-react-aria-pressable="true"]:not([data-touch-target="off"]) {
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+  }
+}
+
+/* Opt-in utility for custom clickable elements that are not real buttons
+   (e.g. a div with onClick). Same 44px floor, coarse pointers only. */
+@media (pointer: coarse) {
+  .touch-target {
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+  }
+}
