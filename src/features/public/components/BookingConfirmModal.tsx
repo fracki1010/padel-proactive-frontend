@@ -31,6 +31,7 @@ interface Props {
   slot: Slot | null;
   date: string;
   clientName: string;
+  holderId?: string;
   onConfirmed: () => void;
   onConflict?: () => void;
 }
@@ -54,6 +55,7 @@ export const BookingConfirmModal = ({
   slot,
   date,
   clientName,
+  holderId,
   onConfirmed,
   onConflict,
 }: Props) => {
@@ -67,16 +69,19 @@ export const BookingConfirmModal = ({
         courtId: court._id,
         slotId: slot._id,
         date,
+        ...(holderId ? { holderId } : {}),
       });
       addToast({ title: "Turno reservado con éxito", color: "success" });
       onConfirmed();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[BookingConfirmModal] Error al crear reserva:", err);
-      const status = err?.response?.status;
-      const message = typeof err?.response?.data === "string"
+      const response = (err as { response?: { status?: number; data?: unknown } })?.response;
+      const status = response?.status;
+      const data = response?.data as { error?: string } | string | undefined;
+      const message = typeof data === "string"
         ? "No se pudo reservar el turno"
-        : err?.response?.data?.error || "No se pudo reservar el turno";
+        : data?.error || "No se pudo reservar el turno";
       addToast({ title: message, color: "danger" });
       if (status === 409) {
         onClose();
