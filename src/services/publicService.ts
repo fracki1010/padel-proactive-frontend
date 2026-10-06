@@ -42,8 +42,25 @@ export const publicService = {
     return res.data;
   },
 
-  getAvailability: async (slug: string, date: string) => {
-    const res = await publicApi.get(`/public/${slug}/availability`, { params: { date } });
+  getAvailability: async (slug: string, date: string, holderId?: string) => {
+    const res = await publicApi.get(`/public/${slug}/availability`, {
+      params: { date, ...(holderId ? { holderId } : {}) },
+    });
+    return res.data;
+  },
+
+  acquireSlotLock: async (
+    slug: string,
+    payload: { courtId: string; slotId: string; date: string; holderId: string },
+  ) => {
+    const res = await publicApi.post(`/public/${slug}/slot-lock`, payload);
+    return res.data;
+  },
+
+  releaseSlotLock: async (slug: string, lockId: string, holderId: string) => {
+    const res = await publicApi.delete(`/public/${slug}/slot-lock/${lockId}`, {
+      params: { holderId },
+    });
     return res.data;
   },
 
@@ -72,7 +89,10 @@ export const publicService = {
     return res.data;
   },
 
-  createBooking: async (slug: string, payload: { courtId: string; slotId: string; date: string }) => {
+  createBooking: async (
+    slug: string,
+    payload: { courtId: string; slotId: string; date: string; holderId?: string },
+  ) => {
     const res = await publicApi.post(`/public/${slug}/bookings`, payload);
     return res.data;
   },

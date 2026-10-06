@@ -1,12 +1,13 @@
-import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner, useDisclosure } from "@heroui/react";
-import { Check, Clock, Lock, LogIn, LogOut, Plus, Ticket, User } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner, addToast, useDisclosure } from "@heroui/react";
+import { Check, ChevronDown, Clock, Lock, LogIn, LogOut, Plus, Ticket, User } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import logo from "../../assets/logo-8.svg";
 import { useClientAuth } from "../../context/ClientAuthContext";
 import { publicService } from "../../services/publicService";
 import type { Announcement } from "../../types";
 import { HAPTIC_BOOKING_CONFIRMED, HAPTIC_TAP, vibrate } from "../../utils/haptics";
+import { getHolderId } from "../../utils/holderId";
 import { Announcements } from "./components/Announcements";
 import { BookingConfirmModal } from "./components/BookingConfirmModal";
 import { ClientAuthModal } from "./components/ClientAuthModal";
@@ -35,11 +36,19 @@ interface AvailabilityItem {
   courtId: string;
   slotId: string;
   available: boolean;
+  locked?: boolean;
 }
 
 interface SelectedSlot {
   court: Court;
   slot: Slot;
+}
+
+interface ActiveLock {
+  lockId: string;
+  expiresAt: number;
+  courtId: string;
+  slotId: string;
 }
 
 // ─── Helpers de fecha ────────────────────────────────────────────────────────
@@ -93,6 +102,13 @@ const isSlotPast = (startTime: string, selectedDate: string) => {
 const buildDates = () =>
   Array.from({ length: MAX_DAYS }, (_, i) => addDays(todayIso(), i));
 
+const formatCountdown = (totalSeconds: number) => {
+  const safe = Math.max(0, totalSeconds);
+  const minutes = Math.floor(safe / 60);
+  const seconds = safe % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+};
+
 // ─── Página ──────────────────────────────────────────────────────────────────
 
 export const BookingPortalPage = () => {
@@ -102,6 +118,12 @@ export const BookingPortalPage = () => {
   const dates = buildDates();
   const [selectedDate, setSelectedDate] = useState(dates[0]);
   const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
+  const [expandedSlotId, setExpandedSlotId] = useState<string | null>(null);
+
+  const [lock, setLock] = useState<ActiveLock | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  const [isLocking, setIsLocking] = useState(false);
+  const holderId = useMemo(() => getHolderId(), []);
 
   const [clubInfo, setClubInfo] = useState<{
     club: { name: string; address?: string; coverImage?: string; companyId?: string };
@@ -159,31 +181,105 @@ export const BookingPortalPage = () => {
       .catch(() => setAnnouncements([]));
   }, [slug]);
 
-  useEffect(() => {
+  const refreshAvailability = useCallback(() => {
     if (!slug) return;
     setIsLoadingAvail(true);
-    setSelectedSlot(null);
-    publicService.getAvailability(slug, selectedDate)
+    publicService.getAvailability(slug, selectedDate, holderId)
       .then((r) => setAvailability(r.data))
       .catch(() => setAvailability(null))
       .finally(() => setIsLoadingAvail(false));
-  }, [slug, selectedDate]);
+  }, [slug, selectedDate, holderId]);
 
-  const isAvailable = (courtId: string, slotId: string) => {
-    if (!availability || availability.closed) return false;
-    return availability.availability?.find(
-      (a) => a.courtId === courtId && a.slotId === slotId,
-    )?.available ?? false;
-  };
+  useEffect(() => {
+    if (!slug) return;
+    setSelectedSlot(null);
+    setLock(null);
+    setExpandedSlotId(null);
+    refreshAvailability();
+  }, [slug, selectedDate, holderId, refreshAvailability]);
 
-  const isSelected = (courtId: string, slotId: string) =>
-    selectedSlot?.court._id === courtId && selectedSlot?.slot._id === slotId;
+  // Countdown for the temporary slot lock.
+  useEffect(() => {
+    if (!lock) {
+      setSecondsLeft(null);
+      return;
+    }
+    const update = () => {
+      const remaining = Math.round((lock.expiresAt - Date.now()) / 1000);
+      if (remaining <= 0) {
+        setLock(null);
+        setSelectedSlot(null);
+        addToast({ title: "El tiempo expiró, elegí otro turno", color: "warning" });
+        refreshAvailability();
+        return;
+      }
+      setSecondsLeft(remaining);
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [lock, refreshAvailability]);
 
-  const handleSlotClick = (court: Court, slot: Slot) => {
+  const releaseLock = useCallback(
+    async (activeLock: ActiveLock | null) => {
+      if (!slug || !activeLock) return;
+      try {
+        await publicService.releaseSlotLock(slug, activeLock.lockId, holderId);
+      } catch {
+        // The backend TTL releases it anyway.
+      }
+    },
+    [slug, holderId],
+  );
+
+  const handleCourtSelect = async (court: Court, slot: Slot) => {
     vibrate(HAPTIC_TAP);
-    setSelectedSlot((prev) =>
-      prev?.court._id === court._id && prev?.slot._id === slot._id ? null : { court, slot },
-    );
+    const isSame =
+      selectedSlot?.court._id === court._id && selectedSlot?.slot._id === slot._id;
+    if (isSame) {
+      await releaseLock(lock);
+      setLock(null);
+      setSelectedSlot(null);
+      return;
+    }
+
+    if (!slug) {
+      setSelectedSlot({ court, slot });
+      return;
+    }
+
+    setIsLocking(true);
+    try {
+      const res = await publicService.acquireSlotLock(slug, {
+        courtId: court._id,
+        slotId: slot._id,
+        date: selectedDate,
+        holderId,
+      });
+      setLock({
+        lockId: res.data.lockId,
+        expiresAt: new Date(res.data.expiresAt).getTime(),
+        courtId: court._id,
+        slotId: slot._id,
+      });
+      setSelectedSlot({ court, slot });
+    } catch (err: unknown) {
+      const response = (err as { response?: { status?: number; data?: { error?: string } } })?.response;
+      if (response?.status === 409) {
+        addToast({
+          title: response.data?.error || "Ese turno lo está reservando otra persona, elegí otro",
+          color: "warning",
+        });
+        setSelectedSlot(null);
+        setExpandedSlotId(null);
+        refreshAvailability();
+      } else {
+        // The lock is best-effort UX; the booking unique index still protects the slot.
+        setSelectedSlot({ court, slot });
+      }
+    } finally {
+      setIsLocking(false);
+    }
   };
 
   const handleCompleteBooking = () => {
@@ -196,29 +292,50 @@ export const BookingPortalPage = () => {
     if (selectedSlot) openConfirm();
   };
 
-  const refreshAvailability = () => {
-    if (!slug) return;
-    setIsLoadingAvail(true);
-    publicService.getAvailability(slug, selectedDate)
-      .then((r) => setAvailability(r.data))
-      .catch(() => setAvailability(null))
-      .finally(() => setIsLoadingAvail(false));
-  };
-
   const handleBookingConfirmed = () => {
     vibrate(HAPTIC_BOOKING_CONFIRMED);
     setSelectedSlot(null);
+    setLock(null);
+    setExpandedSlotId(null);
     refreshAvailability();
   };
 
   const handleBookingConflict = () => {
     setSelectedSlot(null);
+    setLock(null);
     refreshAvailability();
   };
 
-  const courts = availability?.courts || clubInfo?.courts || [];
-  const slots = availability?.slots || clubInfo?.slots || [];
+  const courts = useMemo(
+    () => availability?.courts || clubInfo?.courts || [],
+    [availability, clubInfo],
+  );
+  const slots = useMemo(
+    () => availability?.slots || clubInfo?.slots || [],
+    [availability, clubInfo],
+  );
   const { month, year } = selectedDate ? getDateParts(selectedDate) : { month: "", year: 0 };
+
+  // Group availability by time slot: one row per horario with the count of
+  // free courts, then the court list when expanded.
+  const slotRows = useMemo(() => {
+    const availableByKey = new Map<string, boolean>();
+    (availability?.availability || []).forEach((item) => {
+      availableByKey.set(`${item.courtId}_${item.slotId}`, item.available);
+    });
+    return slots.map((slot) => {
+      const availableCourts = courts.filter(
+        (court) => availableByKey.get(`${court._id}_${slot._id}`) === true,
+      );
+      const past = isSlotPast(slot.startTime, selectedDate);
+      return {
+        slot,
+        availableCourts,
+        past,
+        disabled: past || availableCourts.length === 0,
+      };
+    });
+  }, [slots, courts, availability, selectedDate]);
 
   const clubWords = clubInfo?.club?.name?.trim().split(" ") ?? [];
   const heroFirst = clubWords.length > 1 ? clubWords.slice(0, -1).join(" ") : clubWords[0] ?? "";
@@ -490,7 +607,7 @@ export const BookingPortalPage = () => {
       {/* ── Avisos del club ───────────────────────────────────────────────── */}
       <Announcements announcements={announcements} />
 
-      {/* ── Canchas y turnos ──────────────────────────────────────────────── */}
+      {/* ── Horarios disponibles ──────────────────────────────────────────── */}
       <section className="max-w-2xl mx-auto px-4 pb-40">
 
         {/* Cierre del club */}
@@ -510,141 +627,151 @@ export const BookingPortalPage = () => {
             <span className="text-4xl">🎾</span>
             <p className="text-sm">No hay canchas configuradas todavía</p>
           </div>
-        ) : (
-          <div className="flex flex-col gap-10">
-            {courts.map((court, idx) => (
-              <div key={court._id}>
-
-                {/* Cabecera de la cancha */}
-                <div className="flex items-start gap-3 mb-5 px-2">
-                  <span className="text-primary font-black text-base tabular-nums mt-0.5 w-7 shrink-0">
-                    {String(idx + 1).padStart(2, "0")}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-2xl font-black uppercase tracking-tight leading-tight">
-                      {court.name}
-                    </h2>
-                    <div className="flex gap-2 mt-2 flex-wrap">
-                      {court.courtType && (
-                        <span className="text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full border border-default-300 text-default-500">
-                          {court.courtType}
-                        </span>
-                      )}
-                      {court.surface && (
-                        <span className="text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full border border-default-300 text-default-500">
-                          {court.surface}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Grid de turnos */}
-                <div className="grid grid-cols-2 gap-3 px-2">
-                  {slots.map((slot) => {
-                    const avail = isAvailable(court._id, slot._id);
-                    const past = isSlotPast(slot.startTime, selectedDate);
-                    const sel = isSelected(court._id, slot._id);
-                    const durationMin = calcDurationMin(slot.startTime, slot.endTime);
-
-                    if (past) {
-                      return (
-                        <div
-                          key={slot._id}
-                          className="bg-default-50 border border-default-100 rounded-md p-5 flex items-center justify-between opacity-40"
-                        >
-                          <span className="text-2xl font-black text-default-400">
-                            {slot.startTime}
-                          </span>
-                          <div className="flex flex-col items-end gap-1">
-                            <Clock size={16} className="text-default-300" />
-                            <span className="text-xs font-bold tracking-widest uppercase text-default-400">
-                              Pasado
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    if (!avail) {
-                      return (
-                        <div
-                          key={slot._id}
-                          className="bg-default-50 border border-default-100 rounded-md p-5 flex items-center justify-between opacity-50"
-                        >
-                          <span className="text-2xl font-black text-default-400">
-                            {slot.startTime}
-                          </span>
-                          <div className="flex flex-col items-end gap-1">
-                            <Lock size={16} className="text-default-300" />
-                            <span className="text-xs font-bold tracking-widest uppercase text-default-400">
-                              Ocupado
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <button
-                        key={slot._id}
-                        onClick={() => handleSlotClick(court, slot)}
-                        className={`
-                          rounded-md p-5 text-left flex flex-col gap-3 border transition-all
-                          ${sel
-                            ? "bg-primary/10 border-primary shadow-sm shadow-primary/20"
-                            : "bg-default-100 border-default-200 hover:border-primary/40 hover:bg-primary/5"}
-                        `}
-                      >
-                        {/* Hora + ícono acción */}
-                        <div className="flex items-start justify-between">
-                          <span className="text-2xl font-black text-foreground leading-none">
-                            {slot.startTime}
-                          </span>
-                          <div
-                            className={`
-                              w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-all
-                              ${sel
-                                ? "bg-primary border-primary"
-                                : "bg-primary/10 border-primary/30"}
-                            `}
-                          >
-                            {sel
-                              ? <Check size={14} className="text-white" strokeWidth={3} />
-                              : <Plus size={14} className="text-primary" strokeWidth={3} />
-                            }
-                          </div>
-                        </div>
-
-                        {/* Duración */}
-                        {durationMin > 0 && (
-                          <div>
-                            <p className="text-xs font-bold tracking-widest uppercase text-default-400 mb-0.5">
-                              Duración
-                            </p>
-                            <p className="text-base font-bold text-default-500">
-                              {durationMin} MIN
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Precio + estado */}
-                        <div className="flex items-center justify-between mt-auto">
-                          <span className="text-xl font-black text-primary">
-                            {slot.price > 0 ? `$${slot.price.toLocaleString("es-AR")}` : "—"}
-                          </span>
-                          <span className={`text-xs font-bold tracking-widest uppercase ${sel ? "text-primary" : "text-default-400"}`}>
-                            {sel ? "SELEC." : "DISP."}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+        ) : slots.length === 0 && !availability?.closed ? (
+          <div className="flex flex-col items-center gap-3 py-20 text-default-400">
+            <Clock size={32} />
+            <p className="text-sm">No hay horarios configurados todavía</p>
           </div>
-        )}
+        ) : !availability?.closed ? (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between px-2">
+              <p className="text-sm font-bold tracking-widest uppercase text-default-400">
+                Horarios
+              </p>
+              <p className="text-xs font-bold tracking-widest uppercase text-default-400">
+                Disponibilidad
+              </p>
+            </div>
+
+            <div className="flex flex-col rounded-2xl border border-default-200 bg-default-50/60 overflow-hidden">
+              {slotRows.map(({ slot, availableCourts, past, disabled }) => {
+                const count = availableCourts.length;
+                const expanded = expandedSlotId === slot._id;
+                const duration = calcDurationMin(slot.startTime, slot.endTime);
+
+                return (
+                  <div key={slot._id} className="border-b border-default-100 last:border-b-0">
+                    {/* Fila de horario */}
+                    <button
+                      type="button"
+                      disabled={disabled}
+                      aria-expanded={expanded}
+                      onClick={() => {
+                        vibrate(HAPTIC_TAP);
+                        setExpandedSlotId(expanded ? null : slot._id);
+                      }}
+                      className={`
+                        w-full flex items-center gap-4 px-4 py-4 text-left transition-colors
+                        ${disabled
+                          ? "opacity-40 cursor-not-allowed"
+                          : "hover:bg-primary/5 active:bg-primary/10"}
+                      `}
+                    >
+                      <div className="w-20 shrink-0">
+                        <span className={`text-2xl font-black tabular-nums leading-none ${disabled ? "text-default-400" : "text-foreground"}`}>
+                          {slot.startTime}
+                        </span>
+                        {duration > 0 && (
+                          <span className="block text-[10px] font-bold tracking-widest uppercase text-default-400 mt-1">
+                            {duration} min
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        {past ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold tracking-widest uppercase text-default-400">
+                            <Clock size={13} /> Pasado
+                          </span>
+                        ) : count === 0 ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold tracking-widest uppercase text-default-400">
+                            <Lock size={13} /> Completo
+                          </span>
+                        ) : (
+                          <span className={`text-sm font-bold ${expanded ? "text-primary" : "text-foreground/80"}`}>
+                            {count} {count === 1 ? "cancha libre" : "canchas libres"}
+                          </span>
+                        )}
+                      </div>
+
+                      {!disabled && (
+                        <div
+                          className={`
+                            w-9 h-9 rounded-full flex items-center justify-center shrink-0 border transition-all
+                            ${expanded ? "bg-primary border-primary text-white" : "bg-primary/10 border-primary/20 text-primary"}
+                          `}
+                        >
+                          <ChevronDown
+                            size={18}
+                            className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+                          />
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Canchas disponibles del horario */}
+                    {expanded && count > 0 && (
+                      <div className="px-4 pb-4 pt-1 flex flex-col gap-2 bg-background/60">
+                        {availableCourts.map((court) => {
+                          const sel =
+                            selectedSlot?.court._id === court._id &&
+                            selectedSlot?.slot._id === slot._id;
+                          return (
+                            <button
+                              key={court._id}
+                              type="button"
+                              onClick={() => handleCourtSelect(court, slot)}
+                              disabled={isLocking}
+                              className={`
+                                w-full flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all
+                                ${sel
+                                  ? "border-primary bg-primary/10 shadow-sm shadow-primary/20"
+                                  : "border-default-200 bg-default-100 hover:border-primary/40 hover:bg-primary/5"}
+                              `}
+                            >
+                              <div className="flex-1 min-w-0">
+                                <p className="font-bold text-foreground truncate">{court.name}</p>
+                                <div className="flex gap-1.5 mt-1 flex-wrap">
+                                  {court.courtType && (
+                                    <span className="text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full border border-default-300 text-default-500">
+                                      {court.courtType}
+                                    </span>
+                                  )}
+                                  {court.surface && (
+                                    <span className="text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full border border-default-300 text-default-500">
+                                      {court.surface}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <span className="text-lg font-black text-primary shrink-0 tabular-nums">
+                                {slot.price > 0 ? `$${slot.price.toLocaleString("es-AR")}` : "—"}
+                              </span>
+
+                              <div
+                                className={`
+                                  w-7 h-7 rounded-full flex items-center justify-center shrink-0 border transition-all
+                                  ${sel ? "bg-primary border-primary" : "bg-primary/10 border-primary/30"}
+                                `}
+                              >
+                                {sel ? (
+                                  <Check size={13} className="text-white" strokeWidth={3} />
+                                ) : (
+                                  <Plus size={13} className="text-primary" strokeWidth={3} />
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
       </section>
 
       {/* ── Barra inferior de reserva ──────────────────────────────────────── */}
@@ -659,9 +786,15 @@ export const BookingPortalPage = () => {
       >
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <div className="flex-1 min-w-0">
-            <p className="text-[9px] font-bold tracking-widest uppercase text-default-400 mb-0.5">
-              Turno seleccionado
-            </p>
+            {lock && secondsLeft !== null ? (
+              <p className="text-[10px] font-bold tracking-widest uppercase text-warning-500 mb-0.5 flex items-center gap-1">
+                <Clock size={11} /> Reservá en {formatCountdown(secondsLeft)}
+              </p>
+            ) : (
+              <p className="text-[9px] font-bold tracking-widest uppercase text-default-400 mb-0.5">
+                Turno seleccionado
+              </p>
+            )}
             <p className="font-bold text-sm text-foreground truncate">
               {selectedSlot?.court.name} · {selectedSlot?.slot.startTime}
             </p>
@@ -699,6 +832,7 @@ export const BookingPortalPage = () => {
             slot={selectedSlot?.slot ?? null}
             date={selectedDate}
             clientName={clientUser?.name || ""}
+            holderId={holderId}
             onConfirmed={handleBookingConfirmed}
             onConflict={handleBookingConflict}
           />
