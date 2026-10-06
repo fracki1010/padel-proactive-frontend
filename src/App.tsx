@@ -22,6 +22,7 @@ import {
   useCreateBooking,
   useDeleteBooking,
   useMarkAllRead,
+  useMarkAsRead,
   useNotifications,
   useUpdateBooking,
 } from "./hooks/useData";
@@ -136,6 +137,7 @@ export default function App() {
   const deleteBooking = useDeleteBooking();
   const updateBooking = useUpdateBooking();
   const markAllRead = useMarkAllRead();
+  const markAsRead = useMarkAsRead();
 
   const { data: notificationsData } = useNotifications(isAuthenticated);
   const { data: companiesData, isLoading: isLoadingCompanies } = useCompanies(
@@ -442,6 +444,7 @@ export default function App() {
                   onOpenChange={onNotifOpenChange}
                   notificationsData={notificationsData}
                   markAllRead={markAllRead}
+                  markAsRead={markAsRead}
                   onOpenRelatedBooking={handleOpenBookingFromNotification}
                   isDesktop={isDesktop}
                 />
