@@ -187,3 +187,95 @@
   66% { transform: translate(-20px, 20px) scale(0.9); }
   100% { transform: translate(0px, 0px) scale(1); }
 }
+
+/* =========================================================================
+   GLOBAL FORM CONTROL NORMALIZATION
+   -------------------------------------------------------------------------
+   HeroUI v2's theme plugin only exposes global colors/layout, not per-slot
+   overrides, so the only robust way to normalize every Input/Select/Textarea
+   regardless of the `classNames` a caller passes is to target HeroUI's stable
+   data attributes (`data-slot`, `data-focus`, `data-focus-visible`,
+   `data-invalid`). This file is unlayered and placed after Tailwind's
+   `@tailwind utilities`, so these rules win over the generated utilities.
+
+   Focus: HeroUI paints a `default-foreground` border on focus (white in dark
+   mode) plus a blue `--heroui-focus` ring. We replace both with a subtle
+   primary (cyan) treatment. `!important` is intentional here: it must beat
+   HeroUI variant selectors such as
+   `.group[data-focus=true] .group-data-[focus=true]:border-default-foreground`
+   without requiring the caller to pass any `classNames`.
+   ========================================================================= */
+
+/* HeroUI declares its theme variables later in the cascade (its plugin
+   utilities come after this block), so re-point the focus ring here with
+   `!important` to make the PADEXA cyan win in both themes. */
+:root,
+:root.dark,
+:root.night {
+  --heroui-focus: 191.07 88.79% 45.49% !important;
+}
+
+/* Subtle "inset" definition for fields without a hard border, plus a uniform
+   radius. HeroUI applies `shadow-xs` (a Tailwind v4 name that produces no rule
+   in v3) and its own `rounded-small/medium/large`; `!important` guarantees the
+   unified radius regardless of Tailwind's utility ordering. */
+[data-slot="input-wrapper"],
+[data-slot="trigger"] {
+  border-radius: 0.75rem !important;
+  box-shadow: inset 0 0 0 1px rgb(var(--color-black) / 0.05);
+  /* Explicit property list — never `transition: all`. */
+  transition-property: background-color, border-color, box-shadow !important;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark [data-slot="input-wrapper"],
+.dark [data-slot="trigger"],
+.night [data-slot="input-wrapper"],
+.night [data-slot="trigger"] {
+  box-shadow: inset 0 0 0 1px rgb(var(--color-white) / 0.06);
+}
+
+/* Muted placeholder, consistent across every field type. */
+[data-slot="input"]::placeholder,
+[data-slot="textarea"]::placeholder {
+  color: rgb(var(--color-gray-500) / 0.7);
+  opacity: 1;
+}
+
+/* Primary (cyan) focus ring — replaces HeroUI's white border / blue ring. */
+[data-slot="input-wrapper"][data-focus="true"],
+[data-slot="input-wrapper"][data-focus-visible="true"],
+[data-slot="trigger"][data-focus="true"],
+[data-slot="trigger"][data-focus-visible="true"],
+[data-slot="trigger"][data-open="true"] {
+  border-color: rgb(var(--color-primary-500) / 0.7) !important;
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--color-primary-500) / 0.7),
+    0 0 0 3px rgb(var(--color-primary-500) / 0.15) !important;
+}
+
+/* Error state stays red, including while focused. Declared after the primary
+   focus rules and with `!important` so it wins on equal specificity. */
+[data-slot="base"][data-invalid="true"] [data-slot="input-wrapper"],
+[data-slot="base"][data-invalid="true"] [data-slot="trigger"] {
+  box-shadow: inset 0 0 0 1px rgb(var(--color-red-500) / 0.5);
+}
+
+[data-slot="base"][data-invalid="true"] [data-slot="input-wrapper"][data-focus="true"],
+[data-slot="base"][data-invalid="true"] [data-slot="input-wrapper"][data-focus-visible="true"],
+[data-slot="base"][data-invalid="true"] [data-slot="trigger"][data-focus="true"],
+[data-slot="base"][data-invalid="true"] [data-slot="trigger"][data-focus-visible="true"],
+[data-slot="base"][data-invalid="true"] [data-slot="trigger"][data-open="true"] {
+  border-color: rgb(var(--color-red-500) / 0.7) !important;
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--color-red-500) / 0.55),
+    0 0 0 3px rgb(var(--color-red-500) / 0.15) !important;
+}
+
+/* Disabled controls never advertise focus. */
+[data-slot="base"][data-disabled="true"] [data-slot="input-wrapper"],
+[data-slot="base"][data-disabled="true"] [data-slot="trigger"],
+[data-slot="trigger"][data-disabled="true"] {
+  box-shadow: none !important;
+}

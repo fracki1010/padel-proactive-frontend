@@ -23,6 +23,10 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import { Pagination } from "../../../components/ui/Pagination";
+import {
+  fieldInputClassNames,
+  fieldSelectClassNames,
+} from "../../../components/ui/fieldStyles";
 import { SkeletonCard } from "../../../components/ui/SkeletonCard";
 import { SkeletonTable } from "../../../components/ui/SkeletonTable";
 
@@ -645,6 +649,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
               }}
               variant="bordered"
               className="lg:col-span-2"
+              classNames={fieldInputClassNames.md}
             />
             <Select
               label="Estado turno"
@@ -655,6 +660,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
                 setHistoryPage(1);
               }}
               variant="bordered"
+              classNames={fieldSelectClassNames.md}
             >
               <SelectItem key="all">Todos</SelectItem>
               <SelectItem key="confirmado">Confirmado</SelectItem>
@@ -672,6 +678,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
                 setHistoryPage(1);
               }}
               variant="bordered"
+              classNames={fieldSelectClassNames.md}
             >
               <SelectItem key="all">Todos</SelectItem>
               <SelectItem key="pagado">Pagado</SelectItem>
@@ -752,6 +759,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
                     }}
                     variant="bordered"
                     size="sm"
+                    classNames={fieldSelectClassNames.sm}
                   >
                     <SelectItem key="25">25</SelectItem>
                     <SelectItem key="50">50</SelectItem>

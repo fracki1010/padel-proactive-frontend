@@ -15,6 +15,7 @@ import { publicService } from "../../../services/publicService";
 import { PhoneInput, defaultPhone } from "./PhoneInput";
 import type { PhoneValue } from "./PhoneInput";
 import { normalizePhoneForApi } from "../../../utils/phone";
+import { fieldInputClassNames } from "../../../components/ui/fieldStyles";
 
 interface Props {
   isOpen: boolean;
@@ -298,6 +299,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                   value={otp}
                   onValueChange={setOtp}
                   size="sm"
+                  classNames={fieldInputClassNames.sm}
                   maxLength={6}
                   inputMode="numeric"
                   onKeyDown={(e) => e.key === "Enter" && handleVerifyOtp()}
@@ -335,6 +337,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                   value={name}
                   onValueChange={setName}
                   size="sm"
+                  classNames={fieldInputClassNames.sm}
                   onKeyDown={(e) => e.key === "Enter" && handleCompleteRegistration()}
                   autoFocus
                 />
@@ -392,6 +395,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                   value={googleOtp}
                   onValueChange={setGoogleOtp}
                   size="sm"
+                  classNames={fieldInputClassNames.sm}
                   maxLength={6}
                   inputMode="numeric"
                   onKeyDown={(e) => e.key === "Enter" && handleGoogleVerifyOtp()}

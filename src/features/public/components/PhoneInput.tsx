@@ -1,4 +1,8 @@
 import { Input, Select, SelectItem } from "@heroui/react";
+import {
+  fieldInputClassNames,
+  fieldSelectClassNames,
+} from "../../../components/ui/fieldStyles";
 
 const COUNTRIES = [
   { code: "AR", name: "Argentina",  dial: "54",  placeholder: "9 11 1234-5678",  flag: "🇦🇷" },
@@ -43,6 +47,7 @@ export const PhoneInput = ({ value, onChange, isDisabled, size = "sm" }: Props) 
         onSelectionChange={handleCountryChange}
         isDisabled={isDisabled}
         className="w-[110px] shrink-0"
+        classNames={fieldSelectClassNames[size]}
         aria-label="País"
         renderValue={() => (
           <span className="flex items-center gap-1 text-sm">
@@ -72,6 +77,7 @@ export const PhoneInput = ({ value, onChange, isDisabled, size = "sm" }: Props) 
         }
         isDisabled={isDisabled}
         className="flex-1"
+        classNames={fieldInputClassNames[size]}
         aria-label="Número de teléfono"
       />
     </div>
