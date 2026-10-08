@@ -13,9 +13,17 @@ import {
   Spinner,
   addToast,
 } from "@heroui/react";
-import { AlertTriangle, Clock, History } from "lucide-react";
+import { AlertTriangle, Clock, CreditCard, History } from "lucide-react";
 import { useEffect, useState } from "react";
 import { publicService } from "../../../services/publicService";
+
+interface BookingDeposit {
+  required: boolean;
+  status: string;
+  amount: number;
+  expiresAt?: string | null;
+  refundable?: boolean;
+}
 
 interface Booking {
   _id: string;
@@ -23,6 +31,7 @@ interface Booking {
   status: string;
   court: { name: string };
   timeSlot: { startTime: string; endTime: string; label?: string };
+  deposit?: BookingDeposit;
 }
 
 interface Props {
@@ -50,6 +59,7 @@ const statusLabel: Record<string, string> = {
   confirmado: "Confirmado",
   suspendido: "Suspendido",
   cancelado: "Cancelado",
+  "pendiente_seña": "Seña pendiente",
 };
 
 const statusColor: Record<string, "primary" | "success" | "warning" | "danger" | "default"> = {
@@ -57,52 +67,102 @@ const statusColor: Record<string, "primary" | "success" | "warning" | "danger" |
   confirmado: "success",
   suspendido: "warning",
   cancelado: "danger",
+  "pendiente_seña": "warning",
+};
+
+// Deposit subdocument copy — shown for holds, paid seña and refund flows.
+const depositStatusLabel: Record<string, string> = {
+  pendiente: "Seña pendiente",
+  pagado: "Seña pagada",
+  expirado: "Seña vencida",
+  refund_pending: "Reembolso pendiente",
+  reembolsado: "Reembolsado",
+};
+
+const depositStatusColor: Record<string, "warning" | "success" | "default" | "danger"> = {
+  pendiente: "warning",
+  pagado: "success",
+  expirado: "default",
+  refund_pending: "warning",
+  reembolsado: "default",
 };
 
 const BookingCard = ({
   booking,
   onCancelPress,
+  onPayPress,
   cancellingId,
+  payingId,
   showCancel,
 }: {
   booking: Booking;
   onCancelPress?: (b: Booking) => void;
+  onPayPress?: (b: Booking) => void;
   cancellingId: string | null;
+  payingId: string | null;
   showCancel: boolean;
-}) => (
-  <div className="rounded-xl border border-default-200 bg-default-50 p-4 flex flex-col gap-2">
-    <div className="flex items-center justify-between">
-      <span className="font-semibold text-sm">{booking.court?.name}</span>
-      <Chip size="sm" color={statusColor[booking.status] || "default"} variant="flat">
-        {statusLabel[booking.status] || booking.status}
-      </Chip>
+}) => {
+  const deposit = booking.deposit;
+  const canPay = booking.status === "pendiente_seña" && deposit?.status === "pendiente";
+
+  return (
+    <div className="rounded-xl border border-default-200 bg-default-50 p-4 flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <span className="font-semibold text-sm">{booking.court?.name}</span>
+        <Chip size="sm" color={statusColor[booking.status] || "default"} variant="flat">
+          {statusLabel[booking.status] || booking.status}
+        </Chip>
+      </div>
+      <div className="text-xs text-default-500 flex gap-3">
+        <span>{formatDate(booking.date)}</span>
+        <span>
+          {booking.timeSlot?.label || `${booking.timeSlot?.startTime} - ${booking.timeSlot?.endTime}`}
+        </span>
+      </div>
+      {deposit && (
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-default-500">
+            Seña ${Number(deposit.amount || 0).toLocaleString("es-AR")}
+          </span>
+          <Chip size="sm" variant="dot" color={depositStatusColor[deposit.status] || "default"}>
+            {depositStatusLabel[deposit.status] || deposit.status}
+          </Chip>
+        </div>
+      )}
+      {canPay && onPayPress && (
+        <Button
+          size="sm"
+          color="primary"
+          isLoading={payingId === booking._id}
+          onPress={() => onPayPress(booking)}
+          className="mt-1 font-bold"
+          startContent={payingId === booking._id ? undefined : <CreditCard size={15} />}
+        >
+          Pagar seña
+        </Button>
+      )}
+      {showCancel && booking.status !== "suspendido" && onCancelPress && (
+        <Button
+          size="sm"
+          variant="flat"
+          color="danger"
+          isLoading={cancellingId === booking._id}
+          onPress={() => onCancelPress(booking)}
+          className="mt-1"
+        >
+          Cancelar turno
+        </Button>
+      )}
     </div>
-    <div className="text-xs text-default-500 flex gap-3">
-      <span>{formatDate(booking.date)}</span>
-      <span>
-        {booking.timeSlot?.label || `${booking.timeSlot?.startTime} - ${booking.timeSlot?.endTime}`}
-      </span>
-    </div>
-    {showCancel && booking.status !== "suspendido" && onCancelPress && (
-      <Button
-        size="sm"
-        variant="flat"
-        color="danger"
-        isLoading={cancellingId === booking._id}
-        onPress={() => onCancelPress(booking)}
-        className="mt-1"
-      >
-        Cancelar turno
-      </Button>
-    )}
-  </div>
-);
+  );
+};
 
 export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cancellationLockHours }: Props) => {
   const [upcoming, setUpcoming] = useState<Booking[]>([]);
   const [history, setHistory] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [payingId, setPayingId] = useState<string | null>(null);
   const [confirmBooking, setConfirmBooking] = useState<Booking | null>(null);
   const [blockedBooking, setBlockedBooking] = useState<Booking | null>(null);
 
@@ -154,6 +214,30 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
     }
   };
 
+  const handlePayDeposit = async (booking: Booking) => {
+    setPayingId(booking._id);
+    try {
+      // Mint a fresh link on demand: the list endpoint does not expose
+      // `initPoint`, and a stale preference may have expired.
+      const res = await publicService.regeneratePaymentLink(slug, booking._id);
+      const link = res.data?.initPoint;
+      if (!link) throw new Error("empty payment link");
+      window.open(link, "_blank", "noopener,noreferrer");
+      addToast({ title: "Abrimos el link de pago de la seña", color: "success" });
+    } catch (err: unknown) {
+      const response = (err as { response?: { data?: { error?: string; code?: string } } })?.response;
+      const code = response?.data?.code;
+      const message = code === "DEPOSIT_EXPIRED"
+        ? "La seña venció; el turno ya no admite pago"
+        : code === "DEPOSIT_NOT_CONFIGURED"
+          ? "El pago de seña no está disponible en este momento"
+          : response?.data?.error || "No se pudo generar el link de pago";
+      addToast({ title: message, color: "danger" });
+    } finally {
+      setPayingId(null);
+    }
+  };
+
   return (
     <>
       <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="sm">
@@ -185,7 +269,9 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
                           key={b._id}
                           booking={b}
                           onCancelPress={handleCancelPress}
+                          onPayPress={handlePayDeposit}
                           cancellingId={cancellingId}
+                          payingId={payingId}
                           showCancel
                         />
                       ))}
@@ -208,6 +294,7 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
                           key={b._id}
                           booking={b}
                           cancellingId={cancellingId}
+                          payingId={payingId}
                           showCancel={false}
                         />
                       ))}
