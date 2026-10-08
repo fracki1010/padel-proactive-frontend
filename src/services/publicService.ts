@@ -36,6 +36,40 @@ publicApi.interceptors.response.use(
   },
 );
 
+// Deposit (seña) state attached to a booking when the club has deposits enabled.
+export type DepositStatus =
+  | "pendiente"
+  | "pagado"
+  | "expirado"
+  | "refund_pending"
+  | "reembolsado";
+
+export interface BookingDeposit {
+  required: boolean;
+  status: DepositStatus;
+  amount: number;
+  expiresAt: string | null;
+  refundable?: boolean;
+}
+
+export interface BookingPayment {
+  initPoint: string;
+}
+
+export interface CreatedBooking {
+  _id: string;
+  status: string;
+  deposit?: BookingDeposit;
+  payment?: BookingPayment;
+  [key: string]: unknown;
+}
+
+export interface PaymentLinkResponse {
+  initPoint: string;
+  preferenceId?: string;
+  amount?: number;
+}
+
 export const publicService = {
   getClubInfo: async (slug: string) => {
     const res = await publicApi.get(`/public/${slug}`);
@@ -92,8 +126,19 @@ export const publicService = {
   createBooking: async (
     slug: string,
     payload: { courtId: string; slotId: string; date: string; holderId?: string },
-  ) => {
+  ): Promise<{ success: boolean; data: CreatedBooking }> => {
     const res = await publicApi.post(`/public/${slug}/bookings`, payload);
+    return res.data;
+  },
+
+  // Mints a fresh Checkout Pro preference for a pending deposit. The backend
+  // returns 409 (code `DEPOSIT_EXPIRED`) when the hold already lapsed or was
+  // paid, so callers must handle that briefly.
+  regeneratePaymentLink: async (
+    slug: string,
+    bookingId: string,
+  ): Promise<{ success: boolean; data: PaymentLinkResponse }> => {
+    const res = await publicApi.post(`/public/${slug}/bookings/${bookingId}/payment-link`);
     return res.data;
   },
 
