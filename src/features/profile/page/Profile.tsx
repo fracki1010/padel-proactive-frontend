@@ -7,12 +7,14 @@ import { useScheduleManagement } from "../hooks/useScheduleManagement";
 import { useTenantsManagement } from "../hooks/useTenantsManagement";
 import { useProfileMenu } from "../hooks/useProfileMenu";
 import { useBotAutomationManagement } from "../hooks/useBotAutomationManagement";
+import { useDepositSettingsManagement } from "../hooks/useDepositSettingsManagement";
 import { useWhatsappManagement } from "../hooks/useWhatsappManagement";
 
 import { AnnouncementsView } from "../components/AnnouncementsView";
 import { ClubClosuresView } from "../components/ClubClosuresView";
 import { CourtsView } from "../components/CourtsView";
 import { BotAutomationSettingsView } from "../components/BotAutomationSettingsView";
+import { DepositSettingsView } from "../components/DepositSettingsView";
 import { ProfileMenuView } from "../components/ProfileMenuView";
 import { ScheduleSettingsView } from "../components/ScheduleSettingsView";
 import { TenantsView } from "../components/TenantsView";
@@ -28,6 +30,7 @@ type ViewType =
   | "schedule"
   | "whatsapp"
   | "bot-automation"
+  | "deposits"
   | "tenants"
   | "club-closures"
   | "announcements";
@@ -42,6 +45,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const tenants = useTenantsManagement();
   const whatsapp = useWhatsappManagement();
   const botAutomation = useBotAutomationManagement(whatsapp);
+  const deposits = useDepositSettingsManagement();
   const menu = useProfileMenu({
     courtsCount: courts.courts.length,
     whatsappEnabled: whatsapp.whatsappEnabled,
@@ -229,6 +233,36 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           onDeleteBackground={botAutomation.onDeleteBackground}
           onSendDigestNow={botAutomation.onSendDigestNow}
           isSendingDigestNow={botAutomation.isSendingDigestNow}
+        />
+      );
+
+    case "deposits":
+      return (
+        <DepositSettingsView
+          depositEnabled={deposits.depositEnabledInput}
+          depositAmountInput={deposits.depositAmountInput}
+          holdMinutesInput={deposits.holdMinutesInput}
+          accessTokenInput={deposits.accessTokenInput}
+          credentialConfigured={deposits.credentialConfigured}
+          credentialMasked={deposits.credentialMasked}
+          credentialMpUserId={deposits.credentialMpUserId}
+          maxDepositAmount={deposits.maxDepositAmount}
+          maxHoldMinutes={deposits.maxHoldMinutes}
+          isLoading={!deposits.isReady}
+          isSavingSettings={deposits.isSavingSettings}
+          isSavingCredential={deposits.isSavingCredential}
+          isDeletingCredential={deposits.isDeletingCredential}
+          onBack={() => {
+            deposits.onLeaveView();
+            setView("menu");
+          }}
+          onToggleDepositEnabled={deposits.onToggleDepositEnabled}
+          onDepositAmountChange={deposits.onDepositAmountChange}
+          onHoldMinutesChange={deposits.onHoldMinutesChange}
+          onAccessTokenChange={deposits.onAccessTokenChange}
+          onSaveSettings={deposits.onSaveSettings}
+          onSaveCredential={deposits.onSaveCredential}
+          onDeleteCredential={deposits.onDeleteCredential}
         />
       );
 

@@ -16,6 +16,7 @@ type UseProfileMenuParams = {
       | "schedule"
       | "whatsapp"
       | "bot-automation"
+      | "deposits"
       | "tenants"
       | "club-closures"
       | "announcements",
@@ -74,6 +75,7 @@ export const useProfileMenu = ({
     onGoToWhatsapp: () => setView("whatsapp"),
     onGoToSchedule: () => setView("schedule"),
     onGoToBotAutomation: () => setView("bot-automation"),
+    onGoToDeposits: () => setView("deposits"),
     onGoToTenants: () => setView("tenants"),
     onGoToClubClosures: () => setView("club-closures"),
     onGoToAnnouncements: () => setView("announcements"),
