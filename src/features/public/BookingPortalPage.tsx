@@ -7,8 +7,10 @@ import { useClientAuth } from "../../context/ClientAuthContext";
 import { useAdaptiveHero } from "../../hooks/useAdaptiveHero";
 import { publicService } from "../../services/publicService";
 import type { Announcement } from "../../types";
+import { formatCountdown } from "../../utils/formatters";
 import { HAPTIC_BOOKING_CONFIRMED, HAPTIC_TAP, vibrate } from "../../utils/haptics";
 import { getHolderId } from "../../utils/holderId";
+import { openPaymentLink } from "../../utils/openPaymentLink";
 import { Announcements } from "./components/Announcements";
 import { BookingConfirmModal } from "./components/BookingConfirmModal";
 import { ClientAuthModal } from "./components/ClientAuthModal";
@@ -109,13 +111,6 @@ const isSlotPast = (startTime: string, selectedDate: string) => {
 
 const buildDates = () =>
   Array.from({ length: MAX_DAYS }, (_, i) => addDays(todayIso(), i));
-
-const formatCountdown = (totalSeconds: number) => {
-  const safe = Math.max(0, totalSeconds);
-  const minutes = Math.floor(safe / 60);
-  const seconds = safe % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-};
 
 // ─── Página ──────────────────────────────────────────────────────────────────
 
@@ -349,9 +344,15 @@ export const BookingPortalPage = () => {
     [],
   );
 
+  // The modal can refresh the link after creating an empty one; mirror it here
+  // so the banner never holds a stale URL.
+  const handleDepositLinkChange = useCallback((link: string) => {
+    setPendingDeposit((prev) => (prev ? { ...prev, link } : prev));
+  }, []);
+
   const handleResumeDepositPayment = () => {
     if (pendingDeposit?.link) {
-      window.open(pendingDeposit.link, "_blank", "noopener,noreferrer");
+      void openPaymentLink(pendingDeposit.link);
     }
   };
 
@@ -363,11 +364,17 @@ export const BookingPortalPage = () => {
       const link = res.data?.initPoint;
       if (!link) throw new Error("empty payment link");
       setPendingDeposit((prev) => (prev ? { ...prev, link } : prev));
-      window.open(link, "_blank", "noopener,noreferrer");
-      addToast({ title: "Abrimos el link de pago de la seña", color: "success" });
+      await openPaymentLink(link);
     } catch (err: unknown) {
       const response = (err as { response?: { data?: { error?: string; code?: string } } })?.response;
       const code = response?.data?.code;
+      if (code === "DEPOSIT_EXPIRED") {
+        // Move the banner to its expired state locally.
+        setPendingDeposit((prev) =>
+          prev ? { ...prev, expiresAt: prev.expiresAt ?? new Date().toISOString() } : prev,
+        );
+        setPendingSecondsLeft(0);
+      }
       const message = code === "DEPOSIT_EXPIRED"
         ? "La seña venció; el turno ya no admite pago"
         : code === "DEPOSIT_NOT_CONFIGURED"
@@ -888,7 +895,10 @@ export const BookingPortalPage = () => {
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <div className="flex-1 min-w-0">
             {lock && secondsLeft !== null ? (
-              <p className="text-[10px] font-bold tracking-widest uppercase text-warning-500 mb-0.5 flex items-center gap-1">
+              <p
+                aria-live="polite"
+                className="text-[10px] font-bold tracking-widest uppercase text-warning-500 mb-0.5 flex items-center gap-1"
+              >
                 <Clock size={11} /> Reservá en {formatCountdown(secondsLeft)}
               </p>
             ) : (
@@ -918,17 +928,18 @@ export const BookingPortalPage = () => {
 
       {/* ── Aviso de seña pendiente ────────────────────────────────────────── */}
       {pendingDeposit && (() => {
-        const expired =
-          Boolean(pendingDeposit.expiresAt) &&
-          pendingSecondsLeft !== null &&
-          pendingSecondsLeft <= 0;
+        const fallbackSeconds = pendingDeposit.expiresAt
+          ? Math.max(0, Math.round((new Date(pendingDeposit.expiresAt).getTime() - Date.now()) / 1000))
+          : null;
+        const seconds = pendingSecondsLeft ?? fallbackSeconds;
+        const expired = Boolean(pendingDeposit.expiresAt) && seconds !== null && seconds <= 0;
         return (
           <div
             className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-t border-warning-200 dark:border-warning-800 px-4 py-3"
             style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
           >
             <div className="max-w-2xl mx-auto flex items-center gap-3">
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0" aria-live="polite">
                 <p
                   className={`text-[10px] font-bold tracking-widest uppercase ${
                     expired ? "text-default-400" : "text-warning-500"
@@ -938,8 +949,8 @@ export const BookingPortalPage = () => {
                 </p>
                 <p className="font-bold text-sm text-foreground truncate">
                   ${pendingDeposit.amount.toLocaleString("es-AR")}
-                  {!expired && pendingSecondsLeft !== null
-                    ? ` · ${formatCountdown(pendingSecondsLeft)}`
+                  {!expired && seconds !== null
+                    ? ` · ${formatCountdown(seconds)}`
                     : ""}
                 </p>
               </div>
@@ -961,6 +972,7 @@ export const BookingPortalPage = () => {
                 variant="light"
                 className="shrink-0"
                 onPress={() => setPendingDeposit(null)}
+                aria-label="Descartar aviso de seña"
                 title="Descartar aviso"
               >
                 <X size={16} />
@@ -991,6 +1003,7 @@ export const BookingPortalPage = () => {
             onConfirmed={handleBookingConfirmed}
             onConflict={handleBookingConflict}
             onDepositPending={handleDepositPending}
+            onDepositLinkChange={handleDepositLinkChange}
           />
           <MyBookingsDrawer
             isOpen={isMyBookingsOpen}

@@ -10,6 +10,8 @@ import {
 import { Clock, Copy, ExternalLink, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { publicService } from "../../../services/publicService";
+import { formatCountdown } from "../../../utils/formatters";
+import { openPaymentLink } from "../../../utils/openPaymentLink";
 
 interface Slot {
   _id: string;
@@ -43,6 +45,8 @@ interface Props {
     link: string;
     expiresAt: string | null;
   }) => void;
+  // Keeps the portal banner's link in sync when it is refreshed here.
+  onDepositLinkChange?: (link: string) => void;
 }
 
 interface PendingPayment {
@@ -66,13 +70,6 @@ const formatDate = (dateStr: string) => {
   });
 };
 
-const formatCountdown = (totalSeconds: number) => {
-  const safe = Math.max(0, totalSeconds);
-  const minutes = Math.floor(safe / 60);
-  const seconds = safe % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-};
-
 export const BookingConfirmModal = ({
   isOpen,
   onClose,
@@ -85,11 +82,14 @@ export const BookingConfirmModal = ({
   onConfirmed,
   onConflict,
   onDepositPending,
+  onDepositLinkChange,
 }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [pending, setPending] = useState<PendingPayment | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  // Set when the backend rejects the hold as already expired (409).
+  const [expiredLocally, setExpiredLocally] = useState(false);
 
   // Clear the payment step whenever the modal is dismissed, so a fresh open
   // always starts from the confirmation step.
@@ -98,6 +98,7 @@ export const BookingConfirmModal = ({
       setPending(null);
       setIsRegenerating(false);
       setSecondsLeft(null);
+      setExpiredLocally(false);
     }
   }, [isOpen]);
 
@@ -117,7 +118,16 @@ export const BookingConfirmModal = ({
     return () => clearInterval(interval);
   }, [pending?.expiresAt]);
 
-  const isExpired = Boolean(pending?.expiresAt) && secondsLeft !== null && secondsLeft <= 0;
+  // Derive the remaining time from `expiresAt` on first render so we never
+  // flash `0:00:00` before the interval effect runs.
+  const holdSeconds = pending?.expiresAt
+    ? Math.max(0, Math.round((new Date(pending.expiresAt).getTime() - Date.now()) / 1000))
+    : null;
+  const shownSeconds = secondsLeft ?? holdSeconds;
+  const isExpired =
+    Boolean(pending) &&
+    (expiredLocally ||
+      (Boolean(pending?.expiresAt) && shownSeconds !== null && shownSeconds <= 0));
 
   const handleClose = () => {
     if (isLoading || isRegenerating) return;
@@ -142,6 +152,7 @@ export const BookingConfirmModal = ({
       // of closing. Non-deposit clubs keep the exact previous behaviour.
       if (deposit?.required && Number(deposit.amount) > 0 && deposit.status === "pendiente") {
         const link = data?.payment?.initPoint || "";
+        setExpiredLocally(false);
         setPending({
           bookingId: data._id,
           amount: Number(deposit.amount),
@@ -187,8 +198,8 @@ export const BookingConfirmModal = ({
   };
 
   const handlePay = () => {
-    if (!pending?.link) return;
-    window.open(pending.link, "_blank", "noopener,noreferrer");
+    if (!pending?.link || isExpired) return;
+    void openPaymentLink(pending.link);
   };
 
   const handleCopy = async () => {
@@ -209,12 +220,18 @@ export const BookingConfirmModal = ({
       const link = res.data?.initPoint;
       if (!link) throw new Error("empty payment link");
       setPending((prev) => (prev ? { ...prev, link } : prev));
+      // Keep the portal banner showing the freshest URL.
+      onDepositLinkChange?.(link);
       addToast({ title: "Link de pago actualizado", color: "success" });
     } catch (err: unknown) {
       const response = (err as {
         response?: { status?: number; data?: { error?: string; code?: string } };
       })?.response;
       const code = response?.data?.code;
+      if (code === "DEPOSIT_EXPIRED") {
+        // Reflect the true state locally: disable pay/regenerate.
+        setExpiredLocally(true);
+      }
       const message = code === "DEPOSIT_EXPIRED"
         ? "La seña venció; el turno ya no admite pago"
         : code === "DEPOSIT_NOT_CONFIGURED"
@@ -271,13 +288,16 @@ export const BookingConfirmModal = ({
 
                 {pending.expiresAt && (
                   <p
+                    aria-live="polite"
                     className={`text-xs text-center font-semibold ${
                       isExpired ? "text-danger" : "text-warning-600 dark:text-warning-400"
                     }`}
                   >
                     {isExpired
                       ? "El plazo para pagar la seña venció; el turno se libera automáticamente."
-                      : `Tenés ${formatCountdown(secondsLeft ?? 0)} para completar el pago.`}
+                      : shownSeconds === null
+                        ? "Calculando tiempo restante…"
+                        : `Tenés ${formatCountdown(shownSeconds)} para completar el pago.`}
                   </p>
                 )}
 
@@ -294,6 +314,7 @@ export const BookingConfirmModal = ({
                       size="sm"
                       variant="light"
                       onPress={handleCopy}
+                      aria-label="Copiar link de pago"
                       title="Copiar link de pago"
                     >
                       <Copy size={15} />

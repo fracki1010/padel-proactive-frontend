@@ -15,15 +15,12 @@ import {
 } from "@heroui/react";
 import { AlertTriangle, Clock, CreditCard, History } from "lucide-react";
 import { useEffect, useState } from "react";
-import { publicService } from "../../../services/publicService";
-
-interface BookingDeposit {
-  required: boolean;
-  status: string;
-  amount: number;
-  expiresAt?: string | null;
-  refundable?: boolean;
-}
+import {
+  publicService,
+  type BookingDeposit,
+  type DepositStatus,
+} from "../../../services/publicService";
+import { openPaymentLink } from "../../../utils/openPaymentLink";
 
 interface Booking {
   _id: string;
@@ -71,7 +68,7 @@ const statusColor: Record<string, "primary" | "success" | "warning" | "danger" |
 };
 
 // Deposit subdocument copy — shown for holds, paid seña and refund flows.
-const depositStatusLabel: Record<string, string> = {
+const depositStatusLabel: Record<DepositStatus, string> = {
   pendiente: "Seña pendiente",
   pagado: "Seña pagada",
   expirado: "Seña vencida",
@@ -79,7 +76,7 @@ const depositStatusLabel: Record<string, string> = {
   reembolsado: "Reembolsado",
 };
 
-const depositStatusColor: Record<string, "warning" | "success" | "default" | "danger"> = {
+const depositStatusColor: Record<DepositStatus, "warning" | "success" | "default" | "danger"> = {
   pendiente: "warning",
   pagado: "success",
   expirado: "default",
@@ -103,7 +100,11 @@ const BookingCard = ({
   showCancel: boolean;
 }) => {
   const deposit = booking.deposit;
-  const canPay = booking.status === "pendiente_seña" && deposit?.status === "pendiente";
+  // The backend still allows a legacy `reservado` booking to mint a deposit
+  // link, so both statuses are payable while the seña is pending.
+  const canPay =
+    (booking.status === "pendiente_seña" || booking.status === "reservado") &&
+    deposit?.status === "pendiente";
 
   return (
     <div className="rounded-xl border border-default-200 bg-default-50 p-4 flex flex-col gap-2">
@@ -218,15 +219,25 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
     setPayingId(booking._id);
     try {
       // Mint a fresh link on demand: the list endpoint does not expose
-      // `initPoint`, and a stale preference may have expired.
+      // `initPoint`, and a stale preference may have expired. `openPaymentLink`
+      // falls back to copying the URL when the await loses the popup gesture.
       const res = await publicService.regeneratePaymentLink(slug, booking._id);
       const link = res.data?.initPoint;
       if (!link) throw new Error("empty payment link");
-      window.open(link, "_blank", "noopener,noreferrer");
-      addToast({ title: "Abrimos el link de pago de la seña", color: "success" });
+      await openPaymentLink(link);
     } catch (err: unknown) {
       const response = (err as { response?: { data?: { error?: string; code?: string } } })?.response;
       const code = response?.data?.code;
+      if (code === "DEPOSIT_EXPIRED") {
+        // Disable the pay action locally instead of only toasting.
+        setUpcoming((prev) =>
+          prev.map((b) =>
+            b._id === booking._id && b.deposit
+              ? { ...b, deposit: { ...b.deposit, status: "expirado" } }
+              : b,
+          ),
+        );
+      }
       const message = code === "DEPOSIT_EXPIRED"
         ? "La seña venció; el turno ya no admite pago"
         : code === "DEPOSIT_NOT_CONFIGURED"
