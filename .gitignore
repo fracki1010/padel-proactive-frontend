@@ -36,4 +36,7 @@ dist-ssr
 # dotenv environment variables file
 .env*
 
+# Firebase deploy cache
+.firebase/
+
 

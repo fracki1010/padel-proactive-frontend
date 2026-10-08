@@ -18,6 +18,7 @@ type DepositSettingsViewProps = {
   credentialMpUserId: string;
   maxDepositAmount: number;
   maxHoldMinutes: number;
+  isLoading: boolean;
   isSavingSettings: boolean;
   isSavingCredential: boolean;
   isDeletingCredential: boolean;
@@ -47,6 +48,7 @@ export const DepositSettingsView = ({
   credentialMpUserId,
   maxDepositAmount,
   maxHoldMinutes,
+  isLoading,
   isSavingSettings,
   isSavingCredential,
   isDeletingCredential,
@@ -70,9 +72,10 @@ export const DepositSettingsView = ({
     Number.isInteger(parsedHoldMinutes) &&
     parsedHoldMinutes >= 1 &&
     parsedHoldMinutes <= maxHoldMinutes;
-  const canSaveSettings = isAmountValid && isHoldValid && !isSavingSettings;
+  const canSaveSettings =
+    isAmountValid && isHoldValid && !isSavingSettings && !isLoading;
   const canSaveCredential =
-    accessTokenInput.trim().length > 0 && !isSavingCredential;
+    accessTokenInput.trim().length > 0 && !isSavingCredential && !isLoading;
   const statusLabel = credentialConfigured ? "Configurado" : "No configurado";
 
   return (
@@ -81,6 +84,7 @@ export const DepositSettingsView = ({
         <Button
           isIconOnly
           variant="flat"
+          aria-label="Volver al menú de perfil"
           onClick={onBack}
           className="bg-black/5 dark:bg-white/5 text-foreground rounded-md"
         >
@@ -89,6 +93,15 @@ export const DepositSettingsView = ({
         <h3 className="text-xl font-black text-foreground uppercase italic">
           Seña por MercadoPago
         </h3>
+        {isLoading ? (
+          <Chip
+            size="sm"
+            variant="flat"
+            className="ml-auto font-bold uppercase"
+          >
+            Cargando configuración…
+          </Chip>
+        ) : null}
       </div>
 
       <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-lg">
@@ -113,7 +126,8 @@ export const DepositSettingsView = ({
               <Switch
                 isSelected={depositEnabled}
                 onValueChange={onToggleDepositEnabled}
-                isDisabled={isSavingSettings}
+                isDisabled={isSavingSettings || isLoading}
+                aria-label="Requiere seña"
                 color="primary"
                 size="sm"
               />
@@ -129,6 +143,7 @@ export const DepositSettingsView = ({
                 type="number"
                 min={0}
                 max={maxDepositAmount}
+                isDisabled={isLoading}
                 className="flex-grow"
                 classNames={fieldClassNames}
               />
@@ -141,6 +156,7 @@ export const DepositSettingsView = ({
                 type="number"
                 min={1}
                 max={maxHoldMinutes}
+                isDisabled={isLoading}
                 className="flex-grow"
                 classNames={fieldClassNames}
               />
@@ -204,6 +220,7 @@ export const DepositSettingsView = ({
               placeholder="APP_USR-..."
               type="password"
               autoComplete="off"
+              isDisabled={isLoading}
               className="flex-grow"
               classNames={fieldClassNames}
             />
@@ -228,7 +245,7 @@ export const DepositSettingsView = ({
                   className="h-12 bg-red-500/10 text-red-500 border border-red-500/20 rounded-md font-black uppercase"
                   onPress={onDeleteCredential}
                   isLoading={isDeletingCredential}
-                  isDisabled={isDeletingCredential}
+                  isDisabled={isDeletingCredential || isLoading}
                   startContent={<Trash2 size={18} />}
                 >
                   Desactivar

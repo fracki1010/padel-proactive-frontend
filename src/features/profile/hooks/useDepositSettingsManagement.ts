@@ -1,5 +1,5 @@
 import { addToast } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   useDeleteMercadoPagoCredential,
@@ -37,10 +37,17 @@ export const useDepositSettingsManagement = () => {
   const [isSavingCredential, setIsSavingCredential] = useState(false);
   const [isDeletingCredential, setIsDeletingCredential] = useState(false);
 
+  // Seed the local form only from the FIRST successful load so a background or
+  // post-mutation refetch cannot silently replace in-progress edits.
+  const hasLoadedRef = useRef(false);
   const credentials = depositSettingsData?.credentials;
+  // "Ready" means we have server data to diff against; saving before that would
+  // PUT the initial defaults over the real config.
+  const isReady = !isLoading && Boolean(depositSettingsData);
 
   useEffect(() => {
-    if (!depositSettingsData) return;
+    if (!depositSettingsData || hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
     setDepositEnabledInput(Boolean(depositSettingsData.depositEnabled));
     setDepositAmountInput(String(depositSettingsData.depositAmount ?? 0));
     setHoldMinutesInput(
@@ -48,7 +55,16 @@ export const useDepositSettingsManagement = () => {
     );
   }, [depositSettingsData]);
 
+  // Never keep the write-only token in memory once the view unmounts.
+  useEffect(
+    () => () => {
+      setAccessTokenInput("");
+    },
+    [],
+  );
+
   const handleSaveSettings = async () => {
+    if (!isReady) return;
     const parsedAmount = Number(depositAmountInput);
     const parsedHoldMinutes = Number(holdMinutesInput);
 
@@ -106,6 +122,7 @@ export const useDepositSettingsManagement = () => {
   };
 
   const handleSaveCredential = async () => {
+    if (!isReady) return;
     const normalizedToken = accessTokenInput.trim();
     if (!normalizedToken) {
       addToast({
@@ -136,6 +153,7 @@ export const useDepositSettingsManagement = () => {
   };
 
   const handleDeleteCredential = async () => {
+    if (!isReady) return;
     setIsDeletingCredential(true);
     try {
       await deleteMercadoPagoCredential.mutateAsync();
@@ -157,8 +175,12 @@ export const useDepositSettingsManagement = () => {
     }
   };
 
+  // Called when the admin leaves the view so the token does not linger.
+  const handleLeaveView = () => setAccessTokenInput("");
+
   return {
     isLoading,
+    isReady,
     depositEnabledInput,
     depositAmountInput,
     holdMinutesInput,
@@ -178,5 +200,6 @@ export const useDepositSettingsManagement = () => {
     onSaveSettings: handleSaveSettings,
     onSaveCredential: handleSaveCredential,
     onDeleteCredential: handleDeleteCredential,
+    onLeaveView: handleLeaveView,
   };
 };

@@ -248,10 +248,14 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           credentialMpUserId={deposits.credentialMpUserId}
           maxDepositAmount={deposits.maxDepositAmount}
           maxHoldMinutes={deposits.maxHoldMinutes}
+          isLoading={!deposits.isReady}
           isSavingSettings={deposits.isSavingSettings}
           isSavingCredential={deposits.isSavingCredential}
           isDeletingCredential={deposits.isDeletingCredential}
-          onBack={() => setView("menu")}
+          onBack={() => {
+            deposits.onLeaveView();
+            setView("menu");
+          }}
           onToggleDepositEnabled={deposits.onToggleDepositEnabled}
           onDepositAmountChange={deposits.onDepositAmountChange}
           onHoldMinutesChange={deposits.onHoldMinutesChange}
