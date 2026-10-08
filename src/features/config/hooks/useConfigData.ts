@@ -1,7 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { configService } from "../../../services/api";
-import type { CompanyImage, DigestBackground } from "../../../services/configService";
+import type {
+  CompanyImage,
+  DepositSettingsResponse,
+  DigestBackground,
+  SetMercadoPagoCredentialPayload,
+  UpdateDepositSettingsPayload,
+} from "../../../services/configService";
 
 export const useCourts = (all = false, enabled = true) => {
   return useQuery({
@@ -195,6 +201,49 @@ export const useUpdatePenaltySettings = () => {
       configService.updatePenaltySettings(penaltyLimit),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["penalty-settings"] });
+    },
+  });
+};
+
+export const useDepositSettings = () => {
+  return useQuery<DepositSettingsResponse>({
+    queryKey: ["deposit-settings"],
+    queryFn: configService.getDepositSettings,
+    retry: 1,
+  });
+};
+
+export const useUpdateDepositSettings = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: UpdateDepositSettingsPayload) =>
+      configService.updateDepositSettings(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["deposit-settings"] });
+    },
+  });
+};
+
+export const useSetMercadoPagoCredential = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: SetMercadoPagoCredentialPayload) =>
+      configService.setMercadoPagoCredential(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["deposit-settings"] });
+    },
+  });
+};
+
+export const useDeleteMercadoPagoCredential = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => configService.deleteMercadoPagoCredential(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["deposit-settings"] });
     },
   });
 };

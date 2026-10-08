@@ -295,6 +295,35 @@ export type CompanyImage = {
 
 export type DigestBackground = CompanyImage;
 
+export type DepositCredential = {
+  configured: boolean;
+  provider: string;
+  masked: string;
+  mpUserId: string;
+};
+
+export type DepositSettings = {
+  depositEnabled: boolean;
+  depositAmount: number;
+  holdMinutes: number;
+};
+
+export type DepositSettingsResponse = DepositSettings & {
+  credentials: DepositCredential;
+};
+
+export type UpdateDepositSettingsPayload = {
+  depositEnabled?: boolean;
+  depositAmount?: number;
+  holdMinutes?: number;
+};
+
+export type SetMercadoPagoCredentialPayload = {
+  accessToken: string;
+  webhookSecret?: string;
+  mpUserId?: string;
+};
+
 export const configService = {
   getCompanyImages: async (type?: "portal_cover" | "digest_background"): Promise<CompanyImage[]> => {
     const response = await api.get("/config/company-images", { params: type ? { type } : {} });
@@ -403,6 +432,29 @@ export const configService = {
   updatePenaltySettings: async (penaltyLimit: number): Promise<any> => {
     const response = await api.put("/config/penalties", { penaltyLimit });
     return response.data;
+  },
+
+  getDepositSettings: async (): Promise<DepositSettingsResponse> => {
+    const response = await api.get("/config/deposits");
+    return response.data?.data;
+  },
+
+  updateDepositSettings: async (
+    payload: UpdateDepositSettingsPayload,
+  ): Promise<DepositSettingsResponse> => {
+    const response = await api.put("/config/deposits", payload);
+    return response.data?.data;
+  },
+
+  setMercadoPagoCredential: async (
+    payload: SetMercadoPagoCredentialPayload,
+  ): Promise<DepositCredential> => {
+    const response = await api.put("/config/deposits/credentials", payload);
+    return response.data?.data;
+  },
+
+  deleteMercadoPagoCredential: async (): Promise<void> => {
+    await api.delete("/config/deposits/credentials");
   },
 
   getBotAutomationSettings: async (): Promise<any> => {
