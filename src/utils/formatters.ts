@@ -43,6 +43,16 @@ export const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
+// Shared countdown formatter (slot locks + deposit holds). Always renders
+// hours so a long hold reads `H:MM:SS` instead of an ambiguous `180:00`.
+export const formatCountdown = (totalSeconds: number) => {
+  const safe = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+  const hours = Math.floor(safe / 3600);
+  const minutes = Math.floor((safe % 3600) / 60);
+  const seconds = safe % 60;
+  return `${hours}:${pad2(minutes)}:${pad2(seconds)}`;
+};
+
 const PHONE_PREFIXES = [
   { prefix: "598", flag: "🇺🇾" },
   { prefix: "595", flag: "🇵🇾" },

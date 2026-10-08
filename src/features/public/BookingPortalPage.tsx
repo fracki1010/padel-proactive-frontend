@@ -1,5 +1,5 @@
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner, addToast, useDisclosure } from "@heroui/react";
-import { Check, ChevronDown, Clock, Lock, LogIn, LogOut, Plus, Ticket, User } from "lucide-react";
+import { Check, ChevronDown, Clock, Lock, LogIn, LogOut, Plus, Ticket, User, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import logo from "../../assets/logo-8.svg";
@@ -7,8 +7,10 @@ import { useClientAuth } from "../../context/ClientAuthContext";
 import { useAdaptiveHero } from "../../hooks/useAdaptiveHero";
 import { publicService } from "../../services/publicService";
 import type { Announcement } from "../../types";
+import { formatCountdown } from "../../utils/formatters";
 import { HAPTIC_BOOKING_CONFIRMED, HAPTIC_TAP, vibrate } from "../../utils/haptics";
 import { getHolderId } from "../../utils/holderId";
+import { openPaymentLink } from "../../utils/openPaymentLink";
 import { Announcements } from "./components/Announcements";
 import { BookingConfirmModal } from "./components/BookingConfirmModal";
 import { ClientAuthModal } from "./components/ClientAuthModal";
@@ -50,6 +52,13 @@ interface ActiveLock {
   expiresAt: number;
   courtId: string;
   slotId: string;
+}
+
+interface PendingDeposit {
+  bookingId: string;
+  amount: number;
+  link: string;
+  expiresAt: string | null;
 }
 
 // ─── Helpers de fecha ────────────────────────────────────────────────────────
@@ -103,13 +112,6 @@ const isSlotPast = (startTime: string, selectedDate: string) => {
 const buildDates = () =>
   Array.from({ length: MAX_DAYS }, (_, i) => addDays(todayIso(), i));
 
-const formatCountdown = (totalSeconds: number) => {
-  const safe = Math.max(0, totalSeconds);
-  const minutes = Math.floor(safe / 60);
-  const seconds = safe % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-};
-
 // ─── Página ──────────────────────────────────────────────────────────────────
 
 export const BookingPortalPage = () => {
@@ -124,6 +126,13 @@ export const BookingPortalPage = () => {
   const [lock, setLock] = useState<ActiveLock | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const holderId = useMemo(() => getHolderId(), []);
+
+  // Deposit (seña) hold created by this session. Keeping the issued link in
+  // page state means the payment stays reachable even if the club disables
+  // deposits mid-flight (the already-minted preference is still valid).
+  const [pendingDeposit, setPendingDeposit] = useState<PendingDeposit | null>(null);
+  const [pendingSecondsLeft, setPendingSecondsLeft] = useState<number | null>(null);
+  const [isRegeneratingLink, setIsRegeneratingLink] = useState(false);
 
   const [clubInfo, setClubInfo] = useState<{
     club: { name: string; address?: string; coverImage?: string; companyId?: string };
@@ -221,6 +230,21 @@ export const BookingPortalPage = () => {
     return () => clearInterval(interval);
   }, [lock, refreshAvailability]);
 
+  // Countdown for a pending seña hold so the banner can show remaining time.
+  useEffect(() => {
+    if (!pendingDeposit?.expiresAt) {
+      setPendingSecondsLeft(null);
+      return;
+    }
+    const target = new Date(pendingDeposit.expiresAt).getTime();
+    const tick = () => {
+      setPendingSecondsLeft(Math.max(0, Math.round((target - Date.now()) / 1000)));
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [pendingDeposit?.expiresAt]);
+
   const releaseLock = useCallback(
     async (activeLock: ActiveLock | null) => {
       if (!slug || !activeLock) return;
@@ -311,6 +335,55 @@ export const BookingPortalPage = () => {
     setSelectedSlot(null);
     setLock(null);
     refreshAvailability();
+  };
+
+  const handleDepositPending = useCallback(
+    (info: PendingDeposit) => {
+      setPendingDeposit(info);
+    },
+    [],
+  );
+
+  // The modal can refresh the link after creating an empty one; mirror it here
+  // so the banner never holds a stale URL.
+  const handleDepositLinkChange = useCallback((link: string) => {
+    setPendingDeposit((prev) => (prev ? { ...prev, link } : prev));
+  }, []);
+
+  const handleResumeDepositPayment = () => {
+    if (pendingDeposit?.link) {
+      void openPaymentLink(pendingDeposit.link);
+    }
+  };
+
+  const handleRegenerateDepositLink = async () => {
+    if (!slug || !pendingDeposit) return;
+    setIsRegeneratingLink(true);
+    try {
+      const res = await publicService.regeneratePaymentLink(slug, pendingDeposit.bookingId);
+      const link = res.data?.initPoint;
+      if (!link) throw new Error("empty payment link");
+      setPendingDeposit((prev) => (prev ? { ...prev, link } : prev));
+      await openPaymentLink(link);
+    } catch (err: unknown) {
+      const response = (err as { response?: { data?: { error?: string; code?: string } } })?.response;
+      const code = response?.data?.code;
+      if (code === "DEPOSIT_EXPIRED") {
+        // Move the banner to its expired state locally.
+        setPendingDeposit((prev) =>
+          prev ? { ...prev, expiresAt: prev.expiresAt ?? new Date().toISOString() } : prev,
+        );
+        setPendingSecondsLeft(0);
+      }
+      const message = code === "DEPOSIT_EXPIRED"
+        ? "La seña venció; el turno ya no admite pago"
+        : code === "DEPOSIT_NOT_CONFIGURED"
+          ? "El pago de seña no está disponible en este momento"
+          : response?.data?.error || "No se pudo generar el link de pago";
+      addToast({ title: message, color: "danger" });
+    } finally {
+      setIsRegeneratingLink(false);
+    }
   };
 
   const courts = useMemo(
@@ -822,7 +895,10 @@ export const BookingPortalPage = () => {
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <div className="flex-1 min-w-0">
             {lock && secondsLeft !== null ? (
-              <p className="text-[10px] font-bold tracking-widest uppercase text-warning-500 mb-0.5 flex items-center gap-1">
+              <p
+                aria-live="polite"
+                className="text-[10px] font-bold tracking-widest uppercase text-warning-500 mb-0.5 flex items-center gap-1"
+              >
                 <Clock size={11} /> Reservá en {formatCountdown(secondsLeft)}
               </p>
             ) : (
@@ -850,6 +926,62 @@ export const BookingPortalPage = () => {
         </div>
       </div>
 
+      {/* ── Aviso de seña pendiente ────────────────────────────────────────── */}
+      {pendingDeposit && (() => {
+        const fallbackSeconds = pendingDeposit.expiresAt
+          ? Math.max(0, Math.round((new Date(pendingDeposit.expiresAt).getTime() - Date.now()) / 1000))
+          : null;
+        const seconds = pendingSecondsLeft ?? fallbackSeconds;
+        const expired = Boolean(pendingDeposit.expiresAt) && seconds !== null && seconds <= 0;
+        return (
+          <div
+            className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-t border-warning-200 dark:border-warning-800 px-4 py-3"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
+          >
+            <div className="max-w-2xl mx-auto flex items-center gap-3">
+              <div className="flex-1 min-w-0" aria-live="polite">
+                <p
+                  className={`text-[10px] font-bold tracking-widest uppercase ${
+                    expired ? "text-default-400" : "text-warning-500"
+                  }`}
+                >
+                  {expired ? "Seña vencida" : "Seña pendiente"}
+                </p>
+                <p className="font-bold text-sm text-foreground truncate">
+                  ${pendingDeposit.amount.toLocaleString("es-AR")}
+                  {!expired && seconds !== null
+                    ? ` · ${formatCountdown(seconds)}`
+                    : ""}
+                </p>
+              </div>
+              {!expired && (
+                <Button
+                  color="primary"
+                  radius="lg"
+                  size="sm"
+                  className="font-bold shrink-0"
+                  isLoading={isRegeneratingLink && !pendingDeposit.link}
+                  onPress={pendingDeposit.link ? handleResumeDepositPayment : handleRegenerateDepositLink}
+                >
+                  {pendingDeposit.link ? "Pagar seña" : "Generar link"}
+                </Button>
+              )}
+              <Button
+                isIconOnly
+                size="sm"
+                variant="light"
+                className="shrink-0"
+                onPress={() => setPendingDeposit(null)}
+                aria-label="Descartar aviso de seña"
+                title="Descartar aviso"
+              >
+                <X size={16} />
+              </Button>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ── Modales ────────────────────────────────────────────────────────── */}
       {slug && (
         <>
@@ -870,6 +1002,8 @@ export const BookingPortalPage = () => {
             holderId={holderId}
             onConfirmed={handleBookingConfirmed}
             onConflict={handleBookingConflict}
+            onDepositPending={handleDepositPending}
+            onDepositLinkChange={handleDepositLinkChange}
           />
           <MyBookingsDrawer
             isOpen={isMyBookingsOpen}
