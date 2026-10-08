@@ -14,6 +14,7 @@ import {
   Save,
   Shield,
   Target,
+  Wallet,
 } from "lucide-react";
 import {
   composePhoneForStorage,
@@ -41,6 +42,7 @@ type ProfileMenuViewProps = {
   onGoToWhatsapp: () => void;
   onGoToSchedule: () => void;
   onGoToBotAutomation: () => void;
+  onGoToDeposits: () => void;
   onGoToTenants: () => void;
   onGoToClubClosures: () => void;
   onGoToAnnouncements: () => void;
@@ -96,6 +98,7 @@ export const ProfileMenuView = ({
   onGoToWhatsapp,
   onGoToSchedule,
   onGoToBotAutomation,
+  onGoToDeposits,
   onGoToTenants,
   onGoToClubClosures,
   onGoToAnnouncements,
@@ -275,6 +278,14 @@ export const ProfileMenuView = ({
               subtitle="Avisos, confianza y penalizaciones"
               icon={<Bot size={18} />}
               iconClassName="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-black transition-all"
+            />
+
+            <MenuItemButton
+              onPress={onGoToDeposits}
+              title="Seña por MercadoPago"
+              subtitle="Cobros y credenciales"
+              icon={<Wallet size={18} />}
+              iconClassName="w-10 h-10 bg-sky-500/10 rounded-xl flex items-center justify-center text-sky-400 group-hover:bg-sky-500 group-hover:text-black transition-all"
             />
 
             <MenuItemButton
