@@ -46,6 +46,7 @@ export const Navbar = ({
         <Button
           isIconOnly
           variant="light"
+          aria-label="Ayuda"
           className="hidden lg:flex bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)] w-11 h-11"
           radius="full"
           isDisabled
@@ -63,6 +64,7 @@ export const Navbar = ({
           <Button
             isIconOnly
             variant="flat"
+            aria-label="Notificaciones"
             className="bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-primary)] w-11 h-11"
             radius="full"
             onPress={onBellClick}
@@ -73,10 +75,19 @@ export const Navbar = ({
         <Avatar
           src={avatarSrc}
           name={initials}
+          role="button"
+          tabIndex={0}
+          aria-label="Mi cuenta"
           className="w-11 h-11 border-2 border-[var(--md-sys-color-outline-variant)] cursor-pointer hover:scale-105 active:scale-95 transition-transform"
           radius="full"
           style={!avatarSrc ? { backgroundColor: getAvatarColor(avatarName) } : undefined}
           onClick={onAvatarClick}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              onAvatarClick?.();
+            }
+          }}
         />
       </NavbarContent>
     </HeroNavbar>

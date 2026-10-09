@@ -937,7 +937,7 @@ export const BookingPortalPage = () => {
         const expired = Boolean(pendingDeposit.expiresAt) && seconds !== null && seconds <= 0;
         return (
           <div
-            className="fixed bottom-0 left-0 right-0 z-30 bg-[var(--md-sys-color-surface-container)] border-t border-warning-200 dark:border-warning-800 px-4 py-3"
+            className="fixed bottom-0 left-0 right-0 z-30 bg-[var(--md-sys-color-surface-container)] border-t border-[var(--md-sys-color-outline-variant)] px-4 py-3"
             style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
           >
             <div className="max-w-2xl mx-auto flex items-center gap-3">
