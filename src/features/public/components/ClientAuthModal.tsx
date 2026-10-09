@@ -1,10 +1,10 @@
 import {
   Button,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerHeader,
   Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
   addToast,
 } from "@heroui/react";
 import { signInWithPopup } from "firebase/auth";
@@ -16,6 +16,7 @@ import { PhoneInput, defaultPhone } from "./PhoneInput";
 import type { PhoneValue } from "./PhoneInput";
 import { normalizePhoneForApi } from "../../../utils/phone";
 import { fieldInputClassNames } from "../../../components/ui/fieldStyles";
+import { useIsDesktop } from "../../../hooks/useIsDesktop";
 
 interface Props {
   isOpen: boolean;
@@ -55,6 +56,7 @@ const GoogleIcon = () => (
 
 export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => {
   const { loginClient } = useClientAuth();
+  const isDesktop = useIsDesktop();
   const [step, setStep] = useState<Step>("phone");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -243,17 +245,27 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} placement="center" size="sm">
-      <ModalContent>
+    <Drawer
+      isOpen={isOpen}
+      onClose={handleClose}
+      placement={isDesktop ? "right" : "bottom"}
+      size={isDesktop ? "sm" : "3xl"}
+      classNames={{
+        base: isDesktop
+          ? "rounded-l-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]"
+          : "rounded-t-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]",
+      }}
+    >
+      <DrawerContent>
         {step === "phone" && (
           <>
-            <ModalHeader className="flex flex-col gap-1">
+            <DrawerHeader className="flex flex-col gap-1">
               <span className="text-lg font-bold">Mi cuenta</span>
               <span className="text-sm text-default-500 font-normal">
                 Entrá con tu número de WhatsApp para reservar
               </span>
-            </ModalHeader>
-            <ModalBody className="pb-6">
+            </DrawerHeader>
+            <DrawerBody className="pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
               <div className="flex flex-col gap-4">
                 <PhoneInput value={phone} onChange={setPhone} isDisabled={isLoading} />
                 <p className="text-xs text-default-400">
@@ -279,19 +291,19 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                   Entrar con Google
                 </Button>
               </div>
-            </ModalBody>
+            </DrawerBody>
           </>
         )}
 
         {step === "otp" && (
           <>
-            <ModalHeader className="flex flex-col gap-1">
+            <DrawerHeader className="flex flex-col gap-1">
               <span className="text-lg font-bold">Ingresá el código</span>
               <span className="text-sm text-default-500 font-normal">
                 Te enviamos un código a WhatsApp ***{masked}
               </span>
-            </ModalHeader>
-            <ModalBody className="pb-6">
+            </DrawerHeader>
+            <DrawerBody className="pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
               <div className="flex flex-col gap-4">
                 <Input
                   label="Código de 6 dígitos"
@@ -317,16 +329,16 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                   </Button>
                 </div>
               </div>
-            </ModalBody>
+            </DrawerBody>
           </>
         )}
 
         {step === "name" && (
           <>
-            <ModalHeader className="flex flex-col gap-1">
+            <DrawerHeader className="flex flex-col gap-1">
               <span className="text-lg font-bold">Completá tu registro</span>
-            </ModalHeader>
-            <ModalBody className="pb-6">
+            </DrawerHeader>
+            <DrawerBody className="pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
               <div className="flex flex-col gap-4">
                 <p className="text-sm text-warning-600 bg-warning-50 rounded-medium px-3 py-2">
                   ⚠️ Ingresá tu nombre y apellido real — así te identificamos y te encontramos en el club
@@ -353,19 +365,19 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                   Volver
                 </Button>
               </div>
-            </ModalBody>
+            </DrawerBody>
           </>
         )}
 
         {step === "google_phone" && (
           <>
-            <ModalHeader className="flex flex-col gap-1">
+            <DrawerHeader className="flex flex-col gap-1">
               <span className="text-lg font-bold">Verificá tu teléfono</span>
               <span className="text-sm text-default-500 font-normal">
                 Para entrar con Google necesitamos verificar tu número por WhatsApp
               </span>
-            </ModalHeader>
-            <ModalBody className="pb-6">
+            </DrawerHeader>
+            <DrawerBody className="pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
               <div className="flex flex-col gap-4">
                 <PhoneInput value={googlePhone} onChange={setGooglePhone} isDisabled={isLoading} />
                 <Button color="primary" onPress={handleGoogleSendOtp} isLoading={isLoading} fullWidth>
@@ -375,19 +387,19 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                   Volver
                 </Button>
               </div>
-            </ModalBody>
+            </DrawerBody>
           </>
         )}
 
         {step === "google_otp" && (
           <>
-            <ModalHeader className="flex flex-col gap-1">
+            <DrawerHeader className="flex flex-col gap-1">
               <span className="text-lg font-bold">Ingresá el código</span>
               <span className="text-sm text-default-500 font-normal">
                 Te enviamos un código a WhatsApp ***{googleMasked}
               </span>
-            </ModalHeader>
-            <ModalBody className="pb-6">
+            </DrawerHeader>
+            <DrawerBody className="pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
               <div className="flex flex-col gap-4">
                 <Input
                   label="Código de 6 dígitos"
@@ -408,10 +420,10 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                   Volver
                 </Button>
               </div>
-            </ModalBody>
+            </DrawerBody>
           </>
         )}
-      </ModalContent>
-    </Modal>
+      </DrawerContent>
+    </Drawer>
   );
 };
