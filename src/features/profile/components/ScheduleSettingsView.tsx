@@ -120,7 +120,7 @@ export const ScheduleSettingsView = ({
       </div>
 
       <section className="lg:hidden bg-dark-100 p-3 rounded-lg border border-black/5 dark:border-white/5">
-        <p className="text-[10px] uppercase tracking-widest font-black text-gray-500 px-2 pb-2">
+        <p className="text-[10px] uppercase tracking-widest font-black text-on-surface-variant px-2 pb-2">
           Secciones
         </p>
         <div className="grid grid-cols-3 gap-2">
@@ -130,7 +130,7 @@ export const ScheduleSettingsView = ({
             className={`h-10 rounded-xl border text-[10px] uppercase tracking-widest font-black transition-colors ${
               activeMobileSection === "create"
                 ? "bg-primary/20 border-primary/40 text-primary"
-                : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-gray-400"
+                : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-on-surface-variant"
             }`}
           >
             Crear
@@ -141,7 +141,7 @@ export const ScheduleSettingsView = ({
             className={`h-10 rounded-xl border text-[10px] uppercase tracking-widest font-black transition-colors ${
               activeMobileSection === "configure"
                 ? "bg-primary/20 border-primary/40 text-primary"
-                : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-gray-400"
+                : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-on-surface-variant"
             }`}
           >
             Configurar
@@ -152,7 +152,7 @@ export const ScheduleSettingsView = ({
             className={`h-10 rounded-xl border text-[10px] uppercase tracking-widest font-black transition-colors ${
               activeMobileSection === "price"
                 ? "bg-primary/20 border-primary/40 text-primary"
-                : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-gray-400"
+                : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-on-surface-variant"
             }`}
           >
             Precio
@@ -161,7 +161,7 @@ export const ScheduleSettingsView = ({
       </section>
 
       <section className="hidden lg:block bg-dark-100 p-3 rounded-lg border border-black/5 dark:border-white/5">
-        <p className="text-[10px] uppercase tracking-widest font-black text-gray-500 px-2 pb-2">
+        <p className="text-[10px] uppercase tracking-widest font-black text-on-surface-variant px-2 pb-2">
           Atajos de configuración
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -170,27 +170,27 @@ export const ScheduleSettingsView = ({
             onClick={() => goToSection(createSectionRef)}
             className="rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4 text-left hover:border-primary/40 hover:bg-primary/10 transition-colors"
           >
-            <p className="text-[10px] uppercase tracking-widest font-black text-gray-500">1</p>
+            <p className="text-[10px] uppercase tracking-widest font-black text-on-surface-variant">1</p>
             <p className="text-sm font-black text-foreground uppercase">Crear turno</p>
-            <p className="text-[10px] text-gray-500 font-bold uppercase mt-1">Alta de horario</p>
+            <p className="text-[10px] text-on-surface-variant font-bold uppercase mt-1">Alta de horario</p>
           </button>
           <button
             type="button"
             onClick={() => goToSection(configureSectionRef)}
             className="rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4 text-left hover:border-primary/40 hover:bg-primary/10 transition-colors"
           >
-            <p className="text-[10px] uppercase tracking-widest font-black text-gray-500">2</p>
+            <p className="text-[10px] uppercase tracking-widest font-black text-on-surface-variant">2</p>
             <p className="text-sm font-black text-foreground uppercase">Configurar turnos</p>
-            <p className="text-[10px] text-gray-500 font-bold uppercase mt-1">Activar y desactivar</p>
+            <p className="text-[10px] text-on-surface-variant font-bold uppercase mt-1">Activar y desactivar</p>
           </button>
           <button
             type="button"
             onClick={() => goToSection(basePriceSectionRef)}
             className="rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4 text-left hover:border-primary/40 hover:bg-primary/10 transition-colors"
           >
-            <p className="text-[10px] uppercase tracking-widest font-black text-gray-500">3</p>
+            <p className="text-[10px] uppercase tracking-widest font-black text-on-surface-variant">3</p>
             <p className="text-sm font-black text-foreground uppercase">Precio base</p>
-            <p className="text-[10px] text-gray-500 font-bold uppercase mt-1">Tarifa global</p>
+            <p className="text-[10px] text-on-surface-variant font-bold uppercase mt-1">Tarifa global</p>
           </button>
         </div>
       </section>
@@ -205,7 +205,7 @@ export const ScheduleSettingsView = ({
           <Chip size="sm" className="bg-primary/20 text-primary border border-primary/30 font-black">
             1
           </Chip>
-          <p className="text-xs uppercase tracking-widest font-bold text-gray-500">Crear turno</p>
+          <p className="text-xs uppercase tracking-widest font-bold text-on-surface-variant">Crear turno</p>
         </div>
         <div className="bg-dark-100 p-6 rounded-lg border border-black/5 dark:border-white/5 space-y-4">
           <div className="flex items-center justify-between gap-3">
@@ -215,7 +215,7 @@ export const ScheduleSettingsView = ({
                 Nuevo Horario
               </p>
             </div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">
               Inicio - Fin - Precio
             </p>
           </div>
@@ -272,11 +272,11 @@ export const ScheduleSettingsView = ({
             <Chip size="sm" className="bg-primary/20 text-primary border border-primary/30 font-black">
               2
             </Chip>
-            <p className="text-xs uppercase tracking-widest font-bold text-gray-500">
+            <p className="text-xs uppercase tracking-widest font-bold text-on-surface-variant">
               Configurar turnos
             </p>
           </div>
-          <p className="text-xs uppercase tracking-widest font-bold text-gray-500">
+          <p className="text-xs uppercase tracking-widest font-bold text-on-surface-variant">
             Activar / desactivar
           </p>
         </div>
@@ -284,7 +284,7 @@ export const ScheduleSettingsView = ({
           <Card className="bg-dark-100 border border-dashed border-black/15 dark:border-white/15 rounded-lg">
             <CardBody className="p-8 text-center">
               <p className="font-bold text-foreground">Todavía no hay turnos creados.</p>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-on-surface-variant mt-1">
                 Cargá el primer horario para empezar a tomar reservas.
               </p>
             </CardBody>
@@ -299,7 +299,7 @@ export const ScheduleSettingsView = ({
               <CardBody className="p-5 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-4">
                   <div
-                    className={`w-12 h-12 ${slot.isActive ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-gray-500"} rounded-md flex items-center justify-center`}
+                    className={`w-12 h-12 ${slot.isActive ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-on-surface-variant"} rounded-md flex items-center justify-center`}
                   >
                     <Clock size={20} />
                   </div>
@@ -344,7 +344,7 @@ export const ScheduleSettingsView = ({
           <Chip size="sm" className="bg-primary/20 text-primary border border-primary/30 font-black">
             3
           </Chip>
-          <p className="text-xs uppercase tracking-widest font-bold text-gray-500">Precio base</p>
+          <p className="text-xs uppercase tracking-widest font-bold text-on-surface-variant">Precio base</p>
         </div>
         <div className="bg-primary/10 p-6 rounded-lg border border-primary/20 space-y-4">
           <div className="flex items-center gap-3">

@@ -88,14 +88,14 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
           <h2 className="text-2xl font-black">
             {mode === "create" ? "Nuevo Socio" : "Editar Socio"}
           </h2>
-          <p className="text-sm text-gray-500 font-normal">
+          <p className="text-sm text-on-surface-variant font-normal">
             Completa la información del perfil del socio.
           </p>
         </DrawerHeader>
         <DrawerBody className="py-8 space-y-8 dark">
           <div className="max-w-2xl mx-auto space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+              <label className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider">
                 Nombre Completo
               </label>
               <Input
@@ -111,7 +111,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+              <label className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider">
                 Teléfono
               </label>
               <div className="flex gap-3">

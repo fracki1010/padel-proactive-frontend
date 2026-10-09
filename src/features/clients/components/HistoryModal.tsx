@@ -50,7 +50,7 @@ export const HistoryModal = ({
             />
             <div>
               <h2 className="text-xl font-black">Historial de {user?.name}</h2>
-              <p className="text-xs text-gray-500 font-normal">
+              <p className="text-xs text-on-surface-variant font-normal">
                 Registro completo de turnos y pagos
               </p>
             </div>
@@ -63,8 +63,8 @@ export const HistoryModal = ({
             </div>
           ) : history.length === 0 ? (
             <div className="text-center py-12 bg-dark-200 rounded-md border border-black/5 dark:border-white/5">
-              <Info size={32} className="mx-auto text-gray-600 mb-2" />
-              <p className="text-gray-500">
+              <Info size={32} className="mx-auto text-on-surface-variant mb-2" />
+              <p className="text-on-surface-variant">
                 Este socio aún no tiene actividad registrada.
               </p>
             </div>
@@ -89,7 +89,7 @@ export const HistoryModal = ({
                           </span>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">
+                          <p className="text-xs text-on-surface-variant font-bold uppercase tracking-wider mb-1">
                             {format(stableDate, "MMMM yyyy", {
                               locale: es,
                             })}
@@ -100,7 +100,7 @@ export const HistoryModal = ({
                               {item.timeSlot?.startTime}
                             </div>
                             <div className="h-3 w-[1px] bg-black/10 dark:bg-white/10 hidden sm:block" />
-                            <p className="text-sm font-medium text-gray-300">
+                            <p className="text-sm font-medium text-on-surface-variant">
                               {item.court?.name || "Mantenimiento"}
                             </p>
                           </div>

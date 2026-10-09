@@ -57,7 +57,7 @@ export const DigestBackgroundsGrid = ({
 
   return (
     <div className="space-y-3">
-      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+      <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
         Fondos de imagen ({backgrounds.length}/{MAX_SLOTS}) — se elige uno al azar por envío
       </p>
       <div className="grid grid-cols-3 gap-2">
@@ -97,7 +97,7 @@ export const DigestBackgroundsGrid = ({
                   type="button"
                   onClick={() => inputRefs.current[order]?.click()}
                   disabled={isUploading}
-                  className="w-full h-full flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-sky-400 transition-colors disabled:opacity-40"
+                  className="w-full h-full flex flex-col items-center justify-center gap-1 text-on-surface-variant hover:text-sky-400 transition-colors disabled:opacity-40"
                 >
                   <ImagePlus size={20} />
                   <span className="text-[10px] font-black uppercase">{order}</span>
@@ -125,7 +125,7 @@ export const DigestBackgroundsGrid = ({
           );
         })}
       </div>
-      <p className="text-[11px] text-gray-400">
+      <p className="text-[11px] text-on-surface-variant">
         JPG, PNG, WebP o HEIC · máx {MAX_MB}MB · si no hay fondos se usa el fondo oscuro predeterminado.
       </p>
     </div>

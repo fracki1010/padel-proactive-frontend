@@ -48,7 +48,7 @@ export const AdminStep = ({
   return (
     <Card className="bg-dark-100/70 border border-black/10 dark:border-white/10 rounded-lg">
       <CardBody className="p-5 sm:p-6 space-y-4">
-        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+        <p className="text-[10px] text-on-surface-variant font-black uppercase tracking-widest">
           Paso 3 • Primer admin de empresa
         </p>
 
@@ -78,7 +78,7 @@ export const AdminStep = ({
           classNames={{
             inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-md",
             input: "text-foreground font-bold",
-            label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
+            label: "text-on-surface-variant text-[10px] font-black uppercase tracking-widest",
           }}
         />
 
@@ -94,7 +94,7 @@ export const AdminStep = ({
           classNames={{
             inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-md",
             input: "text-foreground font-bold",
-            label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
+            label: "text-on-surface-variant text-[10px] font-black uppercase tracking-widest",
           }}
         />
 
@@ -112,7 +112,7 @@ export const AdminStep = ({
             classNames={{
               trigger: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-md",
               value: "text-foreground font-bold",
-              label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
+              label: "text-on-surface-variant text-[10px] font-black uppercase tracking-widest",
             }}
           >
             {PHONE_COUNTRY_OPTIONS.map((country) => (
@@ -133,7 +133,7 @@ export const AdminStep = ({
             classNames={{
               inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-md",
               input: "text-foreground font-bold",
-              label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
+              label: "text-on-surface-variant text-[10px] font-black uppercase tracking-widest",
             }}
           />
         </div>

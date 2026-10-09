@@ -94,8 +94,8 @@ export const BookingDetailDrawer = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="p-4 bg-dark-100 rounded-md border border-black/5 dark:border-white/5 flex flex-col gap-1">
-                    <Calendar size={18} className="text-gray-500 mb-1" />
-                    <span className="text-[10px] text-gray-500 font-black uppercase">
+                    <Calendar size={18} className="text-on-surface-variant mb-1" />
+                    <span className="text-[10px] text-on-surface-variant font-black uppercase">
                       FECHA
                     </span>
                     <span className="text-foreground font-bold">
@@ -103,8 +103,8 @@ export const BookingDetailDrawer = ({
                     </span>
                   </div>
                   <div className="p-4 bg-dark-100 rounded-md border border-black/5 dark:border-white/5 flex flex-col gap-1">
-                    <Clock size={18} className="text-gray-500 mb-1" />
-                    <span className="text-[10px] text-gray-500 font-black uppercase">
+                    <Clock size={18} className="text-on-surface-variant mb-1" />
+                    <span className="text-[10px] text-on-surface-variant font-black uppercase">
                       HORARIO
                     </span>
                     <span className="text-foreground font-bold">
@@ -112,8 +112,8 @@ export const BookingDetailDrawer = ({
                     </span>
                   </div>
                   <div className="p-4 bg-dark-100 rounded-md border border-black/5 dark:border-white/5 flex flex-col gap-1 sm:col-span-2">
-                    <MapPin size={18} className="text-gray-500 mb-1" />
-                    <span className="text-[10px] text-gray-500 font-black uppercase">
+                    <MapPin size={18} className="text-on-surface-variant mb-1" />
+                    <span className="text-[10px] text-on-surface-variant font-black uppercase">
                       CANCHA
                     </span>
                     <span className="text-foreground font-bold">
@@ -124,12 +124,12 @@ export const BookingDetailDrawer = ({
                   <div className="p-4 bg-dark-100 rounded-md border border-black/5 dark:border-white/5 flex items-center justify-between sm:col-span-2">
                     <div className="flex gap-4 items-center">
                       <div
-                        className={`w-12 h-12 ${selectedBooking?.paymentStatus === "pagado" ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-gray-500"} rounded-md flex items-center justify-center`}
+                        className={`w-12 h-12 ${selectedBooking?.paymentStatus === "pagado" ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-on-surface-variant"} rounded-md flex items-center justify-center`}
                       >
                         <CreditCard size={20} />
                       </div>
                       <div>
-                        <span className="text-[10px] text-gray-500 font-black uppercase block">
+                        <span className="text-[10px] text-on-surface-variant font-black uppercase block">
                           PAGO
                         </span>
                         <span
@@ -259,7 +259,7 @@ export const BookingDetailDrawer = ({
                 Confirmar cancelación
               </ModalHeader>
               <ModalBody className="space-y-4">
-                <p className="text-sm text-gray-300">
+                <p className="text-sm text-on-surface-variant">
                   ¿Querés cancelar este turno y aplicar penalización al cliente?
                 </p>
                 <div className="flex items-center justify-between rounded-md border border-black/10 dark:border-white/10 bg-dark-200 px-4 py-3">
@@ -267,7 +267,7 @@ export const BookingDetailDrawer = ({
                     <p className="text-sm font-bold text-foreground">
                       Aplicar penalización
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-on-surface-variant">
                       Si está activo, suma 1 penalización al socio.
                     </p>
                   </div>

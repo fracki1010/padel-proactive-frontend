@@ -88,7 +88,7 @@ export const WhatsappSettingsView = ({
         <CardBody className="p-6 space-y-5">
           <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
                 Estado actual
               </p>
               <Chip
@@ -101,13 +101,13 @@ export const WhatsappSettingsView = ({
               </Chip>
             </div>
             <div className="space-y-2">
-              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
                 Siguiente paso
               </p>
               <p className="text-foreground font-bold text-sm">{nextStepMessage}</p>
             </div>
             <div className="space-y-2 md:col-span-2">
-              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
                 Worker WhatsApp
               </p>
               <div className="flex items-center gap-2">
@@ -119,7 +119,7 @@ export const WhatsappSettingsView = ({
                 >
                   {workerOnline ? "Online" : "Offline"}
                 </Chip>
-                <p className="text-xs text-gray-400 font-medium">
+                <p className="text-xs text-on-surface-variant font-medium">
                   Último heartbeat: {workerHeartbeatAt || "sin datos"}
                 </p>
               </div>
@@ -128,7 +128,7 @@ export const WhatsappSettingsView = ({
 
           <div className="flex items-center justify-between gap-4 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md p-4">
             <div>
-              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
                 Activación Manual
               </p>
               <p className="text-foreground font-bold text-sm">
@@ -149,7 +149,7 @@ export const WhatsappSettingsView = ({
 
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
                 Estado del bot
               </p>
               <p className="text-foreground font-bold text-sm">
@@ -202,7 +202,7 @@ export const WhatsappSettingsView = ({
           </div>
 
           <div className="bg-black/5 dark:bg-white/5 rounded-md border border-black/10 dark:border-white/10 p-4">
-            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">
+            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-3">
               Flujo recomendado
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -211,7 +211,7 @@ export const WhatsappSettingsView = ({
                   <Smartphone size={16} />
                   <p className="text-[10px] font-black uppercase tracking-wide">1. Activar</p>
                 </div>
-                <p className="text-xs text-gray-300 font-bold">
+                <p className="text-xs text-on-surface-variant font-bold">
                   Encendé el switch manual para que el bot inicie.
                 </p>
               </div>
@@ -220,7 +220,7 @@ export const WhatsappSettingsView = ({
                   <QrCode size={16} />
                   <p className="text-[10px] font-black uppercase tracking-wide">2. Escanear QR</p>
                 </div>
-                <p className="text-xs text-gray-300 font-bold">
+                <p className="text-xs text-on-surface-variant font-bold">
                   Vinculá el teléfono administrador desde WhatsApp.
                 </p>
               </div>
@@ -229,7 +229,7 @@ export const WhatsappSettingsView = ({
                   <CheckCircle2 size={16} />
                   <p className="text-[10px] font-black uppercase tracking-wide">3. Operativo</p>
                 </div>
-                <p className="text-xs text-gray-300 font-bold">
+                <p className="text-xs text-on-surface-variant font-bold">
                   Cuando diga Conectado, ya quedan activas las alertas.
                 </p>
               </div>
@@ -239,7 +239,7 @@ export const WhatsappSettingsView = ({
           <div className="bg-black/5 dark:bg-white/5 rounded-md p-5 border border-black/10 dark:border-white/10 space-y-4">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
                   Aviso a grupo por cancelaciones
                 </p>
                 <p className="text-foreground font-bold text-sm">
@@ -278,7 +278,7 @@ export const WhatsappSettingsView = ({
               isDisabled={isLoadingWhatsappGroups || !whatsappGroups.length}
               classNames={{
                 trigger: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
-                label: "text-gray-400 font-bold mb-2",
+                label: "text-on-surface-variant font-bold mb-2",
                 value: "text-foreground font-bold",
                 popoverContent: "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
                 listbox: "text-foreground",
@@ -292,12 +292,12 @@ export const WhatsappSettingsView = ({
             </Select>
 
             {!!cancellationGroupIdInput && (
-              <p className="text-[11px] text-gray-400 font-bold">
+              <p className="text-[11px] text-on-surface-variant font-bold">
                 Grupo seleccionado: {cancellationGroupNameInput || cancellationGroupIdInput}
               </p>
             )}
 
-            <p className="text-[10px] text-gray-500 font-bold italic">
+            <p className="text-[10px] text-on-surface-variant font-bold italic">
               * Seleccionando un grupo se guarda automáticamente la configuración.
             </p>
             {!whatsappGroups.length && !isLoadingWhatsappGroups && (
@@ -314,7 +314,7 @@ export const WhatsappSettingsView = ({
 
           {!whatsappEnabled ? (
             <div className="bg-black/5 dark:bg-white/5 rounded-md p-5 border border-black/10 dark:border-white/10">
-              <p className="text-xs text-gray-300 font-bold uppercase tracking-wide">
+              <p className="text-xs text-on-surface-variant font-bold uppercase tracking-wide">
                 {whatsappStatus === "logged_out"
                   ? "La sesión se cerró desde el dispositivo. Activá el switch para volver a generar el QR."
                   : "WhatsApp está desactivado. Activá el switch para iniciar y generar QR."}
@@ -359,7 +359,7 @@ export const WhatsappSettingsView = ({
             </div>
           ) : (
             <div className="bg-black/5 dark:bg-white/5 rounded-md p-5 border border-black/10 dark:border-white/10">
-              <p className="text-xs text-gray-300 font-bold uppercase tracking-wide">
+              <p className="text-xs text-on-surface-variant font-bold uppercase tracking-wide">
                 {whatsappStatus === "ready"
                   ? "WhatsApp ya está conectado. Si querés regenerar el QR, cerrá sesión del dispositivo actual."
                   : "El QR aparecerá acá automáticamente cuando WhatsApp lo requiera."}
@@ -368,7 +368,7 @@ export const WhatsappSettingsView = ({
           )}
 
           {!!whatsappState?.updatedAt && (
-            <p className="text-[10px] text-gray-500 font-bold italic">
+            <p className="text-[10px] text-on-surface-variant font-bold italic">
               Última actualización:{" "}
               {new Date(whatsappState.updatedAt).toLocaleString()}
             </p>

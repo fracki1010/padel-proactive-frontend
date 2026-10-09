@@ -127,7 +127,7 @@ export const FinanceDesktopView = ({
                 isIconOnly
                 size="sm"
                 variant="light"
-                className="text-gray-400"
+                className="text-on-surface-variant"
                 onPress={onPrevMonth}
               >
                 <ChevronLeft size={16} />
@@ -139,7 +139,7 @@ export const FinanceDesktopView = ({
                 isIconOnly
                 size="sm"
                 variant="light"
-                className="text-gray-400"
+                className="text-on-surface-variant"
                 onPress={onNextMonth}
               >
                 <ChevronRight size={16} />
@@ -167,7 +167,7 @@ export const FinanceDesktopView = ({
                     className="w-full max-w-14 rounded-t-md bg-primary hover:opacity-80 transition-opacity cursor-default"
                     style={{ height: normalizedHeights[index] || 2 }}
                   />
-                  <span className="text-[10px] font-semibold text-gray-500 mt-1">
+                  <span className="text-[10px] font-semibold text-on-surface-variant mt-1">
                     {dayLabels[index]}
                   </span>
                 </div>
@@ -175,7 +175,7 @@ export const FinanceDesktopView = ({
             </div>
           ) : (
             <div className="mt-8 flex items-center justify-center h-28">
-              <p className="text-gray-500 font-semibold text-sm">Sin ingresos en los últimos 7 días</p>
+              <p className="text-on-surface-variant font-semibold text-sm">Sin ingresos en los últimos 7 días</p>
             </div>
           )}
         </div>
@@ -219,7 +219,7 @@ export const FinanceDesktopView = ({
           />
         </div>
 
-        <div className="grid grid-cols-[1.7fr_1.1fr_1fr_1fr_0.9fr_64px] px-6 py-3 bg-black/10 dark:bg-white/5 text-[11px] font-black uppercase tracking-[0.16em] text-gray-500">
+        <div className="grid grid-cols-[1.7fr_1.1fr_1fr_1fr_0.9fr_64px] px-6 py-3 bg-black/10 dark:bg-white/5 text-[11px] font-black uppercase tracking-[0.16em] text-on-surface-variant">
           <p>Socio / Jugador</p>
           <p>Concepto</p>
           <p>Fecha y Hora</p>
@@ -238,18 +238,18 @@ export const FinanceDesktopView = ({
                 <p className="font-black text-foreground text-base truncate">
                   {movement.clientName}
                 </p>
-                <p className="text-xs font-semibold text-gray-500">
+                <p className="text-xs font-semibold text-on-surface-variant">
                   {formatPhoneForDisplay(movement.clientPhone)}
                 </p>
               </div>
-              <p className="text-sm font-semibold text-gray-300">
+              <p className="text-sm font-semibold text-on-surface-variant">
                 {movement.court?.name ? `Alquiler ${movement.court.name}` : "Reserva"}
               </p>
               <div>
                 <p className="text-sm font-semibold text-foreground">
                   {toIsoDateKey(movement.date)}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-on-surface-variant">
                   {movement.timeSlot?.startTime || "--:--"}
                 </p>
               </div>
@@ -267,7 +267,7 @@ export const FinanceDesktopView = ({
                   isIconOnly
                   size="sm"
                   variant="light"
-                  className="text-gray-400"
+                  className="text-on-surface-variant"
                 >
                   <MoreVertical size={16} />
                 </Button>
@@ -277,7 +277,7 @@ export const FinanceDesktopView = ({
 
           {metrics.movements.length === 0 && (
             <div className="py-20 text-center">
-              <p className="text-gray-500 font-bold">No hay movimientos para este periodo.</p>
+              <p className="text-on-surface-variant font-bold">No hay movimientos para este periodo.</p>
             </div>
           )}
         </div>

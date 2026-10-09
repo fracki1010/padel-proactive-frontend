@@ -36,7 +36,7 @@ export const DesktopTabNav = ({
                 "h-11 px-4 rounded-xl font-bold transition-all whitespace-nowrap",
                 isActive
                   ? "bg-primary text-black dark:text-white shadow-lg shadow-primary/20"
-                  : "text-gray-500 hover:text-foreground",
+                  : "text-on-surface-variant hover:text-foreground",
               )}
               onPress={() => onTabChange(tab.id)}
             >

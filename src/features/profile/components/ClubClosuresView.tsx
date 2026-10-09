@@ -105,7 +105,7 @@ export const ClubClosuresView = ({
           <h2 className="text-xl font-black text-foreground uppercase tracking-tight">
             Cierres del Club
           </h2>
-          <p className="text-[10px] font-bold uppercase text-gray-500 tracking-widest">
+          <p className="text-[10px] font-bold uppercase text-on-surface-variant tracking-widest">
             Períodos en los que el club estará cerrado
           </p>
         </div>
@@ -122,8 +122,8 @@ export const ClubClosuresView = ({
       {closures.length === 0 ? (
         <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-md">
           <CardBody className="flex flex-col items-center gap-3 py-10 text-center">
-            <CalendarOff size={32} className="text-gray-500" />
-            <p className="text-sm font-bold text-gray-500 uppercase">
+            <CalendarOff size={32} className="text-on-surface-variant" />
+            <p className="text-sm font-bold text-on-surface-variant uppercase">
               No hay cierres programados
             </p>
           </CardBody>
@@ -148,11 +148,11 @@ export const ClubClosuresView = ({
                       )}
                     </p>
                     {closure.reason ? (
-                      <p className="text-[11px] text-gray-400 font-bold truncate">
+                      <p className="text-[11px] text-on-surface-variant font-bold truncate">
                         {closure.reason}
                       </p>
                     ) : (
-                      <p className="text-[11px] text-gray-600 italic">Sin motivo</p>
+                      <p className="text-[11px] text-on-surface-variant italic">Sin motivo</p>
                     )}
                   </div>
                 </div>
@@ -161,7 +161,7 @@ export const ClubClosuresView = ({
                     isIconOnly
                     size="sm"
                     variant="flat"
-                    className="rounded-xl text-gray-400"
+                    className="rounded-xl text-on-surface-variant"
                     onPress={() => openEdit(closure)}
                   >
                     <Pencil size={15} />
@@ -199,7 +199,7 @@ export const ClubClosuresView = ({
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                   input: "text-foreground font-bold",
-                  label: "text-[10px] font-black uppercase text-gray-500",
+                  label: "text-[10px] font-black uppercase text-on-surface-variant",
                 }}
               />
               <Input
@@ -210,7 +210,7 @@ export const ClubClosuresView = ({
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                   input: "text-foreground font-bold",
-                  label: "text-[10px] font-black uppercase text-gray-500",
+                  label: "text-[10px] font-black uppercase text-on-surface-variant",
                 }}
               />
             </div>
@@ -225,7 +225,7 @@ export const ClubClosuresView = ({
               classNames={{
                 inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                 input: "text-foreground font-bold",
-                label: "text-[10px] font-black uppercase text-gray-500",
+                label: "text-[10px] font-black uppercase text-on-surface-variant",
               }}
             />
           </DrawerBody>
@@ -267,7 +267,7 @@ export const ClubClosuresView = ({
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                   input: "text-foreground font-bold",
-                  label: "text-[10px] font-black uppercase text-gray-500",
+                  label: "text-[10px] font-black uppercase text-on-surface-variant",
                 }}
               />
               <Input
@@ -278,7 +278,7 @@ export const ClubClosuresView = ({
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                   input: "text-foreground font-bold",
-                  label: "text-[10px] font-black uppercase text-gray-500",
+                  label: "text-[10px] font-black uppercase text-on-surface-variant",
                 }}
               />
             </div>
@@ -293,7 +293,7 @@ export const ClubClosuresView = ({
               classNames={{
                 inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                 input: "text-foreground font-bold",
-                label: "text-[10px] font-black uppercase text-gray-500",
+                label: "text-[10px] font-black uppercase text-on-surface-variant",
               }}
             />
           </DrawerBody>

@@ -28,7 +28,7 @@ export const TimeFilterTabs = ({
           aria-label={filter.label}
           className={`flex-grow h-14 rounded-full font-bold border border-black/5 dark:border-white/10 transition-all ${activeFilter === filter.id
               ? "bg-primary text-black dark:text-white shadow-lg shadow-primary/20"
-              : "bg-dark-100 text-gray-500 hover:text-foreground"
+              : "bg-dark-100 text-on-surface-variant hover:text-foreground"
             }`}
           onClick={() => onFilterChange(filter.id)}
           startContent={<filter.icon size={20} />}

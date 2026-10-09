@@ -50,7 +50,7 @@ export const StatCard = ({
       <div
         className={`rounded-md border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-4 py-3 ${className}`}
       >
-        <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-500">
+        <p className="text-[10px] uppercase tracking-wider font-semibold text-on-surface-variant">
           {label}
         </p>
         <p className="text-xl font-black text-foreground">{value}</p>
@@ -85,7 +85,7 @@ export const StatCard = ({
           {icon}
         </div>
       )}
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">
         {label}
       </p>
       <p className="text-2xl font-black text-foreground">{value}</p>

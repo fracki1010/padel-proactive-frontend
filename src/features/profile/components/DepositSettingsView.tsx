@@ -35,7 +35,7 @@ type DepositSettingsViewProps = {
 const fieldClassNames = {
   inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
   input: "text-foreground font-bold",
-  label: "text-gray-400 font-bold mb-2",
+  label: "text-on-surface-variant font-bold mb-2",
 };
 
 export const DepositSettingsView = ({
@@ -116,7 +116,7 @@ export const DepositSettingsView = ({
 
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
                   Botón: Requiere seña
                 </p>
                 <p className="text-foreground font-bold text-sm">
@@ -172,7 +172,7 @@ export const DepositSettingsView = ({
               Guardar configuración
             </Button>
 
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-on-surface-variant">
               La seña se descuenta del precio del turno. El monto debe ser mayor
               a 0 para activarla y la retención mínima es de 1 minuto.
             </p>
@@ -201,13 +201,13 @@ export const DepositSettingsView = ({
                 <ShieldCheck size={16} className="text-emerald-400" />
                 <span className="tracking-[0.3em]">{credentialMasked}</span>
                 {credentialMpUserId ? (
-                  <span className="text-[11px] text-gray-500 font-bold">
+                  <span className="text-[11px] text-on-surface-variant font-bold">
                     MP user: {credentialMpUserId}
                   </span>
                 ) : null}
               </div>
             ) : (
-              <p className="text-[11px] text-gray-400">
+              <p className="text-[11px] text-on-surface-variant">
                 Todavía no hay un Access Token configurado para este club.
               </p>
             )}
@@ -225,7 +225,7 @@ export const DepositSettingsView = ({
               classNames={fieldClassNames}
             />
 
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-on-surface-variant">
               El token se guarda encriptado y nunca se vuelve a mostrar. Al
               guardar uno nuevo se reemplaza el anterior.
             </p>

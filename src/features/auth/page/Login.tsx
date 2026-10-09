@@ -51,7 +51,7 @@ export const Login = () => {
           <h1 className="text-3xl sm:text-4xl font-black text-foreground italic tracking-tighter uppercase">
             PADEXA
           </h1>
-          <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">
+          <p className="text-on-surface-variant font-bold uppercase tracking-widest text-[10px]">
             Portal de Administración
           </p>
         </div>
@@ -72,10 +72,10 @@ export const Login = () => {
                     inputWrapper:
                       "bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 group-data-[focus=true]:border-primary/50 transition-all h-14 rounded-md",
                     label:
-                      "text-gray-400 font-bold uppercase text-[10px] tracking-widest pl-1",
+                      "text-on-surface-variant font-bold uppercase text-[10px] tracking-widest pl-1",
                     input: "text-foreground font-bold",
                   }}
-                  startContent={<User className="text-gray-500" size={18} />}
+                  startContent={<User className="text-on-surface-variant" size={18} />}
                 />
 
                 <Input
@@ -91,10 +91,10 @@ export const Login = () => {
                     inputWrapper:
                       "bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 group-data-[focus=true]:border-primary/50 transition-all h-14 rounded-md",
                     label:
-                      "text-gray-400 font-bold uppercase text-[10px] tracking-widest pl-1",
+                      "text-on-surface-variant font-bold uppercase text-[10px] tracking-widest pl-1",
                     input: "text-foreground font-bold",
                   }}
-                  startContent={<Lock className="text-gray-500" size={18} />}
+                  startContent={<Lock className="text-on-surface-variant" size={18} />}
                   endContent={
                     <button
                       className="focus:outline-none"
@@ -102,9 +102,9 @@ export const Login = () => {
                       onClick={toggleVisibility}
                     >
                       {isVisible ? (
-                        <EyeOff className="text-gray-500" size={18} />
+                        <EyeOff className="text-on-surface-variant" size={18} />
                       ) : (
-                        <Eye className="text-gray-500" size={18} />
+                        <Eye className="text-on-surface-variant" size={18} />
                       )}
                     </button>
                   }
@@ -131,7 +131,7 @@ export const Login = () => {
           </CardBody>
         </Card>
 
-        <p className="text-center text-gray-600 text-[10px] font-bold uppercase tracking-widest">
+        <p className="text-center text-on-surface-variant text-[10px] font-bold uppercase tracking-widest">
           &copy; 2026 PADEXA • v1.0.0
         </p>
       </div>
