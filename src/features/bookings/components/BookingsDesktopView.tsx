@@ -62,7 +62,7 @@ export const BookingsDesktopView = ({
           actions={
             <Button
               variant="flat"
-              className="bg-black/10 dark:bg-white/10 text-gray-300 uppercase font-black text-[11px] tracking-wider"
+              className="bg-black/10 dark:bg-white/10 text-on-surface-variant uppercase font-black text-[11px] tracking-wider"
               startContent={<Filter size={14} />}
               endContent={<ChevronDown size={14} />}
               isDisabled
@@ -78,7 +78,7 @@ export const BookingsDesktopView = ({
             value={filterValue}
             onValueChange={onFilterChange}
             placeholder="Buscar por nombre, teléfono o cancha..."
-            startContent={<Search size={16} className="text-gray-500" />}
+            startContent={<Search size={16} className="text-on-surface-variant" />}
             classNames={{
               inputWrapper:
                 "h-12 rounded-md bg-dark-300 border border-black/10 dark:border-white/10",
@@ -86,7 +86,7 @@ export const BookingsDesktopView = ({
             }}
           />
           <div className="h-12 rounded-md bg-dark-300 border border-black/10 dark:border-white/10 px-3 flex items-center gap-2">
-            <Calendar size={16} className="text-gray-500" />
+            <Calendar size={16} className="text-on-surface-variant" />
             <select
               value={selectedCourt}
               onChange={(event) => onCourtChange(event.target.value)}
@@ -122,7 +122,7 @@ export const BookingsDesktopView = ({
               cursor: "w-full bg-primary",
               tab: "max-w-fit px-0 h-12",
               tabContent:
-                "group-data-[selected=true]:text-primary font-black text-gray-500 uppercase text-xs tracking-wider",
+                "group-data-[selected=true]:text-primary font-black text-on-surface-variant uppercase text-xs tracking-wider",
             }}
           >
             <Tab key="today" title="Hoy" />
@@ -140,7 +140,7 @@ export const BookingsDesktopView = ({
       </div>
 
       <div className="rounded-md border border-black/10 dark:border-white/10 bg-dark-200 overflow-hidden">
-        <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr_0.9fr_60px] px-6 py-3 bg-black/10 dark:bg-white/5 text-[11px] font-black uppercase tracking-[0.16em] text-gray-500">
+        <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr_0.9fr_60px] px-6 py-3 bg-black/10 dark:bg-white/5 text-[11px] font-black uppercase tracking-[0.16em] text-on-surface-variant">
           <p>Cliente</p>
           <p>Cancha</p>
           <p>Fecha</p>
@@ -159,11 +159,11 @@ export const BookingsDesktopView = ({
             >
               <div className="min-w-0">
                 <p className="font-black text-foreground text-base truncate">{booking.clientName}</p>
-                <p className="text-[11px] text-gray-500">{formatPhoneForDisplay(booking.clientPhone)}</p>
+                <p className="text-[11px] text-on-surface-variant">{formatPhoneForDisplay(booking.clientPhone)}</p>
               </div>
-              <p className="font-semibold text-gray-300">{booking.court?.name || "-"}</p>
+              <p className="font-semibold text-on-surface-variant">{booking.court?.name || "-"}</p>
               <p className="font-semibold text-foreground">{toIsoDateKey(booking.date)}</p>
-              <p className="font-semibold text-gray-300">
+              <p className="font-semibold text-on-surface-variant">
                 {booking.timeSlot?.startTime || "--:--"} - {booking.timeSlot?.endTime || "--:--"}
               </p>
               <div className="flex items-center gap-2">
@@ -176,14 +176,14 @@ export const BookingsDesktopView = ({
                 <p className="font-black text-foreground">{formatCurrency(Number(booking.finalPrice) || 0)}</p>
               </div>
               <div className="flex justify-end">
-                <MoreVertical size={16} className="text-gray-400" />
+                <MoreVertical size={16} className="text-on-surface-variant" />
               </div>
             </button>
           ))}
 
           {bookings.length === 0 && (
             <div className="py-20 text-center">
-              <p className="text-gray-500 font-bold">No hay reservas para los filtros actuales.</p>
+              <p className="text-on-surface-variant font-bold">No hay reservas para los filtros actuales.</p>
             </div>
           )}
         </div>

@@ -131,7 +131,7 @@ export const Bookings = ({
         <h1 className="text-2xl font-bold text-foreground mb-2">
           Turnos Históricos
         </h1>
-        <p className="text-gray-500 text-sm">Registro de todas las reservas</p>
+        <p className="text-on-surface-variant text-sm">Registro de todas las reservas</p>
       </div>
 
       <div className="lg:hidden">
@@ -147,7 +147,7 @@ export const Bookings = ({
             cursor: "w-full bg-primary",
             tab: "max-w-fit px-0 h-12",
             tabContent:
-              "group-data-[selected=true]:text-primary font-bold text-gray-500 uppercase text-xs tracking-wider",
+              "group-data-[selected=true]:text-primary font-bold text-on-surface-variant uppercase text-xs tracking-wider",
           }}
         >
           <Tab key="today" title="Hoy" />
@@ -172,11 +172,11 @@ export const Bookings = ({
             <SkeletonTable rows={5} columns={3} />
           ) : groupedBookings.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[300px] text-center p-8 bg-dark-200 rounded-md border border-black/5 dark:border-white/5">
-              <HelpCircle size={48} className="text-gray-600 mb-4" />
+              <HelpCircle size={48} className="text-on-surface-variant mb-4" />
               <h3 className="text-xl font-bold mb-1 text-foreground">
                 {hasActiveFilters ? "Sin resultados para tu filtro" : "No hay turnos"}
               </h3>
-              <p className="text-gray-500 text-sm">
+              <p className="text-on-surface-variant text-sm">
                 {hasActiveFilters
                   ? "Probá limpiar búsqueda o cambiar la cancha."
                   : "Aún no hay reservas cargadas en el historial."}
@@ -200,7 +200,7 @@ export const Bookings = ({
               {visibleGroups.map(([dateKey, group]) => (
                 <div key={dateKey} className="space-y-6 w-full">
                   <div className="flex items-center gap-4">
-                    <h2 className="text-[10px] font-semibold text-gray-500 tracking-wider">
+                    <h2 className="text-[10px] font-semibold text-on-surface-variant tracking-wider">
                       {formatDate(dateKey)}
                     </h2>
                     <div className="h-[1px] flex-grow bg-black/5 dark:bg-white/5"></div>
@@ -224,7 +224,7 @@ export const Bookings = ({
                   </div>
                 )}
                 {!hasMore && groupedBookings.length > 5 && (
-                  <p className="text-center text-gray-600 text-xs font-bold uppercase tracking-wide py-4">
+                  <p className="text-center text-on-surface-variant text-xs font-bold uppercase tracking-wide py-4">
                     {filteredBookings.length} reservas cargadas
                   </p>
                 )}

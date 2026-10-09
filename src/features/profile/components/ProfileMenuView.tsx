@@ -72,10 +72,10 @@ const MenuItemButton = ({
       <div className={iconClassName}>{icon}</div>
       <div>
         <p className="font-bold text-foreground uppercase text-sm">{title}</p>
-        <p className="text-[10px] text-gray-500 font-bold uppercase">{subtitle}</p>
+        <p className="text-[10px] text-on-surface-variant font-bold uppercase">{subtitle}</p>
       </div>
     </div>
-    <ChevronRight size={20} className="text-gray-600" />
+    <ChevronRight size={20} className="text-on-surface-variant" />
   </button>
 );
 
@@ -117,12 +117,12 @@ export const ProfileMenuView = ({
     ? "Desactivado"
     : whatsappStatusLabelByKey[whatsappStatus] || whatsappStatus;
   const whatsappStatusClass = !whatsappEnabled
-    ? "text-gray-500"
+    ? "text-on-surface-variant"
     : whatsappStatus === "ready"
       ? "text-emerald-400"
       : whatsappStatus === "qr_pending"
         ? "text-amber-300"
-        : "text-gray-400";
+        : "text-on-surface-variant";
 
   return (
     <div className="space-y-6 pb-8 max-w-6xl mx-auto lg:max-w-none">
@@ -149,7 +149,7 @@ export const ProfileMenuView = ({
         <div className="grid grid-cols-2 gap-3 w-full lg:w-auto lg:min-w-[260px]">
         <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-md">
           <CardBody className="p-3 flex flex-col items-center border border-black/5 dark:border-white/5">
-            <p className="text-[10px] font-black text-gray-500 uppercase">
+            <p className="text-[10px] font-black text-on-surface-variant uppercase">
               Canchas
             </p>
             <p className="text-xl font-black text-foreground">{courtsCount}</p>
@@ -157,7 +157,7 @@ export const ProfileMenuView = ({
         </Card>
         <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-md">
           <CardBody className="p-3 flex flex-col items-center border border-black/5 dark:border-white/5">
-            <p className="text-[10px] font-black text-gray-500 uppercase">
+            <p className="text-[10px] font-black text-on-surface-variant uppercase">
               WhatsApp
             </p>
             <Chip
@@ -179,7 +179,7 @@ export const ProfileMenuView = ({
             <Phone size={18} />
           </div>
           <div>
-            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
               WhatsApp Admin
             </p>
             <p className="text-foreground font-bold text-sm">Para notificaciones</p>
@@ -239,7 +239,7 @@ export const ProfileMenuView = ({
               ? "text-amber-300"
               : phoneHasChanges
                 ? "text-emerald-300"
-                : "text-gray-500"
+                : "text-on-surface-variant"
           }`}
         >
           {!phoneHasEnoughDigits
@@ -252,7 +252,7 @@ export const ProfileMenuView = ({
 
       <div className="space-y-6 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 lg:space-y-0">
         <section className="min-w-0">
-          <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] mb-4 px-2">
+          <h3 className="text-xs font-black text-on-surface-variant uppercase tracking-[0.2em] mb-4 px-2">
             Gestión del Club
           </h3>
           <div className="space-y-3">
@@ -328,16 +328,16 @@ export const ProfileMenuView = ({
         </section>
 
         <section>
-          <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] mb-4 px-2">
+          <h3 className="text-xs font-black text-on-surface-variant uppercase tracking-[0.2em] mb-4 px-2">
             Preferencias
           </h3>
           <div className="bg-dark-100 p-2 rounded-md border border-black/5 dark:border-white/5 space-y-1">
             <div className="flex items-center justify-between p-4 hover:bg-black/5 dark:hover:bg-white/5 rounded-md transition-colors">
               <div className="flex items-center gap-4">
-                <CreditCard size={18} className="text-gray-400" />
+                <CreditCard size={18} className="text-on-surface-variant" />
                 <div>
                   <span className="font-bold text-foreground text-sm">Tema</span>
-                  <p className="text-[10px] font-bold uppercase text-gray-500 tracking-wide">
+                  <p className="text-[10px] font-bold uppercase text-on-surface-variant tracking-wide">
                     {isDarkMode ? "Dark" : "Light"}
                   </p>
                 </div>

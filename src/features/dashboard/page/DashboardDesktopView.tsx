@@ -62,7 +62,7 @@ export const DashboardDesktopView = ({
                 type="date"
                 value={selectedDate}
                 onValueChange={setSelectedDate}
-                startContent={<CalendarDays size={16} className="text-gray-500" />}
+                startContent={<CalendarDays size={16} className="text-on-surface-variant" />}
                 classNames={{
                   inputWrapper:
                     "h-12 rounded-md bg-dark-300 border border-black/10 dark:border-white/10",
@@ -70,7 +70,7 @@ export const DashboardDesktopView = ({
                 }}
               />
               <div className="rounded-md bg-dark-300 border border-black/10 dark:border-white/10 px-4 flex items-center">
-                <span className="text-xs font-bold text-gray-300 capitalize">
+                <span className="text-xs font-bold text-on-surface-variant capitalize">
                   {monthLabel}
                 </span>
               </div>
@@ -84,7 +84,7 @@ export const DashboardDesktopView = ({
                   className={`rounded-xl px-4 h-10 uppercase text-[11px] font-black tracking-wider ${
                     activeFilter === filter.id
                       ? "bg-primary text-black dark:text-white"
-                      : "bg-dark-300 text-gray-400 hover:text-foreground"
+                      : "bg-dark-300 text-on-surface-variant hover:text-foreground"
                   }`}
                   onPress={() => setActiveFilter(filter.id)}
                 >
@@ -161,13 +161,13 @@ export const DashboardDesktopView = ({
                                   ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                                   : state === "suspendido"
                                     ? "bg-red-500/20 text-red-300 border border-red-500/30"
-                                    : "bg-black/10 dark:bg-white/10 text-gray-400 border border-black/10 dark:border-white/10"
+                                    : "bg-black/10 dark:bg-white/10 text-on-surface-variant border border-black/10 dark:border-white/10"
                             }`}
                           >
                             {state}
                           </Chip>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-on-surface-variant mt-1">
                           {activeBooking?.clientName ? (
                             <span className="inline-flex items-center gap-1.5">
                               <UserRound size={12} />
@@ -182,7 +182,7 @@ export const DashboardDesktopView = ({
                             <Button
                               size="sm"
                               isDisabled
-                              className="h-8 rounded-lg w-full bg-black/10 dark:bg-white/10 text-gray-500 font-black uppercase"
+                              className="h-8 rounded-lg w-full bg-black/10 dark:bg-white/10 text-on-surface-variant font-black uppercase"
                             >
                               Expirado
                             </Button>
@@ -224,7 +224,7 @@ export const DashboardDesktopView = ({
             ))}
             {!filteredSlots.length && (
               <div className="py-12 text-center">
-                <p className="font-bold text-gray-500">
+                <p className="font-bold text-on-surface-variant">
                   No hay turnos para el filtro seleccionado.
                 </p>
               </div>

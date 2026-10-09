@@ -116,7 +116,7 @@ const formatVigencia = (announcement: Announcement): string => {
 const inputClassNames = {
   inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
   input: "text-foreground font-bold",
-  label: "text-[10px] font-black uppercase text-gray-500",
+  label: "text-[10px] font-black uppercase text-on-surface-variant",
 };
 
 type AnnouncementFormDrawerProps = {
@@ -191,7 +191,7 @@ const AnnouncementFormDrawer = ({
             classNames={{
               trigger: "bg-black/5 dark:bg-white/5 border-none rounded-md",
               value: "text-foreground font-bold",
-              label: "text-[10px] font-black uppercase text-gray-500",
+              label: "text-[10px] font-black uppercase text-on-surface-variant",
               popoverContent:
                 "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
               listbox: "text-foreground",
@@ -224,7 +224,7 @@ const AnnouncementFormDrawer = ({
               La fecha de inicio no puede ser posterior a la de fin.
             </p>
           )}
-          <p className="text-[10px] font-bold uppercase text-gray-500">
+          <p className="text-[10px] font-bold uppercase text-on-surface-variant">
             Dejá las fechas vacías para publicar sin límite de vigencia.
           </p>
         </DrawerBody>
@@ -279,7 +279,7 @@ export const AnnouncementsView = ({
           <h2 className="text-xl font-black text-foreground uppercase tracking-tight">
             Avisos del Club
           </h2>
-          <p className="text-[10px] font-bold uppercase text-gray-500 tracking-widest">
+          <p className="text-[10px] font-bold uppercase text-on-surface-variant tracking-widest">
             Mensajes que ven tus clientes en el portal de reservas
           </p>
         </div>
@@ -297,7 +297,7 @@ export const AnnouncementsView = ({
         <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-md">
           <CardBody className="flex flex-col items-center gap-3 py-10">
             <Spinner color="primary" />
-            <p className="text-sm font-bold text-gray-500 uppercase">
+            <p className="text-sm font-bold text-on-surface-variant uppercase">
               Cargando avisos
             </p>
           </CardBody>
@@ -314,8 +314,8 @@ export const AnnouncementsView = ({
       ) : announcements.length === 0 ? (
         <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-md">
           <CardBody className="flex flex-col items-center gap-3 py-10 text-center">
-            <BellOff size={32} className="text-gray-500" />
-            <p className="text-sm font-bold text-gray-500 uppercase">
+            <BellOff size={32} className="text-on-surface-variant" />
+            <p className="text-sm font-bold text-on-surface-variant uppercase">
               No hay avisos publicados
             </p>
           </CardBody>
@@ -346,10 +346,10 @@ export const AnnouncementsView = ({
                           {meta.label}
                         </Chip>
                       </div>
-                      <p className="text-[13px] text-gray-400 font-medium mt-1 break-words">
+                      <p className="text-[13px] text-on-surface-variant font-medium mt-1 break-words">
                         {announcement.message}
                       </p>
-                      <p className="text-[10px] font-bold uppercase text-gray-600 mt-2 flex items-center gap-1">
+                      <p className="text-[10px] font-bold uppercase text-on-surface-variant mt-2 flex items-center gap-1">
                         <Megaphone size={12} />
                         {formatVigencia(announcement)}
                         {!announcement.isActive && " · Desactivado"}
@@ -369,7 +369,7 @@ export const AnnouncementsView = ({
                       isIconOnly
                       size="sm"
                       variant="flat"
-                      className="rounded-xl text-gray-400"
+                      className="rounded-xl text-on-surface-variant"
                       onPress={() => setEditTarget(announcement)}
                     >
                       <Pencil size={15} />

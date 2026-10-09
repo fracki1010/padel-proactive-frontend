@@ -22,7 +22,7 @@ export const CourtsAvailability = ({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">
+      <h3 className="text-xs font-black text-on-surface-variant uppercase tracking-[0.2em]">
         Turnos Disponibles
       </h3>
 
@@ -83,7 +83,7 @@ export const CourtsAvailability = ({
                         >
                           {slot.startTime}
                         </span>
-                        <span className="text-[8px] font-bold text-gray-500 uppercase">
+                        <span className="text-[8px] font-bold text-on-surface-variant uppercase">
                           {parseInt(slot.startTime.split(":")[0]) < 12 ? "AM" : "PM"}
                         </span>
                       </div>
@@ -107,7 +107,7 @@ export const CourtsAvailability = ({
                         )}
                         {!isTaken && isPast && (
                           <div className="flex items-center gap-1 mt-1">
-                            <span className="text-[10px] text-gray-400 font-bold uppercase">
+                            <span className="text-[10px] text-on-surface-variant font-bold uppercase">
                               No disponible (Pasado)
                             </span>
                           </div>
@@ -132,7 +132,7 @@ export const CourtsAvailability = ({
                       ) : isTaken ? (
                         <Button
                           size="sm"
-                          className="bg-dark-200 text-gray-500 font-black rounded-xl uppercase px-4 hover:bg-black/5 dark:hover:bg-white/5"
+                          className="bg-dark-200 text-on-surface-variant font-black rounded-xl uppercase px-4 hover:bg-black/5 dark:hover:bg-white/5"
                           onClick={() => onBookingClick(activeBooking)}
                         >
                           Detalles
@@ -141,7 +141,7 @@ export const CourtsAvailability = ({
                         <Button
                           size="sm"
                           disabled
-                          className="bg-dark-200 text-gray-400 font-black rounded-xl uppercase px-4 cursor-default"
+                          className="bg-dark-200 text-on-surface-variant font-black rounded-xl uppercase px-4 cursor-default"
                         >
                           Expirado
                         </Button>
@@ -151,7 +151,7 @@ export const CourtsAvailability = ({
                             size="sm"
                             isIconOnly
                             variant="flat"
-                            className="bg-black/5 dark:bg-white/5 text-gray-500 rounded-xl"
+                            className="bg-black/5 dark:bg-white/5 text-on-surface-variant rounded-xl"
                             onClick={() =>
                               onBookingClick({
                                 status: "suspendido",
@@ -190,7 +190,7 @@ export const CourtsAvailability = ({
           ))}
 
           {filteredSlots.length === 0 && (
-            <p className="text-center text-gray-600 py-10 font-bold italic">
+            <p className="text-center text-on-surface-variant py-10 font-bold italic">
               No se encontraron turnos para este horario.
             </p>
           )}
