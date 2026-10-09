@@ -13,7 +13,7 @@ import {
   Spinner,
   addToast,
 } from "@heroui/react";
-import { AlertTriangle, Clock, CreditCard, History } from "lucide-react";
+import { AlertTriangle, Clock, CreditCard, History, MessageCircle, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   publicService,
@@ -38,7 +38,18 @@ interface Props {
   slug: string;
   isAuthenticated: boolean;
   cancellationLockHours: number;
+  // Club's WhatsApp bot number (digits, may include non-digits). Shown when a
+  // paid-deposit booking cannot be self-cancelled.
+  contactPhone?: string;
 }
+
+const phoneDigits = (phone?: string) => (phone || "").replace(/\D/g, "");
+
+// E.164-ish display: the stored value is a bare number, so prefix the plus.
+const formatPhoneForHumans = (phone?: string) => {
+  const digits = phoneDigits(phone);
+  return digits ? `+${digits}` : "";
+};
 
 const formatDate = (dateStr: string) => {
   const [y, m, d] = dateStr.split("-");
@@ -159,7 +170,7 @@ const BookingCard = ({
   );
 };
 
-export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cancellationLockHours }: Props) => {
+export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cancellationLockHours, contactPhone }: Props) => {
   const isDesktop = useIsDesktop();
   const [upcoming, setUpcoming] = useState<Booking[]>([]);
   const [history, setHistory] = useState<Booking[]>([]);
@@ -168,6 +179,9 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
   const [payingId, setPayingId] = useState<string | null>(null);
   const [confirmBooking, setConfirmBooking] = useState<Booking | null>(null);
   const [blockedBooking, setBlockedBooking] = useState<Booking | null>(null);
+  // Paid-deposit bookings cannot be self-cancelled: the club must handle them.
+  // The contact phone may come from the club info prop or the 409 response.
+  const [paidDeposit, setPaidDeposit] = useState<{ booking: Booking; contactPhone: string } | null>(null);
 
   const load = async () => {
     if (!isAuthenticated) return;
@@ -188,6 +202,11 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
   }, [isOpen]);
 
   const handleCancelPress = (booking: Booking) => {
+    // A paid seña never self-cancels: route the client to the club contact.
+    if (booking.deposit?.status === "pagado") {
+      setPaidDeposit({ booking, contactPhone: contactPhone || "" });
+      return;
+    }
     if (cancellationLockHours > 0 && booking.timeSlot?.startTime) {
       const minutes = minutesUntilSlot(booking.date, booking.timeSlot.startTime);
       if (minutes < cancellationLockHours * 60) {
@@ -200,7 +219,8 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
 
   const handleConfirmCancel = async () => {
     if (!confirmBooking) return;
-    const id = confirmBooking._id;
+    const booking = confirmBooking;
+    const id = booking._id;
     setConfirmBooking(null);
     setCancellingId(id);
     try {
@@ -208,8 +228,16 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
       addToast({ title: "Turno cancelado", color: "success" });
       setUpcoming((prev) => prev.filter((b) => b._id !== id));
     } catch (err: any) {
+      const response = err?.response;
+      const data = response?.data;
+      // Defense in depth: the backend may block a paid-deposit cancel even if
+      // the local deposit snapshot was stale. Show the same club-contact modal.
+      if (response?.status === 409 && data?.error === "CANCEL_REQUIRES_ADMIN") {
+        setPaidDeposit({ booking, contactPhone: data?.contactPhone || contactPhone || "" });
+        return;
+      }
       addToast({
-        title: err?.response?.data?.error || "No se pudo cancelar",
+        title: data?.error || "No se pudo cancelar",
         color: "danger",
       });
     } finally {
@@ -250,6 +278,9 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
       setPayingId(null);
     }
   };
+
+  const paidPhoneDigits = phoneDigits(paidDeposit?.contactPhone);
+  const paidPhoneHuman = formatPhoneForHumans(paidDeposit?.contactPhone);
 
   return (
     <>
@@ -373,6 +404,56 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
           </ModalBody>
           <ModalFooter>
             <Button color="primary" size="sm" onPress={() => setBlockedBooking(null)}>Entendido</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Modal: seña abonada — derivar al contacto del club */}
+      <Modal isOpen={!!paidDeposit} onClose={() => setPaidDeposit(null)} size="sm">
+        <ModalContent>
+          <ModalHeader className="flex items-center gap-2">
+            <CreditCard size={18} className="text-warning" />
+            Seña abonada
+          </ModalHeader>
+          <ModalBody>
+            <p className="text-sm text-default-600">
+              Este turno tiene la seña abonada. Para cancelarlo, comunicate con el club.
+            </p>
+            {paidPhoneHuman && (
+              <p className="text-sm text-default-600 mt-2">
+                Teléfono:{" "}
+                <span className="font-semibold text-foreground">{paidPhoneHuman}</span>
+              </p>
+            )}
+          </ModalBody>
+          <ModalFooter className="flex flex-wrap gap-2">
+            <Button variant="flat" size="sm" onPress={() => setPaidDeposit(null)}>
+              Cerrar
+            </Button>
+            {paidPhoneDigits && (
+              <>
+                <Button
+                  as="a"
+                  href={`tel:+${paidPhoneDigits}`}
+                  variant="flat"
+                  size="sm"
+                  startContent={<Phone size={15} />}
+                >
+                  Llamar
+                </Button>
+                <Button
+                  as="a"
+                  href={`https://wa.me/${paidPhoneDigits}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  color="success"
+                  size="sm"
+                  startContent={<MessageCircle size={15} />}
+                >
+                  WhatsApp
+                </Button>
+              </>
+            )}
           </ModalFooter>
         </ModalContent>
       </Modal>
