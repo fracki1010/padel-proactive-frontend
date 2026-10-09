@@ -6,18 +6,19 @@ import {
   DrawerContent,
   DrawerFooter,
   DrawerHeader,
-  Input,
   Select,
   SelectItem,
   Textarea,
 } from "@heroui/react";
+import { ChevronDown, User as UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { fieldInputClassNames, fieldSelectClassNames } from "../../../components/ui/fieldStyles";
+import { fieldSelectClassNames } from "../../../components/ui/fieldStyles";
 import { useCourts, useSlots } from "../../../hooks/useData";
 import { useIsDesktop } from "../../../hooks/useIsDesktop";
 import type { FixedBooking } from "../../../services/fixedBookingService";
 import { WEEKDAYS } from "../constants";
+import { ClientPickerDrawer } from "./ClientPickerDrawer";
 import {
   useCreateFixedBooking,
   useUpdateFixedBooking,
@@ -59,6 +60,7 @@ export const FixedBookingModal = ({
   const [weekday, setWeekday] = useState("");
   const [clientName, setClientName] = useState("");
   const [clientNameError, setClientNameError] = useState(false);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
@@ -120,6 +122,7 @@ export const FixedBookingModal = ({
   };
 
   return (
+    <>
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
@@ -210,19 +213,37 @@ export const FixedBookingModal = ({
 
           <div className="space-y-2">
             <label className={labelClass}>Cliente</label>
-            <Input
-              placeholder="Ej: Juan Pérez"
-              value={clientName}
-              onValueChange={(value) => {
-                setClientName(value);
-                if (clientNameError) setClientNameError(false);
-              }}
-              isInvalid={clientNameError}
-              errorMessage={clientNameError ? "El cliente es obligatorio" : undefined}
+            <Button
+              fullWidth
               variant="bordered"
-              size="lg"
-              classNames={fieldInputClassNames.lg}
-            />
+              color={clientNameError ? "danger" : "default"}
+              onPress={() => setIsPickerOpen(true)}
+              aria-label="Cliente"
+              className="!justify-start h-14 px-4 rounded-lg gap-3 !bg-black/5 dark:!bg-white/5 font-normal"
+            >
+              <UserIcon
+                size={18}
+                className={`shrink-0 ${
+                  clientNameError ? "text-danger" : "text-on-surface-variant"
+                }`}
+              />
+              <span
+                className={`flex-1 min-w-0 text-left truncate ${
+                  clientName.trim() ? "font-medium text-foreground" : "text-gray-500"
+                }`}
+              >
+                {clientName.trim() ? clientName : "Elegir cliente..."}
+              </span>
+              <ChevronDown
+                size={18}
+                className={`shrink-0 ${
+                  clientNameError ? "text-danger" : "text-on-surface-variant"
+                }`}
+              />
+            </Button>
+            {clientNameError && (
+              <p className="text-sm text-danger">El cliente es obligatorio</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -257,5 +278,16 @@ export const FixedBookingModal = ({
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
+
+    <ClientPickerDrawer
+      isOpen={isPickerOpen}
+      onClose={() => setIsPickerOpen(false)}
+      onSelectClient={(user) => {
+        setClientName(user.name);
+        setClientNameError(false);
+        setIsPickerOpen(false);
+      }}
+    />
+    </>
   );
 };
