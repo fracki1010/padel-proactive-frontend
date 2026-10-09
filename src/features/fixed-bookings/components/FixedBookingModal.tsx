@@ -1,12 +1,12 @@
 import {
   addToast,
   Button,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
   Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
   Select,
   SelectItem,
   Textarea,
@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 
 import { fieldInputClassNames, fieldSelectClassNames } from "../../../components/ui/fieldStyles";
 import { useCourts, useSlots } from "../../../hooks/useData";
+import { useIsDesktop } from "../../../hooks/useIsDesktop";
 import type { FixedBooking } from "../../../services/fixedBookingService";
 import { WEEKDAYS } from "../constants";
 import {
@@ -47,6 +48,7 @@ export const FixedBookingModal = ({
   onClose,
   editing,
 }: FixedBookingModalProps) => {
+  const isDesktop = useIsDesktop();
   const { data: courtsData, isLoading: isLoadingCourts } = useCourts();
   const { data: slotsData, isLoading: isLoadingSlots } = useSlots();
   const createFixedBooking = useCreateFixedBooking();
@@ -110,25 +112,29 @@ export const FixedBookingModal = ({
   };
 
   return (
-    <Modal
+    <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      placement="center"
+      placement={isDesktop ? "right" : "bottom"}
+      size={isDesktop ? "lg" : "3xl"}
       backdrop="blur"
-      size="lg"
-      className="bg-surface-container-high text-foreground dark rounded-md"
+      classNames={{
+        base: isDesktop
+          ? "bg-surface-container-high text-foreground dark border-l border-black/10 dark:border-white/10"
+          : "rounded-t-[3rem] bg-surface-container-high text-foreground dark border-t border-black/10 dark:border-white/10",
+      }}
     >
-      <ModalContent>
-        <ModalHeader className="flex flex-col gap-1 border-b border-black/5 dark:border-white/5 pb-4">
+      <DrawerContent>
+        <DrawerHeader className="flex flex-col gap-1 border-b border-black/5 dark:border-white/5 pb-4">
           <h2 className="text-2xl font-black">
             {editing ? "Editar turno fijo" : "Nuevo turno fijo"}
           </h2>
           <p className="text-sm text-on-surface-variant font-normal">
             Se repite todas las semanas el mismo día y horario.
           </p>
-        </ModalHeader>
+        </DrawerHeader>
 
-        <ModalBody className="py-6 space-y-5">
+        <DrawerBody className="py-6 space-y-5">
           <div className="space-y-2">
             <label className={labelClass}>Cancha</label>
             <Select
@@ -216,9 +222,9 @@ export const FixedBookingModal = ({
               minRows={3}
             />
           </div>
-        </ModalBody>
+        </DrawerBody>
 
-        <ModalFooter className="border-t border-black/5 dark:border-white/5 pt-4">
+        <DrawerFooter className="border-t border-black/5 dark:border-white/5 pt-4 pb-[calc(env(safe-area-inset-bottom)+1.25rem)]">
           <Button
             variant="light"
             onPress={onClose}
@@ -235,8 +241,8 @@ export const FixedBookingModal = ({
           >
             {editing ? "Guardar cambios" : "Crear turno fijo"}
           </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 };
