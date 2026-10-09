@@ -135,7 +135,7 @@ export const BookingPortalPage = () => {
   const [isRegeneratingLink, setIsRegeneratingLink] = useState(false);
 
   const [clubInfo, setClubInfo] = useState<{
-    club: { name: string; address?: string; coverImage?: string; companyId?: string };
+    club: { name: string; address?: string; coverImage?: string; companyId?: string; contactPhone?: string };
     courts: Court[];
     slots: Slot[];
     cancellationLockHours: number;
@@ -1013,6 +1013,7 @@ export const BookingPortalPage = () => {
             slug={slug}
             isAuthenticated={isClientAuthenticated}
             cancellationLockHours={clubInfo?.cancellationLockHours ?? 0}
+            contactPhone={clubInfo?.club?.contactPhone ?? ""}
           />
         </>
       )}
