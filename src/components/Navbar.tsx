@@ -30,14 +30,14 @@ export const Navbar = ({
   return (
     <HeroNavbar
       maxWidth="full"
-      className="bg-background/95 backdrop-blur border-b border-black/10 dark:border-white/10 h-auto min-h-[70px] pt-safe pb-2"
+      className="bg-[var(--md-sys-color-surface)] border-b border-[var(--md-sys-color-outline-variant)] h-auto min-h-16 pt-safe pb-2"
       classNames={{
         wrapper:
-          "w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 gap-0 h-auto min-h-[70px] items-center",
+          "w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 gap-0 h-auto min-h-16 items-center",
       }}
     >
       <NavbarContent justify="start" className="gap-4">
-        <p className="text-base sm:text-lg lg:text-xl font-black text-foreground tracking-tight truncate max-w-[56vw] sm:max-w-none uppercase">
+        <p className="md3-typescale-title-large text-[var(--md-sys-color-on-surface)] truncate max-w-[56vw] sm:max-w-none">
           {title}
         </p>
       </NavbarContent>
@@ -46,8 +46,9 @@ export const Navbar = ({
         <Button
           isIconOnly
           variant="light"
-          className="hidden lg:flex bg-dark-100/50 text-gray-400 border border-black/10 dark:border-white/10 w-11 h-11"
-          radius="lg"
+          aria-label="Ayuda"
+          className="hidden lg:flex bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)] w-11 h-11"
+          radius="full"
           isDisabled
         >
           <HelpCircle size={18} />
@@ -63,8 +64,9 @@ export const Navbar = ({
           <Button
             isIconOnly
             variant="flat"
-            className="bg-dark-100/50 text-primary border border-primary/20 w-11 h-11"
-            radius="lg"
+            aria-label="Notificaciones"
+            className="bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-primary)] w-11 h-11"
+            radius="full"
             onPress={onBellClick}
           >
             <Bell size={20} />
@@ -73,10 +75,19 @@ export const Navbar = ({
         <Avatar
           src={avatarSrc}
           name={initials}
-          className="w-10 h-10 border-2 border-primary/20 cursor-pointer hover:scale-105 active:scale-95 transition-transform"
-          radius="lg"
+          role="button"
+          tabIndex={0}
+          aria-label="Mi cuenta"
+          className="w-11 h-11 border-2 border-[var(--md-sys-color-outline-variant)] cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+          radius="full"
           style={!avatarSrc ? { backgroundColor: getAvatarColor(avatarName) } : undefined}
           onClick={onAvatarClick}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              onAvatarClick?.();
+            }
+          }}
         />
       </NavbarContent>
     </HeroNavbar>

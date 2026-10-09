@@ -329,3 +329,36 @@ html {
     touch-action: manipulation;
   }
 }
+
+/* =========================================================================
+   M3 APP SHELL TYPESCALE
+   -------------------------------------------------------------------------
+   Shell chrome (nav bar, top app bar, drawer) reads its type from the
+   generated `--md-sys-typescale-*` tokens instead of ad-hoc sizes. Roboto
+   Flex is loaded globally; these helpers only bind a role to its scale.
+   Plain CSS after `@tailwind utilities` so the role wins over utility sizes.
+   ========================================================================= */
+
+.md3-typescale-title-large {
+  font-family: var(--md-sys-typescale-title-large-font);
+  font-weight: var(--md-sys-typescale-title-large-weight);
+  font-size: var(--md-sys-typescale-title-large-size);
+  line-height: var(--md-sys-typescale-title-large-line-height);
+  letter-spacing: var(--md-sys-typescale-title-large-tracking);
+}
+
+.md3-typescale-label-large {
+  font-family: var(--md-sys-typescale-label-large-font);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  font-size: var(--md-sys-typescale-label-large-size);
+  line-height: var(--md-sys-typescale-label-large-line-height);
+  letter-spacing: var(--md-sys-typescale-label-large-tracking);
+}
+
+.md3-typescale-label-medium {
+  font-family: var(--md-sys-typescale-label-medium-font);
+  font-weight: var(--md-sys-typescale-label-medium-weight);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  line-height: var(--md-sys-typescale-label-medium-line-height);
+  letter-spacing: var(--md-sys-typescale-label-medium-tracking);
+}

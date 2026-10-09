@@ -21,6 +21,7 @@ import {
   type DepositStatus,
 } from "../../../services/publicService";
 import { openPaymentLink } from "../../../utils/openPaymentLink";
+import { useIsDesktop } from "../../../hooks/useIsDesktop";
 
 interface Booking {
   _id: string;
@@ -159,6 +160,7 @@ const BookingCard = ({
 };
 
 export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cancellationLockHours }: Props) => {
+  const isDesktop = useIsDesktop();
   const [upcoming, setUpcoming] = useState<Booking[]>([]);
   const [history, setHistory] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -251,12 +253,22 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
 
   return (
     <>
-      <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="sm">
+      <Drawer
+        isOpen={isOpen}
+        onClose={onClose}
+        placement={isDesktop ? "right" : "bottom"}
+        size={isDesktop ? "sm" : "3xl"}
+        classNames={{
+          base: isDesktop
+            ? "rounded-l-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]"
+            : "rounded-t-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]",
+        }}
+      >
         <DrawerContent>
           <DrawerHeader className="flex flex-col gap-1">
-            <span className="text-lg font-bold">Mis turnos</span>
+            <span className="md3-typescale-title-large">Mis turnos</span>
           </DrawerHeader>
-          <DrawerBody className="gap-6">
+          <DrawerBody className="gap-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
             {isLoading ? (
               <div className="flex justify-center py-12">
                 <Spinner />

@@ -372,7 +372,13 @@ export default function App() {
                   onLogout={logout}
                 />
 
-                <div className="flex flex-col min-h-[100dvh] bg-[radial-gradient(circle_at_top_right,rgba(13,181,219,0.08),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(13,181,219,0.05),transparent_40%)]">
+                <div
+                  className="flex flex-col min-h-[100dvh] bg-background"
+                  style={{
+                    backgroundImage:
+                      "radial-gradient(circle at top right, color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent), transparent 35%), radial-gradient(circle at bottom left, color-mix(in srgb, var(--md-sys-color-primary) 5%, transparent), transparent 40%)",
+                  }}
+                >
                   <Navbar
                     title={
                       activeTab === "socios" && clientIdFromPath

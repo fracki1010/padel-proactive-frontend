@@ -448,7 +448,7 @@ export const BookingPortalPage = () => {
 
       {/* ── Navbar ────────────────────────────────────────────────────────── */}
       <header
-        className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-black/10 dark:border-white/10"
+        className="sticky top-0 z-30 bg-[var(--md-sys-color-surface)] border-b border-[var(--md-sys-color-outline-variant)]"
         style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
       >
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -584,11 +584,11 @@ export const BookingPortalPage = () => {
               {/* Glow primario */}
               <div
                 className="absolute -top-20 -right-20 w-96 h-96 rounded-full pointer-events-none"
-                style={{ background: "radial-gradient(circle, rgba(13,181,219,0.18) 0%, transparent 65%)" }}
+                style={{ background: "radial-gradient(circle, color-mix(in srgb, var(--md-sys-color-primary) 18%, transparent) 0%, transparent 65%)" }}
               />
               <div
                 className="absolute bottom-0 left-0 w-72 h-72 rounded-full pointer-events-none"
-                style={{ background: "radial-gradient(circle, rgba(45,212,191,0.12) 0%, transparent 70%)" }}
+                style={{ background: "radial-gradient(circle, color-mix(in srgb, var(--md-sys-color-tertiary) 12%, transparent) 0%, transparent 70%)" }}
               />
             </div>
           )}
@@ -597,7 +597,7 @@ export const BookingPortalPage = () => {
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 50%, var(--heroui-background, #000) 100%)",
+              background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 50%, var(--md-sys-color-surface) 100%)",
             }}
           />
         </div>
@@ -631,13 +631,15 @@ export const BookingPortalPage = () => {
               style={{
                 fontSize:
                   "calc(clamp(3.8rem, 18vw, 6.5rem) * (1 - var(--hero-p, 0)) + 1.75rem * var(--hero-p, 0))",
-                background: "linear-gradient(135deg, rgb(13,181,219) 0%, rgb(100,210,255) 50%, rgb(45,212,191) 100%)",
+                background:
+                  "linear-gradient(135deg, rgb(var(--color-white)) 0%, color-mix(in srgb, rgb(var(--color-white)) 70%, var(--md-sys-color-primary)) 50%, color-mix(in srgb, rgb(var(--color-white)) 70%, var(--md-sys-color-tertiary)) 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
                 lineHeight: 0.88,
                 letterSpacing: "-0.02em",
-                filter: "drop-shadow(0 2px 24px rgba(13,181,219,0.45))",
+                filter:
+                  "drop-shadow(0 2px 24px color-mix(in srgb, var(--md-sys-color-primary) 45%, transparent))",
               }}
             >
               {heroLast || heroFirst}
@@ -886,8 +888,8 @@ export const BookingPortalPage = () => {
       <div
         className={`
           fixed bottom-0 left-0 right-0 z-20
-          bg-background/95 backdrop-blur-md border-t border-black/10 dark:border-white/10
-          px-4 py-4 transition-transform duration-300 ease-out
+          bg-[var(--md-sys-color-surface-container)] border-t border-[var(--md-sys-color-outline-variant)]
+          px-4 py-4 transition-transform duration-300 ease-[var(--md-sys-motion-emphasized)]
           ${selectedSlot ? "translate-y-0" : "translate-y-full"}
         `}
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
@@ -935,7 +937,7 @@ export const BookingPortalPage = () => {
         const expired = Boolean(pendingDeposit.expiresAt) && seconds !== null && seconds <= 0;
         return (
           <div
-            className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-t border-warning-200 dark:border-warning-800 px-4 py-3"
+            className="fixed bottom-0 left-0 right-0 z-30 bg-[var(--md-sys-color-surface-container)] border-t border-[var(--md-sys-color-outline-variant)] px-4 py-3"
             style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
           >
             <div className="max-w-2xl mx-auto flex items-center gap-3">
