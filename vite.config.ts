@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+import { md3 } from "./src/theme/md3-tokens.ts";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -14,8 +15,8 @@ export default defineConfig({
         short_name: "Padexa",
         description:
           "Gestiona turnos, clientes y caja de tu club desde una app instalable.",
-        theme_color: "#113159",
-        background_color: "#081222",
+        theme_color: md3.light.roles.primary,
+        background_color: md3.light.roles.surface,
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
@@ -70,6 +71,18 @@ export default defineConfig({
             sizes: "512x512",
             type: "image/png",
             purpose: "any",
+          },
+          {
+            src: "/icons/icon-192x192-maskable.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "maskable",
+          },
+          {
+            src: "/icons/icon-512x512-maskable.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
           },
         ],
       },
