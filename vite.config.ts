@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt",
       includeAssets: ["logo.svg", "offline.html", "icons/*.png"],
       manifest: {
         name: "Padexa",
