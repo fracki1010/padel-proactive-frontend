@@ -15,6 +15,3 @@ export const WEEKDAYS: WeekdayOption[] = [
   { value: 5, short: "VIE", label: "Viernes" },
   { value: 6, short: "SÁB", label: "Sábado" },
 ];
-
-export const weekdayLabel = (value: number): string =>
-  WEEKDAYS.find((day) => day.value === value)?.label ?? `Día ${value}`;

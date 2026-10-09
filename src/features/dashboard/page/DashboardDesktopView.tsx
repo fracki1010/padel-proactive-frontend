@@ -30,6 +30,7 @@ export const DashboardDesktopView = ({
     filteredSlots,
     stats,
     isLoading,
+    fixedKeys,
     getSlotBookings,
   } = useDashboardData(courts);
 
@@ -133,15 +134,20 @@ export const DashboardDesktopView = ({
                     const isTaken = !!activeBooking && activeBooking.status !== "suspendido";
                     const isSuspended =
                       !!activeBooking && activeBooking.status === "suspendido";
+                    // An active fixed weekly turn owns this court+slot on the
+                    // selected date: it cannot be reserved.
+                    const isFixed = fixedKeys.has(`${court._id}_${slot._id}`);
                     const slotDateTime = new Date(`${selectedDate}T${slot.startTime}:00`);
                     const isPast = slotDateTime < new Date();
-                    const state = isSuspended
-                      ? "suspendido"
-                      : isTaken
-                        ? "ocupado"
-                        : isPast
-                          ? "pasado"
-                          : "libre";
+                    const state = isFixed
+                      ? "fijo"
+                      : isSuspended
+                        ? "suspendido"
+                        : isTaken
+                          ? "ocupado"
+                          : isPast
+                            ? "pasado"
+                            : "libre";
 
                     return (
                       <div
@@ -157,11 +163,13 @@ export const DashboardDesktopView = ({
                             className={`font-black uppercase ${
                               state === "libre"
                                 ? "bg-primary/20 text-primary border border-primary/30"
-                                : state === "ocupado"
-                                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                                  : state === "suspendido"
-                                    ? "bg-red-500/20 text-red-300 border border-red-500/30"
-                                    : "bg-black/10 dark:bg-white/10 text-on-surface-variant border border-black/10 dark:border-white/10"
+                                : state === "fijo"
+                                  ? "bg-primary/30 text-primary border border-primary/40"
+                                  : state === "ocupado"
+                                    ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                                    : state === "suspendido"
+                                      ? "bg-red-500/20 text-red-300 border border-red-500/30"
+                                      : "bg-black/10 dark:bg-white/10 text-on-surface-variant border border-black/10 dark:border-white/10"
                             }`}
                           >
                             {state}
@@ -173,6 +181,8 @@ export const DashboardDesktopView = ({
                               <UserRound size={12} />
                               {activeBooking.clientName}
                             </span>
+                          ) : isFixed ? (
+                            "Turno fijo"
                           ) : (
                             "Sin reserva"
                           )}
@@ -185,6 +195,14 @@ export const DashboardDesktopView = ({
                               className="h-8 rounded-lg w-full bg-black/10 dark:bg-white/10 text-on-surface-variant font-black uppercase"
                             >
                               Expirado
+                            </Button>
+                          ) : isFixed ? (
+                            <Button
+                              size="sm"
+                              isDisabled
+                              className="h-8 rounded-lg w-full bg-black/10 dark:bg-white/10 text-on-surface-variant font-black uppercase"
+                            >
+                              Turno fijo
                             </Button>
                           ) : (
                             <Button
