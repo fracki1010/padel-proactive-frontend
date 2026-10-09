@@ -58,6 +58,7 @@ export const FixedBookingModal = ({
   const [timeSlot, setTimeSlot] = useState("");
   const [weekday, setWeekday] = useState("");
   const [clientName, setClientName] = useState("");
+  const [clientNameError, setClientNameError] = useState(false);
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
@@ -66,6 +67,7 @@ export const FixedBookingModal = ({
     setTimeSlot(refId(editing?.timeSlot));
     setWeekday(editing ? String(editing.weekday) : "");
     setClientName(editing?.clientName || "");
+    setClientNameError(false);
     setNotes(editing?.notes || "");
   }, [isOpen, editing]);
 
@@ -83,11 +85,17 @@ export const FixedBookingModal = ({
       return;
     }
 
+    const trimmedClientName = clientName.trim();
+    if (!trimmedClientName) {
+      setClientNameError(true);
+      return;
+    }
+
     const payload = {
       court,
       timeSlot,
       weekday: Number(weekday),
-      clientName: clientName.trim(),
+      clientName: trimmedClientName,
       notes: notes.trim(),
     };
 
@@ -201,11 +209,16 @@ export const FixedBookingModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className={labelClass}>Cliente (opcional)</label>
+            <label className={labelClass}>Cliente</label>
             <Input
               placeholder="Ej: Juan Pérez"
               value={clientName}
-              onValueChange={setClientName}
+              onValueChange={(value) => {
+                setClientName(value);
+                if (clientNameError) setClientNameError(false);
+              }}
+              isInvalid={clientNameError}
+              errorMessage={clientNameError ? "El cliente es obligatorio" : undefined}
               variant="bordered"
               size="lg"
               classNames={fieldInputClassNames.lg}
