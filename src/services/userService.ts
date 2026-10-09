@@ -33,4 +33,11 @@ export const userService = {
     const response = await api.post(`/users/${id}/attendance/adjust`, { delta });
     return response.data;
   },
+  setDepositExemption: async (
+    id: string,
+    enabled: boolean,
+  ): Promise<{ success: boolean; data: { depositExempt: boolean } }> => {
+    const response = await api.put(`/users/${id}/deposit-exempt`, { enabled });
+    return response.data;
+  },
 };

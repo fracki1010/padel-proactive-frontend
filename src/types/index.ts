@@ -33,6 +33,7 @@ export interface User {
   confirmationsToBeTrusted?: number;
   isTrustedClient?: boolean;
   isVerified?: boolean;
+  depositExempt?: boolean;
   accountOrigin?: "whatsapp" | "sistema" | "google";
 }
 

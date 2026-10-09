@@ -83,3 +83,16 @@ export const useAdjustAttendanceCount = () => {
     },
   });
 };
+
+export const useSetDepositExemption = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) =>
+      userService.setDepositExemption(id, enabled),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
+    },
+  });
+};
