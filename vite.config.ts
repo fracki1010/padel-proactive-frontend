@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt",
       includeAssets: ["logo.svg", "offline.html", "icons/*.png"],
       manifest: {
         name: "Padexa",
@@ -89,7 +89,9 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: true,
+        // NO skipWaiting here: registerType "prompt" keeps the new SW in the
+        // waiting state until the user taps "Actualizar" in PwaManager, so the
+        // page never reloads underneath an in-progress booking.
         navigateFallback: "/index.html",
         runtimeCaching: [
           {

@@ -5,13 +5,22 @@ const API_BASE_URL =
 
 type UnauthorizedHandler = () => void;
 
-let unauthorizedHandler: UnauthorizedHandler | null = null;
+// Default 401 handling: NEVER reload the page. Clear the stored session and
+// notify the app so it can react (AuthContext listens and logs out). AuthContext
+// overrides this with its own handler after mount; the event channel stays alive
+// for requests that race ahead of that registration.
+const defaultUnauthorizedHandler: UnauthorizedHandler = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  window.dispatchEvent(new Event("auth:unauthorized"));
+};
+let unauthorizedHandler: UnauthorizedHandler = defaultUnauthorizedHandler;
 let isHandlingUnauthorized = false;
 
 export const setUnauthorizedHandler = (
   handler: UnauthorizedHandler | null,
 ) => {
-  unauthorizedHandler = handler;
+  unauthorizedHandler = handler ?? defaultUnauthorizedHandler;
 };
 
 export const api = axios.create({
@@ -44,14 +53,7 @@ api.interceptors.response.use(
       !isHandlingUnauthorized
     ) {
       isHandlingUnauthorized = true;
-
-      if (unauthorizedHandler) {
-        unauthorizedHandler();
-      } else {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        window.location.reload();
-      }
+      unauthorizedHandler();
 
       setTimeout(() => {
         isHandlingUnauthorized = false;

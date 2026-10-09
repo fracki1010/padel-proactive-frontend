@@ -12,48 +12,32 @@ import { ClientAuthProvider } from "./context/ClientAuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import "./lib/firebase";
 import { getDeviceKind } from "./lib/device";
-import { registerSW } from "virtual:pwa-register";
 
 const queryClient = new QueryClient();
-const updateSW = registerSW({
-  immediate: true,
-  onRegisteredSW: (_swUrl, registration) => {
-    if (!registration) return;
 
-    registration.update().catch(() => {
-      // Ignore transient update errors; periodic checks continue running.
-    });
+// Background update detection only. PwaManager (useRegisterSW, prompt mode)
+// surfaces the "Nueva versión disponible" banner and applies the update on user
+// action. This registration of the same /sw.js URL is idempotent in the browser
+// (deduped by scope); it exists solely so the poll below can detect updates
+// without ever auto-applying or reloading the page.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).then(
+      (registration) => {
+        window.setInterval(() => {
+          registration.update().catch(() => {
+            // Transient error; the next interval retries.
+          });
+        }, 60_000);
+      },
+      () => {
+        // Registration failure is non-fatal: PwaManager may still register the
+        // SW, and the app works online regardless.
+      },
+    );
+  });
+}
 
-    window.setInterval(() => {
-      registration.update().catch(() => {
-        // Ignore transient update errors; next interval will retry.
-      });
-    }, 60_000);
-  },
-  onNeedRefresh() {
-    const applyUpdate = () => {
-      void updateSW(true);
-    };
-
-    if (document.visibilityState === "hidden" || !document.hasFocus()) {
-      applyUpdate();
-      return;
-    }
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        document.removeEventListener("visibilitychange", handleVisibilityChange);
-        applyUpdate();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.setTimeout(() => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      applyUpdate();
-    }, 30_000);
-  },
-});
 const deviceKind = getDeviceKind();
 const isMobileViewport =
   typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
