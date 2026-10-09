@@ -50,7 +50,7 @@ api.interceptors.response.use(
       } else {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        window.location.reload();
+        window.dispatchEvent(new Event("auth:unauthorized"));
       }
 
       setTimeout(() => {

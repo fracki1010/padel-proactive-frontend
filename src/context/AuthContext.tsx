@@ -81,7 +81,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       logout();
     });
 
-    return () => setUnauthorizedHandler(null);
+    const onUnauthorized = () => logout();
+    window.addEventListener("auth:unauthorized", onUnauthorized);
+
+    return () => {
+      setUnauthorizedHandler(null);
+      window.removeEventListener("auth:unauthorized", onUnauthorized);
+    };
   }, [logout]);
 
   return (
