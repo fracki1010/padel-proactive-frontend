@@ -1,4 +1,5 @@
 import { heroui } from "@heroui/react";
+import { md3 } from "./src/theme/md3-tokens.ts";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -71,13 +72,14 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Plus Jakarta Sans", "Inter", "sans-serif"],
-        heading: ["Outfit", "sans-serif"],
+        sans: ["Roboto Flex", "Inter", "sans-serif"],
+        heading: ["Roboto Flex", "sans-serif"],
       },
       borderRadius: {
-        sm: "0.75rem",   // inputs, chips, small elements
-        md: "1.25rem",   // cards, buttons, standard containers
-        lg: "2rem",      // modals, large containers, hero sections
+        sm: "0.5rem",   // M3 shape-corner-small (8px) — inputs, chips
+        md: "0.75rem",  // M3 shape-corner-medium (12px) — cards, buttons
+        lg: "1rem",     // M3 shape-corner-large (16px)
+        xl: "1.75rem",  // M3 shape-corner-extra-large (28px) — modals, drawers
       },
       // Single source of truth for interactive control heights (WCAG 2.5.5).
       // Mirrored as CSS vars in src/index.css (`--control-height-*`). The touch
@@ -102,5 +104,20 @@ export default {
     },
   },
   darkMode: "class",
-  plugins: [heroui()],
+  plugins: [
+    heroui({
+      // M3 radii applied to every HeroUI component slot.
+      layout: {
+        radius: {
+          small: "0.5rem", // shape-corner-small
+          medium: "0.75rem", // shape-corner-medium
+          large: "1rem", // shape-corner-large
+        },
+      },
+      themes: {
+        light: { colors: md3.light.heroui },
+        dark: { colors: md3.dark.heroui },
+      },
+    }),
+  ],
 };

@@ -1,4 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Outfit:wght@100..900&display=swap');
+/* MD3 token layer + `--color-*` compat bridge (generated, do not edit). */
+@import "./theme/md3-tokens.css";
+
+/* Roboto Flex is loaded via <link> in index.html (Google Fonts CDN). */
 
 @tailwind base;
 @tailwind components;
@@ -6,89 +9,20 @@
 
 @layer base {
   :root {
-    --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-    --font-heading: "Outfit", sans-serif;
+    --font-sans: "Roboto Flex", ui-sans-serif, system-ui, sans-serif;
+    --font-heading: "Roboto Flex", sans-serif;
 
-    /* =========================================================
-       THEME TOKENS (Light Mode)
-       Edit only these values to rebrand the whole app.
-       Format: space-separated RGB values (without rgb()).
-       ========================================================= */
-    --color-background: 244 252 255;
-    --color-foreground: 16 35 52;
-
-    --color-primary-50: 229 252 255;
-    --color-primary-100: 199 247 255;
-    --color-primary-200: 152 237 251;
-    --color-primary-300: 98 223 245;
-    --color-primary-400: 52 204 234;
-    --color-primary-500: 13 181 219;
-    --color-primary-600: 10 152 189;
-    --color-primary-700: 11 124 156;
-    --color-primary-800: 14 97 122;
-    --color-primary-900: 14 73 93;
-
-    --color-dark-100: 255 255 255;
-    --color-dark-200: 235 247 255;
-    --color-dark-300: 216 235 248;
-
-    --color-accent-blue: 56 189 248;
-    --color-accent-orange: 45 212 191;
-
-    /* Common palette aliases used across the app classes */
-    --color-white: 255 255 255;
-    --color-black: 0 0 0;
-
-    --color-gray-300: 106 136 166;
-    --color-gray-400: 79 108 136;
-    --color-gray-500: 60 86 111;
-    --color-gray-600: 46 68 89;
-
-    --color-red-500: 239 68 68;
-    --color-green-400: 74 222 128;
-    --color-green-500: 34 197 94;
-    --color-blue-500: 13 181 219;
-    --color-orange-500: 45 212 191;
+    /* Non-color theme state (colors live in md3-tokens.css). */
     --toast-safe-top-offset: 1rem;
     --toast-mobile-extra-offset: 2.25rem;
     --keyboard-height: 0px;
   }
 
-  .night,
-  .dark {
-    --color-background: 3 10 24;
-    --color-foreground: 224 247 255;
-
-    --color-primary-50: 229 252 255;
-    --color-primary-100: 199 247 255;
-    --color-primary-200: 152 237 251;
-    --color-primary-300: 98 223 245;
-    --color-primary-400: 52 204 234;
-    --color-primary-500: 13 181 219;
-    --color-primary-600: 10 152 189;
-    --color-primary-700: 11 124 156;
-    --color-primary-800: 14 97 122;
-    --color-primary-900: 14 73 93;
-
-    --color-dark-100: 8 23 43;
-    --color-dark-200: 5 16 32;
-    --color-dark-300: 3 10 24;
-
-    --color-accent-blue: 56 189 248;
-    --color-accent-orange: 45 212 191;
-
-    --color-gray-300: 159 196 222;
-    --color-gray-400: 118 157 184;
-    --color-gray-500: 86 124 151;
-    --color-gray-600: 64 97 121;
-
-    --color-blue-500: 13 181 219;
-    --color-orange-500: 45 212 191;
-  }
-
   body {
     @apply bg-background text-foreground antialiased selection:bg-primary/30 font-sans;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    /* M3 body-large as the base text scale. */
+    font-size: var(--md-sys-typescale-body-large-size);
+    line-height: var(--md-sys-typescale-body-large-line-height);
     background-color: rgb(var(--color-background));
     min-height: 100vh;
     min-height: 100dvh;
@@ -207,13 +141,9 @@
    ========================================================================= */
 
 /* HeroUI declares its theme variables later in the cascade (its plugin
-   utilities come after this block), so re-point the focus ring here with
-   `!important` to make the PADEXA cyan win in both themes. */
-:root,
-:root.dark,
-:root.night {
-  --heroui-focus: 191.07 88.79% 45.49% !important;
-}
+   utilities come after this block). The `--heroui-focus` re-point to the M3
+   primary tone is emitted by scripts/gen-md3-tokens.mjs with `!important`
+   (see md3-tokens.css), so the PADEXA focus ring wins in both themes. */
 
 /* Subtle "inset" definition for fields without a hard border, plus a uniform
    radius. HeroUI applies `shadow-xs` (a Tailwind v4 name that produces no rule
