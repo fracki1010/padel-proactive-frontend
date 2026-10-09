@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { md3 } from "../theme/md3-tokens";
 
 type ThemeMode = "light" | "dark";
 
@@ -34,6 +35,14 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     root.classList.toggle("dark", isDark);
     root.style.colorScheme = isDark ? "dark" : "light";
     window.localStorage.setItem(STORAGE_KEY, theme);
+
+    // Keep the browser/PWA chrome in sync with the active M3 surface.
+    const surface = (isDark ? md3.dark : md3.light).roles.surface;
+    document
+      .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+      .forEach((meta) => {
+        meta.content = surface;
+      });
   }, [theme]);
 
   const value = useMemo<ThemeContextValue>(
