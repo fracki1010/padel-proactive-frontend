@@ -31,7 +31,7 @@ import { useIsDesktop } from "./hooks/useIsDesktop";
 const APP_ACTIVE_TAB_KEY = "padexa:last-active-tab";
 const APP_FILTER_VALUE_KEY = "padexa:last-filter-value";
 const APP_SELECTED_COURT_KEY = "padexa:last-selected-court";
-const ALLOWED_APP_TABS = new Set(["panel", "reservas", "turnos-fijos", "socios", "caja", "configuracion"]);
+const ALLOWED_APP_TABS = new Set(["panel", "reservas", "turnos-fijos", "socios", "configuracion"]);
 
 const readStoredString = (key: string, fallback = "") => {
   if (typeof window === "undefined") return fallback;
@@ -87,8 +87,6 @@ const getScreenTitle = (activeTab: string, isCreating: boolean) => {
       return "Turnos";
     case "turnos-fijos":
       return "Turnos fijos";
-    case "caja":
-      return "Caja";
     case "configuracion":
       return "Configuración";
     default:

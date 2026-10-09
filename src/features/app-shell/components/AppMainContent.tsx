@@ -4,7 +4,6 @@ import { ClientDetailPage } from "../../clients/page/ClientDetailPage";
 import { Clients } from "../../clients/page/Clients";
 import { Dashboard } from "../../dashboard/page/Dashboard";
 import { FixedBookings } from "../../fixed-bookings/page/FixedBookings";
-import { Finance } from "../../finance/page/Finance";
 import { Profile } from "../../profile/page/Profile";
 
 type AppMainContentProps = {
@@ -71,8 +70,6 @@ export const AppMainContent = ({
       );
     case "turnos-fijos":
       return <FixedBookings />;
-    case "caja":
-      return <Finance bookings={bookings} />;
     case "configuracion":
       return <Profile courts={courts} />;
     default:

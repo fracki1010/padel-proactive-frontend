@@ -6,7 +6,6 @@ import {
   LogOut,
   Settings,
   Users,
-  Wallet,
 } from "lucide-react";
 import { cn } from "@heroui/react";
 
@@ -22,7 +21,6 @@ const navItems = [
   { id: "reservas", label: "Turnos", icon: Calendar },
   { id: "turnos-fijos", label: "Turnos fijos", icon: CalendarClock },
   { id: "socios", label: "Socios", icon: Users },
-  { id: "caja", label: "Caja", icon: Wallet },
 ];
 
 export const DesktopSidebar = ({
