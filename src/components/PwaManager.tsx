@@ -14,6 +14,7 @@ const isStandalone = () =>
 
 export const PwaManager = () => {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isStandaloneMode, setIsStandaloneMode] = useState<boolean>(() => isStandalone());
   const [isOnline, setIsOnline] = useState<boolean>(() => navigator.onLine);
 
   const {
@@ -26,7 +27,19 @@ export const PwaManager = () => {
     },
   });
 
-  const canInstall = useMemo(() => !!installPrompt && !isStandalone(), [installPrompt]);
+  const canInstall = useMemo(
+    () => !!installPrompt && !isStandaloneMode,
+    [installPrompt, isStandaloneMode],
+  );
+
+  // Track standalone (installed) mode so the install CTA hides as soon as the
+  // app is launched edge-to-edge from the home screen.
+  useEffect(() => {
+    const media = window.matchMedia("(display-mode: standalone)");
+    const syncStandalone = () => setIsStandaloneMode(isStandalone());
+    media.addEventListener("change", syncStandalone);
+    return () => media.removeEventListener("change", syncStandalone);
+  }, []);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (event: Event) => {
@@ -105,11 +118,11 @@ export const PwaManager = () => {
 
       {needRefresh && (
         <div className="fixed left-4 right-4 bottom-[calc(env(safe-area-inset-bottom)+5.2rem)] z-[120]">
-          <Card className="bg-dark-100 border border-primary/30 rounded-md shadow-2xl">
+          <Card className="bg-surface-container-high border border-outline-variant rounded-md shadow-2xl">
             <CardBody className="p-4 flex flex-col gap-3">
               <div>
                 <p className="text-foreground font-black text-sm">Nueva versión disponible</p>
-                <p className="text-gray-400 text-xs">
+                <p className="text-on-surface-variant text-xs">
                   Actualizá para tener mejoras y correcciones recientes.
                 </p>
               </div>
@@ -137,7 +150,7 @@ export const PwaManager = () => {
 
       {offlineReady && (
         <div className="fixed left-4 right-4 bottom-[calc(env(safe-area-inset-bottom)+5.2rem)] z-[110] pointer-events-none">
-          <Card className="bg-dark-100/95 border border-black/10 dark:border-white/10 rounded-md">
+          <Card className="bg-surface-container border border-outline-variant rounded-md">
             <CardBody className="p-3">
               <p className="text-xs text-foreground font-bold text-center">
                 App lista para funcionar sin conexión
