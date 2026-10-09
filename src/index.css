@@ -145,13 +145,14 @@
    primary tone is emitted by scripts/gen-md3-tokens.mjs with `!important`
    (see md3-tokens.css), so the PADEXA focus ring wins in both themes. */
 
-/* Subtle "inset" definition for fields without a hard border, plus a uniform
-   radius. HeroUI applies `shadow-xs` (a Tailwind v4 name that produces no rule
-   in v3) and its own `rounded-small/medium/large`; `!important` guarantees the
-   unified radius regardless of Tailwind's utility ordering. */
+/* Subtle "inset" definition for fields without a hard border, plus the M3
+   text-field radius (shape-corner-small, 8px). HeroUI applies `shadow-xs` (a
+   Tailwind v4 name that produces no rule in v3) and its own
+   `rounded-small/medium/large`; `!important` guarantees the unified M3 radius
+   regardless of Tailwind's utility ordering. */
 [data-slot="input-wrapper"],
 [data-slot="trigger"] {
-  border-radius: 0.75rem !important;
+  border-radius: var(--md-sys-shape-corner-small, 0.5rem) !important;
   box-shadow: inset 0 0 0 1px rgb(var(--color-black) / 0.05);
   /* Explicit property list — never `transition: all`. */
   transition-property: background-color, border-color, box-shadow !important;
@@ -361,4 +362,41 @@ html {
   font-size: var(--md-sys-typescale-label-medium-size);
   line-height: var(--md-sys-typescale-label-medium-line-height);
   letter-spacing: var(--md-sys-typescale-label-medium-tracking);
+}
+
+/* =========================================================================
+   M3 COMPONENT SHAPE + TONAL OVERRIDES
+   -------------------------------------------------------------------------
+   HeroUI v2 only exposes global colors/layout through its plugin, so M3
+   per-component shape/tonal roles are applied here through the stable hooks
+   the components actually render. Unlayered and placed after `@tailwind
+   utilities`, these win over HeroUI's utility classes; callers that pass an
+   explicit radius keep it, because tailwind-merge drops HeroUI's default
+   radius class whenever a caller supplies its own.
+   ========================================================================= */
+
+/* Buttons -> M3 full corner. HeroUI's default radius classes are only present
+   when the caller did not pass one, so context menus, selects and other
+   `data-slot` surfaces are excluded. */
+button[data-react-aria-pressable="true"].rounded-small:not([data-slot]),
+button[data-react-aria-pressable="true"].rounded-medium:not([data-slot]),
+button[data-react-aria-pressable="true"].rounded-large:not([data-slot]) {
+  border-radius: var(--md-sys-shape-corner-full);
+}
+
+/* Dialogs / drawers -> M3 extra-large (28px) corners and the
+   surface-container-high tonal surface. Centered dialogs round every corner;
+   bottom sheets round the top edge only; side sheets keep the shell's leading
+   edge and only adopt the tonal surface. */
+[aria-modal="true"] {
+  background-color: var(--md-sys-color-surface-container-high);
+}
+
+[aria-modal="true"][data-placement="center"] {
+  border-radius: var(--md-sys-shape-corner-extra-large);
+}
+
+[aria-modal="true"][data-placement="bottom"] {
+  border-radius: var(--md-sys-shape-corner-extra-large)
+    var(--md-sys-shape-corner-extra-large) 0 0;
 }
