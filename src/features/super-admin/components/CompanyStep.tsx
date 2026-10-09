@@ -34,13 +34,13 @@ export const CompanyStep = ({
   return (
     <Card className="bg-dark-100/70 border border-black/10 dark:border-white/10 rounded-lg">
       <CardBody className="p-5 sm:p-6 space-y-4">
-        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+        <p className="text-[10px] text-on-surface-variant font-black uppercase tracking-widest">
           Paso 1 • Empresa
         </p>
 
         {companies.length > 0 && (
           <div className="space-y-2">
-            <p className="text-xs text-gray-300 font-bold">
+            <p className="text-xs text-on-surface-variant font-bold">
               Ya existen empresas. Seleccioná una para continuar o creá otra.
             </p>
             <select
@@ -71,7 +71,7 @@ export const CompanyStep = ({
           classNames={{
             inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-md",
             input: "text-foreground font-bold",
-            label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
+            label: "text-on-surface-variant text-[10px] font-black uppercase tracking-widest",
           }}
         />
 
@@ -87,8 +87,8 @@ export const CompanyStep = ({
           classNames={{
             inputWrapper: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 h-12 rounded-md",
             input: "text-foreground font-bold",
-            label: "text-gray-400 text-[10px] font-black uppercase tracking-widest",
-            description: "text-gray-500 text-[10px]",
+            label: "text-on-surface-variant text-[10px] font-black uppercase tracking-widest",
+            description: "text-on-surface-variant text-[10px]",
           }}
         />
 

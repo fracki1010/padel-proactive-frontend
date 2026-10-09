@@ -28,10 +28,10 @@ export const BootstrapStep = ({
   return (
     <Card className="bg-dark-100/70 border border-black/10 dark:border-white/10 rounded-lg">
       <CardBody className="p-5 sm:p-6 space-y-4">
-        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+        <p className="text-[10px] text-on-surface-variant font-black uppercase tracking-widest">
           Paso 2 • Migración inicial
         </p>
-        <p className="text-xs text-gray-300 font-bold leading-relaxed">
+        <p className="text-xs text-on-surface-variant font-bold leading-relaxed">
           Podés migrar datos viejos sin tenant (reservas, usuarios, canchas, etc.) a la
           empresa seleccionada.
         </p>
