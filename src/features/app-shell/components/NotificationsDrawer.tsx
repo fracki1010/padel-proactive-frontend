@@ -61,7 +61,7 @@ export const NotificationsDrawer = ({
 
   const getNotificationBadge = (type: string) => {
     if (type === "new_booking") {
-      return { label: "Nueva Reserva", className: "bg-primary text-black" };
+      return { label: "Nueva Reserva", className: "bg-primary text-on-primary" };
     }
     if (type === "fixed_turn_request") {
       return { label: "Turno Fijo", className: "bg-amber-500 text-black" };
@@ -194,7 +194,7 @@ export const NotificationsDrawer = ({
                   size="lg"
                   aria-label="Marcar todas las notificaciones como leídas"
                   onPress={() => markAllRead.mutate()}
-                  className="h-control-lg min-h-control-lg bg-primary text-black font-black uppercase tracking-wide rounded-md"
+                  className="h-control-lg min-h-control-lg bg-primary text-on-primary font-black uppercase tracking-wide rounded-md"
                   startContent={<CheckCheck size={20} />}
                 >
                   Marcar todo como leído

@@ -199,7 +199,7 @@ export const BookingDetailDrawer = ({
                     </Button>
                   ) : (
                     <Button
-                      className="h-16 bg-primary text-black font-black text-lg rounded-md shadow-xl shadow-primary/20"
+                      className="h-16 bg-primary text-on-primary font-black text-lg rounded-md shadow-xl shadow-primary/20"
                       onPress={() =>
                         window.open(
                           `https://wa.me/${selectedBooking?.clientPhone.replace(/\D/g, "")}`,

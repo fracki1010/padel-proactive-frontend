@@ -94,7 +94,7 @@ export const CompanyStep = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <Button
-            className="h-12 bg-primary text-black font-black uppercase rounded-md"
+            className="h-12 bg-primary text-on-primary font-black uppercase rounded-md"
             isLoading={createCompanyPending}
             onPress={onCreateCompany}
           >

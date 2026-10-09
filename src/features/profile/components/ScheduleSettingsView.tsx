@@ -252,7 +252,7 @@ export const ScheduleSettingsView = ({
             />
           </div>
           <Button
-            className="h-12 bg-primary text-black font-black rounded-md uppercase text-[10px] w-full sm:w-auto px-8"
+            className="h-12 bg-primary text-on-primary font-black rounded-md uppercase text-[10px] w-full sm:w-auto px-8"
             onPress={onCreateSlot}
             isLoading={createSlotPending}
           >
@@ -369,7 +369,7 @@ export const ScheduleSettingsView = ({
               }}
             />
             <Button
-              className="h-12 bg-primary text-black font-black rounded-md uppercase text-[10px] w-full sm:w-auto"
+              className="h-12 bg-primary text-on-primary font-black rounded-md uppercase text-[10px] w-full sm:w-auto"
               onPress={onSaveBasePrice}
               isLoading={updateBasePricePending}
             >

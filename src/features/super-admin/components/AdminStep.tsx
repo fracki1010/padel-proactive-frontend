@@ -146,7 +146,7 @@ export const AdminStep = ({
             Volver
           </Button>
           <Button
-            className="h-12 bg-primary text-black font-black uppercase rounded-md"
+            className="h-12 bg-primary text-on-primary font-black uppercase rounded-md"
             isLoading={createAdminPending}
             onPress={onCreateAdmin}
             isDisabled={!selectedCompanyId || hasTenantAdmin}

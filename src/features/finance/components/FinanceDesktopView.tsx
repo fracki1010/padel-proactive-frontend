@@ -208,7 +208,7 @@ export const FinanceDesktopView = ({
                 <Button
                   size="sm"
                   color="primary"
-                  className="uppercase font-black text-[11px] tracking-wider text-black"
+                  className="uppercase font-black text-[11px] tracking-wider text-on-primary"
                   startContent={<Download size={14} />}
                   onPress={exportCsv}
                 >

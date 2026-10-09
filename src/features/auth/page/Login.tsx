@@ -123,7 +123,7 @@ export const Login = () => {
                 size="lg"
                 fullWidth
                 isLoading={isLoading}
-                className="h-16 bg-primary text-black font-black uppercase tracking-widest rounded-md shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                className="h-16 bg-primary text-on-primary font-black uppercase tracking-widest rounded-md shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
               >
                 Ingresar al Sistema
               </Button>
