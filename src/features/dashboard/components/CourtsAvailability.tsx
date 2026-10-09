@@ -89,11 +89,25 @@ export const CourtsAvailability = ({
                       </div>
 
                       <div className="flex-grow min-w-0">
-                        <h4 className={`font-bold ${state === "available" ? "text-foreground" : "text-gray-500"}`}>
+                        <h4
+                          className={`font-bold ${
+                            state === "available"
+                              ? "text-foreground"
+                              : state === "past"
+                                ? "text-on-surface-variant"
+                                : "text-gray-500"
+                          }`}
+                        >
                           {court.name}
                         </h4>
                         <p
-                          className={`text-[10px] ${isSuspended ? "text-red-500/70" : "text-gray-500"} font-bold uppercase mt-0.5`}
+                          className={`text-[10px] ${
+                            isSuspended
+                              ? "text-red-500/70"
+                              : state === "taken"
+                                ? "text-gray-500"
+                                : "text-on-surface-variant"
+                          } font-bold uppercase mt-0.5`}
                         >
                           {isSuspended ? "⚠️ TURNO SUSPENDIDO" : "90 mins"}
                         </p>
