@@ -26,9 +26,9 @@ const titleStyles: Record<"h1" | "h2" | "h3", string> = {
 const eyebrowClass =
   "text-[11px] font-semibold uppercase tracking-wider text-primary/80";
 
-const subtitleClass = "text-sm font-semibold text-gray-500 mt-1";
+const subtitleClass = "text-sm font-semibold text-on-surface-variant mt-1";
 
-const compactSubtitleClass = "text-xs font-semibold text-gray-500 mt-1";
+const compactSubtitleClass = "text-xs font-semibold text-on-surface-variant mt-1";
 
 const badgeClass =
   "text-[10px] font-semibold text-primary bg-primary/10 px-2 py-1 rounded-md";

@@ -67,7 +67,7 @@ export const Pagination = ({
       className={`flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-t border-black/10 dark:border-white/10 ${className}`}
     >
       {/* Info label */}
-      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500 dark:text-gray-400">
+      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">
         {totalItems} {itemsLabel} &bull; p&aacute;gina {safePage}/{totalPages}
       </p>
 
@@ -78,7 +78,7 @@ export const Pagination = ({
             page === null ? (
               <span
                 key={`ellipsis-${idx}`}
-                className="w-8 h-8 flex items-center justify-center text-gray-400 dark:text-gray-500 font-semibold text-sm select-none"
+                className="w-8 h-8 flex items-center justify-center text-on-surface-variant font-semibold text-sm select-none"
               >
                 &hellip;
               </span>
@@ -90,7 +90,7 @@ export const Pagination = ({
                   ${
                     page === safePage
                       ? "bg-primary text-white"
-                      : "text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10"
+                      : "text-on-surface-variant hover:bg-black/5 dark:hover:bg-white/10"
                   }`}
               >
                 {page}

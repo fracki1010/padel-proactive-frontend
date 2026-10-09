@@ -65,7 +65,7 @@ export const ConfirmModal = ({
                 </h2>
               </ModalHeader>
               <ModalBody className="pb-2">
-                <p className="text-sm text-gray-300 leading-relaxed">{message}</p>
+                <p className="text-sm text-on-surface-variant leading-relaxed">{message}</p>
               </ModalBody>
               <ModalFooter className="pt-3 border-t border-black/5 dark:border-white/5">
                 <Button

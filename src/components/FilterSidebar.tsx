@@ -33,7 +33,7 @@ export const DashboardControls = ({
       <Input
         isClearable
         placeholder="Buscar por nombre o teléfono..."
-        startContent={<Search size={20} className="text-gray-400" />}
+        startContent={<Search size={20} className="text-on-surface-variant" />}
         value={filterValue}
         onValueChange={onFilterChange}
         className="max-w-full"
@@ -76,7 +76,7 @@ export const DashboardControls = ({
             cursor: "w-full bg-primary",
             tab: "max-w-fit px-0 h-12",
             tabContent:
-              "group-data-[selected=true]:text-primary font-bold text-gray-500",
+              "group-data-[selected=true]:text-primary font-bold text-on-surface-variant",
           }}
         >
           <Tab key="all" title="Todas" />

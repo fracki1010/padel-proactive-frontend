@@ -22,7 +22,7 @@ export const GlobalActionOverlay = ({
       <div className="rounded-md border border-white/10 bg-dark-200/95 px-8 py-6 flex flex-col items-center gap-3 shadow-2xl">
         <Spinner color="primary" size="lg" />
         <p className="text-sm font-black uppercase tracking-[0.14em] text-foreground">{title}</p>
-        <p className="text-xs text-gray-400">{description}</p>
+        <p className="text-xs text-on-surface-variant">{description}</p>
       </div>
     </div>
   );
