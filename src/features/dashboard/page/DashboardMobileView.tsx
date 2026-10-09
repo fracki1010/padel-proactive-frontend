@@ -22,6 +22,7 @@ export const DashboardMobileView = ({
     filteredSlots,
     stats,
     isLoading,
+    fixedKeys,
     getSlotBookings,
   } = useDashboardData(courts);
 
@@ -50,6 +51,7 @@ export const DashboardMobileView = ({
         selectedDate={selectedDate}
         getSlotBookings={getSlotBookings}
         onBookingClick={onBookingClick}
+        fixedKeys={fixedKeys}
       />
     </div>
   );

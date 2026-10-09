@@ -3,7 +3,7 @@ import { Bookings } from "../../bookings/page/Bookings";
 import { ClientDetailPage } from "../../clients/page/ClientDetailPage";
 import { Clients } from "../../clients/page/Clients";
 import { Dashboard } from "../../dashboard/page/Dashboard";
-import { Finance } from "../../finance/page/Finance";
+import { FixedBookings } from "../../fixed-bookings/page/FixedBookings";
 import { Profile } from "../../profile/page/Profile";
 
 type AppMainContentProps = {
@@ -68,8 +68,8 @@ export const AppMainContent = ({
           onBookingClick={onBookingClick}
         />
       );
-    case "caja":
-      return <Finance bookings={bookings} />;
+    case "turnos-fijos":
+      return <FixedBookings />;
     case "configuracion":
       return <Profile courts={courts} />;
     default:

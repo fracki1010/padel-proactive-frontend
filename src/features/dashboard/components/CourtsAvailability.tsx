@@ -8,6 +8,7 @@ type CourtsAvailabilityProps = {
   selectedDate: string;
   getSlotBookings: (slotId: string, courtId: string) => any[];
   onBookingClick: (booking: any) => void;
+  fixedKeys?: Set<string>;
 };
 
 export const CourtsAvailability = ({
@@ -17,6 +18,7 @@ export const CourtsAvailability = ({
   selectedDate,
   getSlotBookings,
   onBookingClick,
+  fixedKeys,
 }: CourtsAvailabilityProps) => {
   const now = new Date();
 
@@ -51,27 +53,36 @@ export const CourtsAvailability = ({
 
                 const isTaken = !!activeBooking && activeBooking.status !== "suspendido";
                 const isSuspended = !!activeBooking && activeBooking.status === "suspendido";
+                // An active fixed weekly turn owns this court+slot on the
+                // selected date: it cannot be reserved (backend also refuses).
+                const isFixed =
+                  fixedKeys !== undefined &&
+                  fixedKeys.has(`${court._id}_${slot._id}`);
                 const slotDateTime = new Date(`${selectedDate}T${slot.startTime}:00`);
                 const isPast = slotDateTime < now;
-                const state = isSuspended
-                  ? "suspended"
-                  : isTaken
-                    ? "taken"
-                    : isPast
-                      ? "past"
-                      : "available";
+                const state = isFixed
+                  ? "fixed"
+                  : isSuspended
+                    ? "suspended"
+                    : isTaken
+                      ? "taken"
+                      : isPast
+                        ? "past"
+                        : "available";
 
                 return (
                   <Card
                     key={`${court._id}-${slot._id}`}
                     className={`bg-dark-100 border transition-all ${
-                      state === "suspended"
-                        ? "border-red-500/40 bg-red-500/10"
-                        : state === "taken"
-                          ? "border-amber-500/20 bg-amber-500/5"
-                          : state === "past"
-                            ? "border-black/10 dark:border-white/10 bg-dark-100/70 opacity-75"
-                            : "border-black/10 dark:border-white/10 hover:border-primary/40"
+                      state === "fixed"
+                        ? "border-primary/40 bg-primary/10"
+                        : state === "suspended"
+                          ? "border-red-500/40 bg-red-500/10"
+                          : state === "taken"
+                            ? "border-amber-500/20 bg-amber-500/5"
+                            : state === "past"
+                              ? "border-black/10 dark:border-white/10 bg-dark-100/70 opacity-75"
+                              : "border-black/10 dark:border-white/10 hover:border-primary/40"
                     }`}
                   >
                     <CardBody className="p-4 flex flex-row items-center gap-4">
@@ -104,12 +115,16 @@ export const CourtsAvailability = ({
                           className={`text-[10px] ${
                             isSuspended
                               ? "text-red-500/70"
-                              : state === "taken"
+                              : state === "taken" || state === "fixed"
                                 ? "text-gray-500"
                                 : "text-on-surface-variant"
                           } font-bold uppercase mt-0.5`}
                         >
-                          {isSuspended ? "⚠️ TURNO SUSPENDIDO" : "90 mins"}
+                          {isSuspended
+                            ? "⚠️ TURNO SUSPENDIDO"
+                            : isFixed
+                              ? "TURNO FIJO"
+                              : "90 mins"}
                         </p>
                         {isTaken && (
                           <div className="flex items-center gap-1 mt-1">
@@ -142,6 +157,14 @@ export const CourtsAvailability = ({
                           onClick={() => onBookingClick(activeBooking)}
                         >
                           Habilitar
+                        </Button>
+                      ) : isFixed ? (
+                        <Button
+                          size="sm"
+                          disabled
+                          className="bg-dark-200 text-on-surface-variant font-black rounded-xl uppercase px-4 cursor-default"
+                        >
+                          Turno fijo
                         </Button>
                       ) : isTaken ? (
                         <Button

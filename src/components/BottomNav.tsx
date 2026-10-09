@@ -1,5 +1,5 @@
 import { Button } from "@heroui/react";
-import { LayoutGrid, Calendar, Users, Wallet, Plus } from "lucide-react";
+import { LayoutGrid, Calendar, Users, CalendarClock, Plus } from "lucide-react";
 import { cn } from "@heroui/react";
 
 interface BottomNavProps {
@@ -17,8 +17,8 @@ export const BottomNav = ({
     { id: "panel", label: "Panel", icon: LayoutGrid },
     { id: "reservas", label: "Reservas", icon: Calendar },
     { id: "fab", isFab: true },
+    { id: "turnos-fijos", label: "Turnos fijos", icon: CalendarClock },
     { id: "socios", label: "Socios", icon: Users },
-    { id: "caja", label: "Caja", icon: Wallet },
   ];
 
   return (

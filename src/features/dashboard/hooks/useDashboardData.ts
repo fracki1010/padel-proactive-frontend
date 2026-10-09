@@ -2,8 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useBookings, useSlots } from "../../../hooks/useData";
 import { getTodayIsoLocal, toIsoDateKey } from "../../../utils/formatters";
+import { useFixedBookings } from "../../fixed-bookings/hooks/useFixedBookings";
 
 type Court = { _id: string;[key: string]: any };
+
+const refId = (ref: { _id: string } | string | null | undefined): string => {
+  if (!ref) return "";
+  return typeof ref === "string" ? ref : ref._id;
+};
 
 const DASHBOARD_SELECTED_DATE_KEY = "padexa:dashboard-selected-date";
 const DASHBOARD_ACTIVE_FILTER_KEY = "padexa:dashboard-active-filter";
@@ -40,9 +46,27 @@ export const useDashboardData = (courts: Court[] = []) => {
   const [activeFilter, setActiveFilter] = useState(readStoredDashboardFilter);
   const { data: slotsData, isLoading: isLoadingSlots } = useSlots();
   const { data: bookingsData, isLoading: isLoadingBookings } = useBookings(selectedDate);
+  const { data: fixedBookingsData } = useFixedBookings();
 
   const slots = slotsData?.data || [];
   const dashboardBookings = bookingsData?.data || [];
+
+  // Active fixed weekly turns block their court+slot for the selected date's
+  // weekday. Keys use the backend format `String(courtId)_String(timeSlotId)`.
+  // Date-only strings parse as UTC midnight, so getUTCDay() matches the
+  // backend's UTC weekday derivation for the same calendar date.
+  const fixedKeys = useMemo(() => {
+    const weekday = new Date(selectedDate).getUTCDay();
+    const keys = new Set<string>();
+    for (const fixedBooking of fixedBookingsData?.data ?? []) {
+      if (fixedBooking.status !== "active") continue;
+      if (fixedBooking.weekday !== weekday) continue;
+      const courtId = refId(fixedBooking.court);
+      const slotId = refId(fixedBooking.timeSlot);
+      if (courtId && slotId) keys.add(`${courtId}_${slotId}`);
+    }
+    return keys;
+  }, [fixedBookingsData, selectedDate]);
 
   const filteredSlots = useMemo(() => {
     return slots.filter((slot: any) => {
@@ -127,6 +151,7 @@ export const useDashboardData = (courts: Court[] = []) => {
     filteredSlots,
     slotCounts,
     stats,
+    fixedKeys,
     isLoading: isLoadingSlots || isLoadingBookings,
     getSlotBookings,
   };

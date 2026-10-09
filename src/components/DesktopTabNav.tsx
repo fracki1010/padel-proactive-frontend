@@ -1,5 +1,5 @@
 import { Button } from "@heroui/react";
-import { Calendar, LayoutGrid, Plus, Users, Wallet } from "lucide-react";
+import { Calendar, CalendarClock, LayoutGrid, Plus, Users } from "lucide-react";
 import { cn } from "@heroui/react";
 
 type DesktopTabNavProps = {
@@ -11,8 +11,8 @@ type DesktopTabNavProps = {
 const tabs = [
   { id: "panel", label: "Panel", icon: LayoutGrid },
   { id: "reservas", label: "Reservas", icon: Calendar },
+  { id: "turnos-fijos", label: "Turnos fijos", icon: CalendarClock },
   { id: "socios", label: "Socios", icon: Users },
-  { id: "caja", label: "Caja", icon: Wallet },
 ];
 
 export const DesktopTabNav = ({
