@@ -7,6 +7,7 @@ import {
   Input,
   Select,
   SelectItem,
+  Switch,
   addToast,
   useDisclosure,
 } from "@heroui/react";
@@ -35,6 +36,7 @@ import {
   useClearPenalties,
   useCourts,
   useDeleteUser,
+  useSetDepositExemption,
   useSlots,
   useUpdateUser,
   useUserById,
@@ -307,6 +309,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
   const clearPenalties = useClearPenalties();
   const deleteUser = useDeleteUser();
   const updateUser = useUpdateUser();
+  const setDepositExemption = useSetDepositExemption();
   const isClientActionPending = clearPenalties.isPending || deleteUser.isPending;
   const { data: courtsData } = useCourts();
   const { data: slotsData } = useSlots();
@@ -338,6 +341,9 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
     typeof user?.isTrustedClient === "boolean"
       ? user.isTrustedClient
       : attendanceCount >= trustedThreshold;
+
+  const hasExemptablePhone =
+    (user?.phoneNumber?.replace(/\D/g, "")?.length ?? 0) >= 7;
 
   const sortedHistory = useMemo(
     () => [...history].sort((a, b) => getBookingSortTimestamp(b) - getBookingSortTimestamp(a)),
@@ -416,6 +422,20 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
       addToast({ title: "Penalizaciones eliminadas", color: "success" });
     } catch {
       addToast({ title: "Error al limpiar penalizaciones", color: "danger" });
+    }
+  };
+
+  const handleToggleDepositExemption = async (enabled: boolean) => {
+    if (!user?._id) return;
+
+    try {
+      await setDepositExemption.mutateAsync({ id: user._id, enabled });
+      addToast({
+        title: enabled ? "Socio exento de seña" : "El socio vuelve a pagar seña",
+        color: "success",
+      });
+    } catch {
+      addToast({ title: "Error al actualizar la exención de seña", color: "danger" });
     }
   };
 
@@ -581,6 +601,30 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
                   : "Sistema"}
               </Chip>
             )}
+          </div>
+
+          <div className="flex items-center justify-between gap-4 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md p-4">
+            <div>
+              <p className="text-sm font-black text-foreground uppercase tracking-wide">
+                Exento de seña
+              </p>
+              <p id="deposit-exempt-hint" className="text-[11px] text-gray-400">
+                {setDepositExemption.isPending
+                  ? "Guardando…"
+                  : hasExemptablePhone
+                  ? "No paga seña al reservar."
+                  : "Sin teléfono válido para eximir de la seña."}
+              </p>
+            </div>
+            <Switch
+              isSelected={Boolean(user.depositExempt)}
+              onValueChange={handleToggleDepositExemption}
+              isDisabled={setDepositExemption.isPending || !hasExemptablePhone}
+              aria-label="Exento de seña"
+              aria-describedby="deposit-exempt-hint"
+              color="primary"
+              size="sm"
+            />
           </div>
 
           <div className="flex flex-wrap gap-2">
