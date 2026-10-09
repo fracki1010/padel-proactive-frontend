@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { userService } from "../../../services/api";
+import type { User } from "../../../types";
 
 export const useUsers = () => {
   return useQuery({
@@ -90,7 +91,30 @@ export const useSetDepositExemption = () => {
   return useMutation({
     mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) =>
       userService.setDepositExemption(id, enabled),
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
+      const { depositExempt } = data.data;
+
+      queryClient.setQueryData<{ success: boolean; data: User }>(
+        ["user", variables.id],
+        (previous) => {
+          if (!previous) return previous;
+          return { ...previous, data: { ...previous.data, depositExempt } };
+        },
+      );
+
+      queryClient.setQueryData<{ success: boolean; count?: number; data: User[] }>(
+        ["users"],
+        (previous) => {
+          if (!previous || !Array.isArray(previous.data)) return previous;
+          return {
+            ...previous,
+            data: previous.data.map((user) =>
+              user._id === variables.id ? { ...user, depositExempt } : user,
+            ),
+          };
+        },
+      );
+
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
     },

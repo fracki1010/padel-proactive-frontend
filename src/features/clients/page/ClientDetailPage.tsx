@@ -608,8 +608,10 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
               <p className="text-sm font-black text-foreground uppercase tracking-wide">
                 Exento de seña
               </p>
-              <p className="text-[11px] text-gray-400">
-                {hasExemptablePhone
+              <p id="deposit-exempt-hint" className="text-[11px] text-gray-400">
+                {setDepositExemption.isPending
+                  ? "Guardando…"
+                  : hasExemptablePhone
                   ? "No paga seña al reservar."
                   : "Sin teléfono válido para eximir de la seña."}
               </p>
@@ -619,6 +621,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
               onValueChange={handleToggleDepositExemption}
               isDisabled={setDepositExemption.isPending || !hasExemptablePhone}
               aria-label="Exento de seña"
+              aria-describedby="deposit-exempt-hint"
               color="primary"
               size="sm"
             />
