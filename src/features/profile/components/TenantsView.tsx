@@ -259,7 +259,7 @@ export const TenantsView = ({
                 }}
               />
               <Button
-                className="h-12 bg-primary text-on-primary font-black rounded-md uppercase text-[10px]"
+                className="h-12 bg-primary text-black dark:text-white font-black rounded-md uppercase text-[10px]"
                 onPress={onCreateCompany}
                 isLoading={createCompanyPending}
               >
@@ -326,7 +326,7 @@ export const TenantsView = ({
               ))}
             </select>
             <Button
-              className="h-12 bg-primary text-on-primary font-black rounded-md uppercase text-[10px]"
+              className="h-12 bg-primary text-black dark:text-white font-black rounded-md uppercase text-[10px]"
               onPress={onCreateAdmin}
               isLoading={createAdminPending}
             >
@@ -498,7 +498,7 @@ export const TenantsView = ({
 
                 <div className="flex flex-col sm:flex-row gap-2 pt-1">
                   <Button
-                    className="h-11 bg-primary text-on-primary font-black rounded-xl uppercase text-[10px] sm:min-w-[160px]"
+                    className="h-11 bg-primary text-black dark:text-white font-black rounded-xl uppercase text-[10px] sm:min-w-[160px]"
                     isLoading={updateCompanyPending}
                     onPress={() => handleSaveCompany(company)}
                     startContent={<Save size={14} />}

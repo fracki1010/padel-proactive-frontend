@@ -60,8 +60,8 @@ export const BookingDetailDrawer = ({
         backdrop="blur"
         classNames={{
           base: isDesktop
-            ? "bg-dark-200 border-l border-black/10 dark:border-white/10"
-            : "rounded-t-[3rem] bg-dark-200 border-t border-black/10 dark:border-white/10",
+            ? "bg-surface-container-high border-l border-black/10 dark:border-white/10"
+            : "rounded-t-[3rem] bg-surface-container-high border-t border-black/10 dark:border-white/10",
         }}
       >
         <DrawerContent>
@@ -199,7 +199,7 @@ export const BookingDetailDrawer = ({
                     </Button>
                   ) : (
                     <Button
-                      className="h-16 bg-primary text-on-primary font-black text-lg rounded-md shadow-xl shadow-primary/20"
+                      className="h-16 bg-primary text-black dark:text-white font-black text-lg rounded-md shadow-xl shadow-primary/20"
                       onPress={() =>
                         window.open(
                           `https://wa.me/${selectedBooking?.clientPhone.replace(/\D/g, "")}`,
@@ -249,7 +249,7 @@ export const BookingDetailDrawer = ({
         onOpenChange={setIsCancelModalOpen}
         placement="center"
         backdrop="blur"
-        className="bg-dark-300 text-foreground"
+        className="bg-surface-container-high text-foreground"
       >
         <ModalContent>
           {(onClose) => (

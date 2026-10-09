@@ -139,7 +139,7 @@ export const CourtsView = ({
           Mis Canchas
         </h3>
         <Button
-          className="ml-auto bg-primary text-on-primary font-black rounded-md uppercase"
+          className="ml-auto bg-primary text-black dark:text-white font-black rounded-md uppercase"
           onPress={() => setIsCreateDrawerOpen(true)}
           startContent={<Plus size={16} />}
         >
@@ -307,7 +307,7 @@ export const CourtsView = ({
               </DrawerBody>
               <DrawerFooter className="p-6 pt-0">
                 <Button
-                  className="w-full h-12 bg-primary text-on-primary rounded-md font-black uppercase"
+                  className="w-full h-12 bg-primary text-black dark:text-white rounded-md font-black uppercase"
                   onPress={handleCreateFromDrawer}
                   isLoading={createCourtPending}
                 >
@@ -417,7 +417,7 @@ export const CourtsView = ({
               </DrawerBody>
               <DrawerFooter className="p-6 pt-0">
                 <Button
-                  className="w-full h-12 bg-primary text-on-primary rounded-md font-black uppercase"
+                  className="w-full h-12 bg-primary text-black dark:text-white rounded-md font-black uppercase"
                   onPress={handleSaveFromDrawer}
                   isLoading={updateCourtPending}
                   startContent={<Save size={16} />}

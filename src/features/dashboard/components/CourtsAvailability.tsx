@@ -168,7 +168,7 @@ export const CourtsAvailability = ({
                           </Button>
                           <Button
                             size="sm"
-                            className="bg-primary text-on-primary font-black rounded-xl uppercase px-6 shadow-lg shadow-primary/20"
+                            className="bg-primary text-black dark:text-white font-black rounded-xl uppercase px-6 shadow-lg shadow-primary/20"
                             onClick={() =>
                               onBookingClick({
                                 status: "disponible",

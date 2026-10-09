@@ -45,7 +45,7 @@ export const ConfirmModal = ({
           placement="center"
           backdrop="blur"
           size="sm"
-          className="bg-dark-300 text-foreground dark rounded-md"
+          className="bg-surface-container-high text-foreground dark rounded-md"
           isDismissable={!isConfirmLoading}
           isKeyboardDismissDisabled={isConfirmLoading}
         >

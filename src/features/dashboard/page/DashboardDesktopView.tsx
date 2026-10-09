@@ -83,7 +83,7 @@ export const DashboardDesktopView = ({
                   variant="light"
                   className={`rounded-xl px-4 h-10 uppercase text-[11px] font-black tracking-wider ${
                     activeFilter === filter.id
-                      ? "bg-primary text-on-primary"
+                      ? "bg-primary text-black dark:text-white"
                       : "bg-dark-300 text-gray-400 hover:text-foreground"
                   }`}
                   onPress={() => setActiveFilter(filter.id)}
@@ -194,7 +194,7 @@ export const DashboardDesktopView = ({
                                   ? "bg-red-500/20 text-red-300 border border-red-500/30"
                                   : isTaken
                                     ? "bg-black/10 dark:bg-white/10 text-foreground"
-                                    : "bg-primary text-on-primary"
+                                    : "bg-primary text-black dark:text-white"
                               }`}
                               onPress={() =>
                                 onBookingClick(

@@ -133,7 +133,7 @@ export const ProfileMenuView = ({
             src={avatarSrc}
             className="w-24 h-24 lg:w-16 lg:h-16 rounded-lg lg:rounded-xl border-4 border-primary shadow-2xl shadow-primary/20"
           />
-          <div className="absolute -bottom-2 -right-2 bg-primary text-on-primary p-2 rounded-md border-4 border-dark-200">
+          <div className="absolute -bottom-2 -right-2 bg-primary text-black dark:text-white p-2 rounded-md border-4 border-dark-200">
             <Shield size={16} fill="currentColor" />
           </div>
           </div>
@@ -224,7 +224,7 @@ export const ProfileMenuView = ({
             }}
           />
           <Button
-            className="h-12 w-full sm:w-auto sm:min-w-28 bg-primary text-on-primary rounded-md font-black uppercase"
+            className="h-12 w-full sm:w-auto sm:min-w-28 bg-primary text-black dark:text-white rounded-md font-black uppercase"
             onPress={onSavePhone}
             isDisabled={!canSavePhone}
             isLoading={updateProfilePending}
@@ -261,7 +261,7 @@ export const ProfileMenuView = ({
               title="Mis Canchas"
               subtitle={`${courtsCount} canchas activas`}
               icon={<MapPin size={18} />}
-              iconClassName="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-all"
+              iconClassName="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black dark:group-hover:text-white transition-all"
             />
 
             <MenuItemButton
@@ -269,7 +269,7 @@ export const ProfileMenuView = ({
               title="WhatsApp Web"
               subtitle={whatsappDisplayStatus}
               icon={<QrCode size={18} />}
-              iconClassName="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-all"
+              iconClassName="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black dark:group-hover:text-white transition-all"
             />
 
             <MenuItemButton
@@ -318,7 +318,7 @@ export const ProfileMenuView = ({
                 title={isSuperAdmin ? "Multiempresa" : "Datos del club"}
                 subtitle={isSuperAdmin ? "Empresas y admins" : "Nombre, slug y dirección"}
                 icon={<Building2 size={18} />}
-                iconClassName="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-all"
+                iconClassName="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black dark:group-hover:text-white transition-all"
               />
             )}
             <p className={`text-[10px] font-bold uppercase px-2 ${whatsappStatusClass}`}>

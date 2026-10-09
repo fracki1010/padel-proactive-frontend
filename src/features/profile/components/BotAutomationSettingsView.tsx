@@ -176,7 +176,7 @@ export const BotAutomationSettingsView = ({
                 }}
               />
               <Button
-                className="h-12 bg-primary text-on-primary rounded-md font-black uppercase"
+                className="h-12 bg-primary text-black dark:text-white rounded-md font-black uppercase"
                 onPress={onSaveReminderMinutes}
                 isLoading={isSavingReminderMinutes}
                 startContent={<Save size={18} />}
@@ -205,7 +205,7 @@ export const BotAutomationSettingsView = ({
                 }}
               />
               <Button
-                className="h-12 bg-primary text-on-primary rounded-md font-black uppercase"
+                className="h-12 bg-primary text-black dark:text-white rounded-md font-black uppercase"
                 onPress={onSaveAttendanceResponseTimeoutMinutes}
                 isLoading={isSavingResponseTimeoutMinutes}
                 startContent={<Save size={18} />}

@@ -434,7 +434,7 @@ export const BookingForm = ({
               type="button"
               className={`h-14 rounded-md font-bold transition-all ${
                 paymentStatus === "pagado"
-                  ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
+                  ? "bg-primary text-black dark:text-white shadow-lg shadow-primary/20"
                   : "bg-dark-100/50 text-on-surface-variant border border-black/5 dark:border-white/5"
               }`}
               onClick={() => setPaymentStatus("pagado")}
@@ -458,7 +458,7 @@ export const BookingForm = ({
         <Button
           type="submit"
           isLoading={createMutation.isPending}
-          className="w-full h-16 bg-primary text-on-primary font-bold text-lg rounded-md shadow-xl shadow-primary/20 mt-8"
+          className="w-full h-16 bg-primary text-black dark:text-white font-bold text-lg rounded-md shadow-xl shadow-primary/20 mt-8"
         >
           <Save size={20} /> Guardar Reserva
         </Button>

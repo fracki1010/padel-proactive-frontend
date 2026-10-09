@@ -155,7 +155,7 @@ export const ClientsDesktopView = ({
                   key={item.id}
                   size="sm"
                   variant="light"
-                  className={`rounded-xl px-4 uppercase text-[11px] font-black tracking-wider ${isActive ? "bg-primary text-on-primary" : "text-on-surface-variant hover:text-foreground"}`}
+                  className={`rounded-xl px-4 uppercase text-[11px] font-black tracking-wider ${isActive ? "bg-primary text-black dark:text-white" : "text-on-surface-variant hover:text-foreground"}`}
                   onPress={() => setDesktopFilter(item.id as DesktopFilter)}
                 >
                   {item.label}

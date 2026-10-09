@@ -73,7 +73,7 @@ export const BootstrapStep = ({
             Volver
           </Button>
           <Button
-            className="h-12 bg-primary text-on-primary font-black uppercase rounded-md"
+            className="h-12 bg-primary text-black dark:text-white font-black uppercase rounded-md"
             onPress={onContinue}
           >
             Continuar

@@ -112,7 +112,7 @@ export const ClubClosuresView = ({
       </div>
 
       <Button
-        className="w-full h-12 bg-primary text-on-primary rounded-md font-black uppercase tracking-widest"
+        className="w-full h-12 bg-primary text-black dark:text-white rounded-md font-black uppercase tracking-widest"
         startContent={<Plus size={18} />}
         onPress={() => setIsCreateOpen(true)}
       >
@@ -239,7 +239,7 @@ export const ClubClosuresView = ({
               Cancelar
             </Button>
             <Button
-              className="bg-primary text-on-primary rounded-md font-black uppercase"
+              className="bg-primary text-black dark:text-white rounded-md font-black uppercase"
               startContent={<Save size={16} />}
               isDisabled={!createStart || !createEnd || Boolean(createDateError)}
               isLoading={createPending}
@@ -307,7 +307,7 @@ export const ClubClosuresView = ({
               Cancelar
             </Button>
             <Button
-              className="bg-primary text-on-primary rounded-md font-black uppercase"
+              className="bg-primary text-black dark:text-white rounded-md font-black uppercase"
               startContent={<Save size={16} />}
               isDisabled={!editStart || !editEnd || Boolean(editDateError)}
               isLoading={updatePending}
