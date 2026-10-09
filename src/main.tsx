@@ -15,9 +15,11 @@ import { getDeviceKind } from "./lib/device";
 
 const queryClient = new QueryClient();
 
-// Background update detection only. The service worker is registered by
-// PwaManager (useRegisterSW in prompt mode), which surfaces the "Nueva versión
-// disponible" banner. Never auto-apply updates here.
+// Background update detection only. PwaManager (useRegisterSW, prompt mode)
+// surfaces the "Nueva versión disponible" banner and applies the update on user
+// action. This registration of the same /sw.js URL is idempotent in the browser
+// (deduped by scope); it exists solely so the poll below can detect updates
+// without ever auto-applying or reloading the page.
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).then(
@@ -27,6 +29,10 @@ if ("serviceWorker" in navigator) {
             // Transient error; the next interval retries.
           });
         }, 60_000);
+      },
+      () => {
+        // Registration failure is non-fatal: PwaManager may still register the
+        // SW, and the app works online regardless.
       },
     );
   });
