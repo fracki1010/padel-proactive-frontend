@@ -1,6 +1,7 @@
 import { Button } from "@heroui/react";
 import {
   Calendar,
+  CalendarClock,
   LayoutGrid,
   LogOut,
   Settings,
@@ -19,6 +20,7 @@ type DesktopSidebarProps = {
 const navItems = [
   { id: "panel", label: "Dashboard", icon: LayoutGrid },
   { id: "reservas", label: "Turnos", icon: Calendar },
+  { id: "turnos-fijos", label: "Turnos fijos", icon: CalendarClock },
   { id: "socios", label: "Socios", icon: Users },
   { id: "caja", label: "Caja", icon: Wallet },
 ];
