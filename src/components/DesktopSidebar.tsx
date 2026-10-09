@@ -30,17 +30,17 @@ export const DesktopSidebar = ({
   onLogout,
 }: DesktopSidebarProps) => {
   return (
-    <aside className="hidden lg:sticky lg:top-0 lg:h-dvh lg:self-start lg:flex flex-col border-r border-black/10 dark:border-white/10 bg-dark-300/70 backdrop-blur-xl">
-      <div className="px-8 pt-9 pb-8 border-b border-black/10 dark:border-white/10">
-        <h2 className="text-2xl font-black text-primary italic tracking-tight uppercase">
+    <aside className="hidden lg:sticky lg:top-0 lg:h-dvh lg:self-start lg:flex flex-col border-r border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container)]">
+      <div className="px-8 pt-9 pb-8 border-b border-[var(--md-sys-color-outline-variant)]">
+        <h2 className="text-2xl font-black text-[var(--md-sys-color-primary)] italic tracking-tight uppercase">
           PADEXA
         </h2>
-        <p className="text-[11px] font-semibold text-gray-500 tracking-wider mt-2">
+        <p className="md3-typescale-label-medium text-[var(--md-sys-color-on-surface-variant)] mt-2">
           Admin Console
         </p>
       </div>
 
-      <nav className="flex-1 px-4 py-6 space-y-2">
+      <nav className="flex-1 px-4 py-6 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -48,13 +48,14 @@ export const DesktopSidebar = ({
             <Button
               key={item.id}
               variant="light"
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "w-full justify-start h-11 rounded-xl px-4 text-sm font-bold",
+                "w-full justify-start h-12 rounded-full px-4 md3-typescale-label-large",
                 isActive
-                  ? "bg-primary text-black shadow-lg shadow-primary/20"
-                  : "text-gray-400 hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10",
+                  ? "bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)]"
+                  : "text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-high)] hover:text-[var(--md-sys-color-on-surface)]",
               )}
-              startContent={<Icon size={16} />}
+              startContent={<Icon size={18} />}
               onPress={() => onTabChange(item.id)}
             >
               {item.label}
@@ -64,19 +65,19 @@ export const DesktopSidebar = ({
 
         <Button
           variant="light"
-          className="w-full justify-start h-11 rounded-xl px-4 text-sm font-bold text-gray-400 hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10"
-          startContent={<Settings size={16} />}
+          className="w-full justify-start h-12 rounded-full px-4 md3-typescale-label-large text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-color-surface-container-high)] hover:text-[var(--md-sys-color-on-surface)]"
+          startContent={<Settings size={18} />}
           onPress={onOpenSettings}
         >
           Configuración
         </Button>
       </nav>
 
-      <div className="p-4 border-t border-black/10 dark:border-white/10">
+      <div className="p-4 border-t border-[var(--md-sys-color-outline-variant)]">
         <Button
           variant="light"
-          className="w-full justify-start h-11 rounded-xl px-4 text-sm font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10"
-          startContent={<LogOut size={16} />}
+          className="w-full justify-start h-12 rounded-full px-4 md3-typescale-label-large text-[var(--md-sys-color-error)] hover:bg-[var(--md-sys-color-surface-container-high)]"
+          startContent={<LogOut size={18} />}
           onPress={onLogout}
         >
           Cerrar Sesión

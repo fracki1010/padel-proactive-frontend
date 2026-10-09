@@ -22,8 +22,14 @@ export const BottomNav = ({
   ];
 
   return (
-    <div
-      className={`fixed bottom-0 left-0 right-0 bg-dark-200/90 backdrop-blur-xl border-t border-black/5 dark:border-white/5 px-3 sm:px-6 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] flex items-end justify-between z-50 transition-all duration-200 app-bottom-nav lg:hidden ${isKeyboardOpen ? "translate-y-full opacity-0 pointer-events-none" : "translate-y-0 opacity-100"}`}
+    <nav
+      aria-label="Navegación principal"
+      className={cn(
+        "fixed bottom-0 left-0 right-0 z-50 flex items-end justify-between gap-1 border-t border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container)] px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] sm:px-6 app-bottom-nav transition-all duration-300 ease-[var(--md-sys-motion-emphasized)] lg:hidden",
+        isKeyboardOpen
+          ? "pointer-events-none translate-y-full opacity-0"
+          : "translate-y-0 opacity-100",
+      )}
     >
       {tabs.map((tab) => {
         if (tab.isFab) {
@@ -32,8 +38,9 @@ export const BottomNav = ({
               <Button
                 isIconOnly
                 size="lg"
+                aria-label="Nueva reserva"
                 onClick={() => onTabChange?.("fab")}
-                className="bg-primary text-black shadow-lg shadow-primary/40 w-14 h-14 sm:w-16 sm:h-16 rounded-full"
+                className="h-14 w-14 rounded-[var(--md-sys-shape-corner-large)] bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] shadow-lg shadow-black/25 sm:h-16 sm:w-16"
               >
                 <Plus size={28} strokeWidth={3} />
               </Button>
@@ -47,22 +54,30 @@ export const BottomNav = ({
         return (
           <button
             key={tab.id}
+            type="button"
+            aria-current={isActive ? "page" : undefined}
             onClick={() => onTabChange?.(tab.id!)}
             className={cn(
-              "flex flex-col items-center gap-1 transition-all duration-300 min-w-[64px] py-1 active:scale-95",
-              isActive ? "text-primary" : "text-gray-500",
+              "flex min-w-[64px] flex-col items-center gap-1 py-1 transition-colors duration-300 ease-[var(--md-sys-motion-emphasized)] active:scale-95",
+              isActive
+                ? "text-[var(--md-sys-color-on-surface)]"
+                : "text-[var(--md-sys-color-on-surface-variant)]",
             )}
           >
-            <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-            <span className="text-[10px] font-semibold tracking-wide">
-              {tab.label}
+            <span
+              className={cn(
+                "flex h-8 w-16 items-center justify-center rounded-full transition-colors duration-300 ease-[var(--md-sys-motion-emphasized)]",
+                isActive
+                  ? "bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)]"
+                  : "bg-transparent",
+              )}
+            >
+              <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
             </span>
-            {isActive && (
-              <div className="w-1 h-1 bg-primary rounded-full mt-0.5 shadow-sm shadow-primary"></div>
-            )}
+            <span className="md3-typescale-label-medium">{tab.label}</span>
           </button>
         );
       })}
-    </div>
+    </nav>
   );
 };
