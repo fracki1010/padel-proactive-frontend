@@ -4,11 +4,15 @@
 // Material Design 3 light/dark scheme, then emitted as two artifacts:
 //
 //   - src/theme/md3-tokens.ts   typed token source (roles + HeroUI slice +
-//                               typescale/shape/motion)
+//                               semantic success/warning + typescale/shape/motion)
 //   - src/theme/md3-tokens.css  `--md-sys-*` layer + `--color-*` compat bridge
 //
 // The HeroUI Tailwind plugin parses concrete colors at build time (it cannot
 // read CSS custom properties), so the concrete hexes must live in the TS file.
+//
+// A dev-only WCAG contrast guard validates the M3 role pairs plus the legacy
+// bridge pairings that matter (see verifyContrast) and fails generation if any
+// critical pair drops below 4.5:1 (5:1 for light gray-400).
 //
 // Usage:
 //   node scripts/gen-md3-tokens.mjs           # write the generated files
@@ -17,7 +21,12 @@
 import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { argbFromHex, hexFromArgb, themeFromSourceColor } from "@material/material-color-utilities";
+import {
+  argbFromHex,
+  Hct,
+  hexFromArgb,
+  themeFromSourceColor,
+} from "@material/material-color-utilities";
 
 // Brand seed. Changing it regenerates every token in both files.
 export const SEED = "#0DB5DB";
@@ -59,30 +68,170 @@ function buildRoles(mode) {
   return roles;
 }
 
-// Tailwind-style tonal ramp. In every scheme `500` equals the M3 role color;
-// the remaining stops interpolate the source palette around it.
+// ---------------------------------------------------------------------------
+// Legacy `--color-*` bridge decisions
+// ---------------------------------------------------------------------------
+// The legacy palette has ONE `--color-primary-500` consumed by both `bg-primary`
+// (hardcoded black text in light, white in dark) and `text-primary`. The M3
+// primary role cannot serve `bg-primary` (3.24:1 light / 1.70:1 dark), so the
+// bridge uses its OWN per-mode tone, keeping the HeroUI theme M3-correct:
+//   - light: primary palette tone 50 (#00829E) — black text ≥4.5:1,
+//     and `text-primary` on the light surface stays ≈4.3:1 (near-AA).
+//   - dark:  primary palette tone 48 (#007C98) — white text ≥4.5:1.
+const LEGACY_PRIMARY_TONES = { light: 50, dark: 48 };
+// Ramp tones per scheme (50 = lightest stop … 900 = darkest), `500` overridden
+// by the legacy tone above.
+const PRIMARY_RAMP_TONES = {
+  light: [95, 90, 80, 70, 60, null, 40, 30, 20, 10],
+  dark: [100, 95, 90, 85, 82, null, 40, 35, 30, 25],
+};
+const RAMP_STOPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
 const RAMP_TONES = {
   light: { 50: 95, 100: 90, 200: 80, 300: 70, 400: 60, 600: 30, 700: 20, 800: 10, 900: 5 },
   dark: { 50: 100, 100: 95, 200: 90, 300: 85, 400: 82, 600: 70, 700: 60, 800: 50, 900: 40 },
 };
 
+// Semantic bridge roles — M3 has no success/warning tokens. These are legible
+// fixed hues (green/amber) derived from the Material palette family, chosen so
+// `text-warning`, `bg-green-*`, `color="success"` chips etc. keep WCAG AA in
+// both modes. They are NOT container tones (containers are too light/dark to
+// carry text pairings on their own as brand colors).
+const SEMANTIC = {
+  success: {
+    light: { value: "#2E7D32", on: "#FFFFFF", container: "#A6F4C5", onContainer: "#00210C" },
+    dark: { value: "#81C995", on: "#00391C", container: "#1B5E2A", onContainer: "#A6F4C5" },
+  },
+  warning: {
+    light: { value: "#7A5900", on: "#FFFFFF", container: "#FFDF90", onContainer: "#251A00" },
+    dark: { value: "#FFCF5C", on: "#4A3800", container: "#614C00", onContainer: "#FFDF90" },
+  },
+};
+// neutral-palette gray ramp: light must keep gray-300/400/600 AA on the light
+// surface (tone 45+ reads 4.8:1+), dark gray-600 ≥4.5:1 on the dark surface.
+const GRAY_TONES = {
+  light: { 300: 46, 400: 42, 500: 35, 600: 30 },
+  dark: { 300: 90, 400: 80, 500: 70, 600: 60 },
+};
+
+// ---------------------------------------------------------------------------
+// WCAG contrast guard (dev-only, runs on every generate/check)
+// ---------------------------------------------------------------------------
+function relativeLuminance(hex) {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const linear = (v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+  return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+}
+
+function contrastRatio(a, b) {
+  const [l1, l2] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
+  return (l1 + 0.05) / (l2 + 0.05);
+}
+
+const BLACK = "#000000";
+const WHITE = "#ffffff";
+
+function verifyContrast(roles, bridge, mode) {
+  const pairs = [
+    // M3 role pairs (normal text, ≥4.5:1).
+    ["primary / on-primary", roles.primary, roles.onPrimary],
+    ["primary-container / on-primary-container", roles.primaryContainer, roles.onPrimaryContainer],
+    ["secondary / on-secondary", roles.secondary, roles.onSecondary],
+    ["secondary-container / on-secondary-container", roles.secondaryContainer, roles.onSecondaryContainer],
+    ["tertiary / on-tertiary", roles.tertiary, roles.onTertiary],
+    ["tertiary-container / on-tertiary-container", roles.tertiaryContainer, roles.onTertiaryContainer],
+    ["error / on-error", roles.error, roles.onError],
+    ["error-container / on-error-container", roles.errorContainer, roles.onErrorContainer],
+    ["surface / on-surface", roles.surface, roles.onSurface],
+    ["surface / on-surface-variant", roles.surface, roles.onSurfaceVariant],
+    ["surface-container / on-surface", roles.surfaceContainer, roles.onSurface],
+    ["surface-container-highest / on-surface", roles.surfaceContainerHighest, roles.onSurface],
+    ["inverse-surface / inverse-on-surface", roles.inverseSurface, roles.inverseOnSurface],
+    // Legacy bridge pairings that matter.
+    // `bg-primary` paired with hardcoded black (light) / white (dark) text.
+    [mode === "light" ? "legacy primary-500 + black" : "legacy primary-500 + white", bridge.primary500, mode === "light" ? BLACK : WHITE],
+    ["legacy red-500 + white", bridge.red500, WHITE],
+    ["legacy gray-300 on surface", bridge.gray300, roles.surface],
+    ["legacy gray-400 on surface", bridge.gray400, roles.surface],
+    ["legacy gray-500 on surface", bridge.gray500, roles.surface],
+    ["legacy gray-600 on surface", bridge.gray600, roles.surface],
+    // Semantic success/warning (fixed hues).
+    ["success / on-success", bridge.success, bridge.onSuccess],
+    ["success-container / on-success-container", bridge.successContainer, bridge.onSuccessContainer],
+    ["warning / on-warning", bridge.warning, bridge.onWarning],
+    ["warning-container / on-warning-container", bridge.warningContainer, bridge.onWarningContainer],
+  ];
+  const min = { "legacy gray-400 on surface": 5 };
+  const failed = [];
+  for (const [name, fg, bg] of pairs) {
+    const ratio = contrastRatio(fg, bg);
+    const threshold = min[name] ?? 4.5;
+    const ok = ratio >= threshold;
+    const mark = ok ? "✔" : "✘";
+    console.log(`  ${mark} ${name.padEnd(44)} ${ratio.toFixed(2)}:1 (need ≥${threshold}) [${mode}]`);
+    if (!ok) failed.push(`${mode}: ${name} = ${ratio.toFixed(2)}:1`);
+  }
+  return failed;
+}
+
+// ---------------------------------------------------------------------------
+// Builders
+// ---------------------------------------------------------------------------
+
 function buildRamp(palette, mode, midHex) {
   const ramp = { 500: midHex };
-  for (const [stop, tone] of Object.entries(RAMP_TONES[mode])) ramp[stop] = hexFromArgb(palette.tone(Number(tone)));
+  for (const [stop, tone] of Object.entries(RAMP_TONES[mode])) {
+    ramp[stop] = hexFromArgb(palette.tone(Number(tone)));
+  }
   return ramp;
 }
 
+// Legacy `--color-primary-*` ramp with the per-mode legible 500.
+function buildLegacyPrimaryRamp(mode) {
+  const tones = PRIMARY_RAMP_TONES[mode];
+  const ramp = {};
+  RAMP_STOPS.forEach((stop, i) => {
+    ramp[stop] =
+      stop === 500
+        ? hexFromArgb(theme.palettes.primary.tone(LEGACY_PRIMARY_TONES[mode]))
+        : hexFromArgb(theme.palettes.primary.tone(tones[i]));
+  });
+  return ramp;
+}
+
+// Tailwind-style scale for the semantic hues (light/dark oriented, monotonic
+// around the DEFAULT's own HCT tone so `500` stays the brand color).
+function semanticScale(baseHex, mode) {
+  const hct = Hct.fromInt(argbFromHex(baseHex));
+  const mid = Math.round(hct.tone);
+  const clamp = (t) => Math.min(99, Math.max(1, t));
+  const offsets = mode === "light"
+    ? { lighter: [55, 46, 38, 30, 22], darker: [-7, -14, -22, -30] }
+    : { lighter: [-55, -46, -38, -30, -22], darker: [7, 14, 22, 30] };
+  const out = {};
+  RAMP_STOPS.forEach((stop, i) => {
+    if (stop === 500) out[stop] = baseHex;
+    else {
+      const tone = i < 5 ? mid + offsets.lighter[i] : mid + offsets.darker[i - 6];
+      out[stop] = hexFromArgb(Hct.from(hct.hue, hct.chroma, clamp(tone)).toInt());
+    }
+  });
+  return out;
+}
+
 // HeroUI semantic colors. `default` is a neutral gray ramp (used for muted
-// text/borders); the rest map to M3 roles, reusing the matching tonal palette.
+// text/borders); success/warning are legible fixed hues, not M3 container tones.
 function buildHeroui(roles, mode) {
-  const tones = Object.keys(RAMP_TONES[mode]).map(Number).sort((a, b) => a - b);
   const ramp = (palette, midHex) => {
     const out = { 500: midHex };
-    for (const t of tones) if (t !== 500) out[t] = hexFromArgb(palette.tone(RAMP_TONES[mode][t]));
+    for (const [stop, tone] of Object.entries(RAMP_TONES[mode])) {
+      out[stop] = hexFromArgb(palette.tone(Number(tone)));
+    }
     return out;
   };
-  const neutral = {};
+  const success = SEMANTIC.success[mode];
+  const warning = SEMANTIC.warning[mode];
   const defaultTones = { light: { 50: 98, 100: 96, 200: 93, 300: 89, 400: 78, 500: 64, 600: 52, 700: 42, 800: 32, 900: 22 }, dark: { 50: 22, 100: 32, 200: 42, 300: 52, 400: 64, 500: 78, 600: 89, 700: 93, 800: 96, 900: 98 } }[mode];
+  const neutral = {};
   for (const [stop, tone] of Object.entries(defaultTones)) neutral[stop] = hexFromArgb(theme.palettes.neutral.tone(tone));
 
   return {
@@ -98,9 +247,51 @@ function buildHeroui(roles, mode) {
     default: { ...neutral, foreground: roles.onSurface, DEFAULT: roles.surfaceContainer },
     primary: { ...ramp(theme.palettes.primary, roles.primary), foreground: roles.onPrimary, DEFAULT: roles.primary },
     secondary: { ...ramp(theme.palettes.secondary, roles.secondary), foreground: roles.onSecondary, DEFAULT: roles.secondary },
-    success: { ...ramp(theme.palettes.tertiary, roles.tertiary), foreground: roles.onTertiary, DEFAULT: roles.tertiary },
-    warning: { ...ramp(theme.palettes.tertiary, roles.tertiaryContainer), foreground: roles.onTertiaryContainer, DEFAULT: roles.tertiaryContainer },
+    success: { ...semanticScale(success.value, mode), foreground: success.on, DEFAULT: success.value },
+    warning: { ...semanticScale(warning.value, mode), foreground: warning.on, DEFAULT: warning.value },
     danger: { ...ramp(theme.palettes.error, roles.error), foreground: roles.onError, DEFAULT: roles.error },
+  };
+}
+
+// Bridge values as data (single source for both the CSS emission and the
+// contrast guard). Space-separated RGB triplet per value.
+function buildBridge(roles, mode) {
+  const success = SEMANTIC.success[mode];
+  const warning = SEMANTIC.warning[mode];
+  const primaryRamp = buildLegacyPrimaryRamp(mode);
+  const darkMap = mode === "light"
+    ? [roles.surfaceContainerLowest, roles.surface, roles.surfaceContainerLow]
+    : [roles.surfaceContainerHigh, roles.surfaceContainer, roles.surface];
+  const gray = (stop) => hexFromArgb(theme.palettes.neutral.tone(GRAY_TONES[mode][stop]));
+  return {
+    background: roles.surface,
+    foreground: roles.onSurface,
+    primaryRamp,
+    primary500: primaryRamp[500],
+    dark100: darkMap[0],
+    dark200: darkMap[1],
+    dark300: darkMap[2],
+    gray300: gray(300),
+    gray400: gray(400),
+    gray500: gray(500),
+    gray600: gray(600),
+    red500: mode === "light" ? "#BA1A1A" : "#93000A",
+    green400: success.container,
+    green500: success.value,
+    blue500: primaryRamp[500],
+    orange500: warning.value,
+    accentBlue: primaryRamp[500],
+    accentOrange: warning.value,
+    white: "#FFFFFF",
+    black: "#000000",
+    success: success.value,
+    onSuccess: success.on,
+    successContainer: success.container,
+    onSuccessContainer: success.onContainer,
+    warning: warning.value,
+    onWarning: warning.on,
+    warningContainer: warning.container,
+    onWarningContainer: warning.onContainer,
   };
 }
 
@@ -139,23 +330,18 @@ const MOTION = {
   durationLong: "500ms",
 };
 
-const light = { roles: buildRoles("light"), heroui: null };
-const dark = { roles: buildRoles("dark"), heroui: null };
+const light = { roles: buildRoles("light"), heroui: null, bridge: null };
+const dark = { roles: buildRoles("dark"), heroui: null, bridge: null };
 light.heroui = buildHeroui(light.roles, "light");
 dark.heroui = buildHeroui(dark.roles, "dark");
+light.bridge = buildBridge(light.roles, "light");
+dark.bridge = buildBridge(dark.roles, "dark");
 
 // ---------- TS output ----------
-
-const kebabToCamel = (s) => s.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 
 function tsRoles(roles) {
   const pad = Math.max(...Object.keys(roles).map((k) => k.length));
   return Object.entries(roles).map(([k, v]) => `      ${k.padEnd(pad)}: "${v}",`).join("\n");
-}
-
-function tsScale(scale) {
-  const entries = Object.entries(scale).map(([k, v]) => `${k}: "${v}"`).join(", ");
-  return `{ ${entries} }`;
 }
 
 function tsHeroui(h) {
@@ -168,6 +354,17 @@ function tsHeroui(h) {
     lines.push(`      ${key}: { ${body} },`);
   }
   return lines.join("\n");
+}
+
+function tsSemantic() {
+  const rows = [];
+  for (const name of ["success", "warning"]) {
+    const s = SEMANTIC[name];
+    rows.push(
+      `      ${name}: { light: { value: "${s.light.value}", on: "${s.light.on}", container: "${s.light.container}", onContainer: "${s.light.onContainer}" }, dark: { value: "${s.dark.value}", on: "${s.dark.on}", container: "${s.dark.container}", onContainer: "${s.dark.onContainer}" } },`,
+    );
+  }
+  return rows.join("\n");
 }
 
 const tsTypescale = Object.entries(TYPESCALE)
@@ -197,6 +394,9 @@ ${tsRoles(dark.roles)}
     heroui: {
 ${tsHeroui(dark.heroui)}
     },
+  },
+  semantic: {
+${tsSemantic()}
   },
   typescale: {
 ${tsTypescale}
@@ -270,54 +470,36 @@ function cssMotion() {
 // Compat bridge: re-point the legacy `--color-*` aliases (space-separated RGB,
 // consumed as `rgb(var(--color-x) / <alpha>)`) to the new M3 palette so the
 // 200+ existing utility classes keep working during the migration.
-//
-// Note: the design mapped the gray ramp onto on-surface-variant/outline/
-// outline-variant, but in the light scheme outline-variant (near-white) would
-// render `text-gray-500` (166 uses) unreadable. The gray stops therefore use a
-// monotonic neutral-palette ramp (M3-derived) that stays legible in both modes.
-const GRAY_TONES = {
-  light: { 300: 60, 400: 50, 500: 40, 600: 30 },
-  dark: { 300: 80, 400: 70, 500: 60, 600: 50 },
-};
-
-function cssBridge(roles, mode) {
-  const p = roles.primary;
-  const t = roles.tertiary;
-  const primaryRamp = buildRamp(theme.palettes.primary, mode, p);
-  const rampLine = Object.keys(primaryRamp)
+function cssBridge(b, mode) {
+  const rampLine = Object.keys(b.primaryRamp)
     .map(Number)
     .sort((a, b) => a - b)
-    .map((stop) => `--color-primary-${stop}: ${hexToRgbTriplet(primaryRamp[stop])};`)
+    .map((stop) => `--color-primary-${stop}: ${hexToRgbTriplet(b.primaryRamp[stop])};`)
     .join(" ");
-  const darkMap = mode === "light"
-    ? [roles.surfaceContainerLowest, roles.surface, roles.surfaceContainerLow]
-    : [roles.surfaceContainerHigh, roles.surfaceContainer, roles.surface];
   const rgba = (hex) => hexToRgbTriplet(hex);
-  const gray = (stop) => hexToRgbTriplet(hexFromArgb(theme.palettes.neutral.tone(GRAY_TONES[mode][stop])));
-  const lines = [
-    `  --color-background: ${rgba(roles.surface)};`,
-    `  --color-foreground: ${rgba(roles.onSurface)};`,
+  return [
+    `  --color-background: ${rgba(b.background)};`,
+    `  --color-foreground: ${rgba(b.foreground)};`,
     `  ${rampLine}`,
-    `  --color-dark-100: ${rgba(darkMap[0])};`,
-    `  --color-dark-200: ${rgba(darkMap[1])};`,
-    `  --color-dark-300: ${rgba(darkMap[2])};`,
-    `  --color-gray-300: ${gray(300)};`,
-    `  --color-gray-400: ${gray(400)};`,
-    `  --color-gray-500: ${gray(500)};`,
-    `  --color-gray-600: ${gray(600)};`,
-    `  --color-red-500: ${rgba(roles.error)};`,
-    `  --color-green-400: ${rgba(t)};`,
-    `  --color-green-500: ${rgba(t)};`,
-    `  --color-blue-500: ${rgba(p)};`,
-    `  --color-orange-500: ${rgba(t)};`,
-    `  --color-accent-blue: ${rgba(p)};`,
-    `  --color-accent-orange: ${rgba(t)};`,
-    `  --color-white: 255 255 255;`,
-    `  --color-black: 0 0 0;`,
+    `  --color-dark-100: ${rgba(b.dark100)};`,
+    `  --color-dark-200: ${rgba(b.dark200)};`,
+    `  --color-dark-300: ${rgba(b.dark300)};`,
+    `  --color-gray-300: ${rgba(b.gray300)};`,
+    `  --color-gray-400: ${rgba(b.gray400)};`,
+    `  --color-gray-500: ${rgba(b.gray500)};`,
+    `  --color-gray-600: ${rgba(b.gray600)};`,
+    `  --color-red-500: ${rgba(b.red500)};`,
+    `  --color-green-400: ${rgba(b.green400)};`,
+    `  --color-green-500: ${rgba(b.green500)};`,
+    `  --color-blue-500: ${rgba(b.blue500)};`,
+    `  --color-orange-500: ${rgba(b.orange500)};`,
+    `  --color-accent-blue: ${rgba(b.accentBlue)};`,
+    `  --color-accent-orange: ${rgba(b.accentOrange)};`,
+    `  --color-white: ${rgba(b.white)};`,
+    `  --color-black: ${rgba(b.black)};`,
     // HeroUI reads its focus ring as `H S% L%`; keep it token-driven.
-    `  --heroui-focus: ${hexToHslTriplet(p)} !important;`,
-  ];
-  return lines.join("\n");
+    `  --heroui-focus: ${hexToHslTriplet(b.primary500)} !important;`,
+  ].join("\n");
 }
 
 const css = `${CSS_HEADER}
@@ -331,7 +513,7 @@ ${cssShape()}
 ${cssMotion()}
 
   /* Compat bridge (light) */
-${cssBridge(light.roles, "light")}
+${cssBridge(light.bridge, "light")}
 }
 
 .dark,
@@ -340,9 +522,23 @@ ${cssBridge(light.roles, "light")}
 ${cssRoles(dark.roles)}
 
   /* Compat bridge (dark) */
-${cssBridge(dark.roles, "dark")}
+${cssBridge(dark.bridge, "dark")}
 }
 `;
+
+// ---------- contrast guard ----------
+
+console.log("Contrast guard (WCAG normal text ≥4.5:1):");
+const failures = [
+  ...verifyContrast(light.roles, light.bridge, "light"),
+  ...verifyContrast(dark.roles, dark.bridge, "dark"),
+];
+if (failures.length > 0) {
+  console.error("\n✖ Contrast guard failed:");
+  for (const f of failures) console.error(`  - ${f}`);
+  process.exit(1);
+}
+console.log("✔ All critical contrast pairs pass.\n");
 
 // ---------- write / check ----------
 

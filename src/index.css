@@ -20,7 +20,6 @@
 
   body {
     @apply bg-background text-foreground antialiased selection:bg-primary/30 font-sans;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     /* M3 body-large as the base text scale. */
     font-size: var(--md-sys-typescale-body-large-size);
     line-height: var(--md-sys-typescale-body-large-line-height);

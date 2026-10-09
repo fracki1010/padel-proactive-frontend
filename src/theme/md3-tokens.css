@@ -72,24 +72,24 @@
   /* Compat bridge (light) */
   --color-background: 251 252 254;
   --color-foreground: 25 28 29;
-  --color-primary-50: 220 245 255; --color-primary-100: 181 235 255; --color-primary-200: 78 214 253; --color-primary-300: 30 186 224; --color-primary-400: 0 158 191; --color-primary-500: 0 103 126; --color-primary-600: 0 78 96; --color-primary-700: 0 53 67; --color-primary-800: 0 31 40; --color-primary-900: 0 19 26;
+  --color-primary-50: 220 245 255; --color-primary-100: 181 235 255; --color-primary-200: 78 214 253; --color-primary-300: 30 186 224; --color-primary-400: 0 158 191; --color-primary-500: 0 130 158; --color-primary-600: 0 103 126; --color-primary-700: 0 78 96; --color-primary-800: 0 53 67; --color-primary-900: 0 31 40;
   --color-dark-100: 255 255 255;
   --color-dark-200: 251 252 254;
   --color-dark-300: 242 244 245;
-  --color-gray-300: 143 145 146;
-  --color-gray-400: 117 119 121;
-  --color-gray-500: 92 95 96;
+  --color-gray-300: 107 109 111;
+  --color-gray-400: 97 100 101;
+  --color-gray-500: 80 83 84;
   --color-gray-600: 68 71 73;
   --color-red-500: 186 26 26;
-  --color-green-400: 89 92 126;
-  --color-green-500: 89 92 126;
-  --color-blue-500: 0 103 126;
-  --color-orange-500: 89 92 126;
-  --color-accent-blue: 0 103 126;
-  --color-accent-orange: 89 92 126;
+  --color-green-400: 166 244 197;
+  --color-green-500: 46 125 50;
+  --color-blue-500: 0 130 158;
+  --color-orange-500: 122 89 0;
+  --color-accent-blue: 0 130 158;
+  --color-accent-orange: 122 89 0;
   --color-white: 255 255 255;
   --color-black: 0 0 0;
-  --heroui-focus: 190.95 100.00% 24.71% !important;
+  --heroui-focus: 190.63 100.00% 30.98% !important;
 }
 
 .dark,
@@ -131,22 +131,22 @@
   /* Compat bridge (dark) */
   --color-background: 25 28 29;
   --color-foreground: 225 227 228;
-  --color-primary-50: 255 255 255; --color-primary-100: 220 245 255; --color-primary-200: 181 235 255; --color-primary-300: 135 225 255; --color-primary-400: 100 218 255; --color-primary-500: 78 214 253; --color-primary-600: 30 186 224; --color-primary-700: 0 158 191; --color-primary-800: 0 130 158; --color-primary-900: 0 103 126;
+  --color-primary-50: 255 255 255; --color-primary-100: 220 245 255; --color-primary-200: 181 235 255; --color-primary-300: 135 225 255; --color-primary-400: 100 218 255; --color-primary-500: 0 124 152; --color-primary-600: 0 103 126; --color-primary-700: 0 90 111; --color-primary-800: 0 78 96; --color-primary-900: 0 65 81;
   --color-dark-100: 39 42 44;
   --color-dark-200: 29 32 33;
   --color-dark-300: 25 28 29;
-  --color-gray-300: 197 199 200;
-  --color-gray-400: 169 171 173;
-  --color-gray-500: 143 145 146;
-  --color-gray-600: 117 119 121;
-  --color-red-500: 255 180 171;
-  --color-green-400: 194 195 235;
-  --color-green-500: 194 195 235;
-  --color-blue-500: 78 214 253;
-  --color-orange-500: 194 195 235;
-  --color-accent-blue: 78 214 253;
-  --color-accent-orange: 194 195 235;
+  --color-gray-300: 225 227 228;
+  --color-gray-400: 197 199 200;
+  --color-gray-500: 169 171 173;
+  --color-gray-600: 143 145 146;
+  --color-red-500: 147 0 10;
+  --color-green-400: 27 94 42;
+  --color-green-500: 129 201 149;
+  --color-blue-500: 0 124 152;
+  --color-orange-500: 255 207 92;
+  --color-accent-blue: 0 124 152;
+  --color-accent-orange: 255 207 92;
   --color-white: 255 255 255;
   --color-black: 0 0 0;
-  --heroui-focus: 193.37 97.77% 64.90% !important;
+  --heroui-focus: 191.05 100.00% 29.80% !important;
 }
