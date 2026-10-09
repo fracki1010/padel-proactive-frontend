@@ -36,7 +36,7 @@ export const HistoryModal = ({
       isOpen={isOpen}
       onClose={onClose}
       size="2xl"
-      className="bg-dark-300 text-foreground"
+      className="bg-surface-container-high text-foreground"
       backdrop="blur"
       scrollBehavior="inside"
     >

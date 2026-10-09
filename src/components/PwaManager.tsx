@@ -115,7 +115,7 @@ export const PwaManager = () => {
               </div>
               <div className="flex gap-2">
                 <Button
-                  className="flex-1 bg-primary text-black font-black"
+                  className="flex-1 bg-primary text-black dark:text-white font-black"
                   startContent={<RefreshCw size={14} />}
                   onPress={() => updateServiceWorker(true)}
                 >

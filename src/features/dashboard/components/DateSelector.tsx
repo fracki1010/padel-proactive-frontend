@@ -79,18 +79,18 @@ export const DateSelector = ({ selectedDate, onDateChange }: DateSelectorProps) 
             >
               {isToday && (
                 <span
-                  className={`absolute -top-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${isSelected ? "bg-black text-primary" : "bg-primary text-black"}`}
+                  className={`absolute -top-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${isSelected ? "bg-black text-primary" : "bg-primary text-black dark:text-white"}`}
                 >
                   Hoy
                 </span>
               )}
               <span
-                className={`text-xs font-bold mb-1 ${isSelected ? "text-black/60" : "text-gray-500"}`}
+                className={`text-xs font-bold mb-1 ${isSelected ? "text-black dark:text-white opacity-70" : "text-on-surface-variant"}`}
               >
                 {day.dayName}
               </span>
               <span
-                className={`text-2xl font-black ${isSelected ? "text-black" : "text-foreground"}`}
+                className={`text-2xl font-black ${isSelected ? "text-black dark:text-white" : "text-foreground"}`}
               >
                 {day.dayNum}
               </span>

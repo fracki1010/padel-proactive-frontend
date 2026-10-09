@@ -1,6 +1,17 @@
 import { heroui } from "@heroui/react";
 import { md3 } from "./src/theme/md3-tokens.ts";
 
+/**
+ * M3 color roles exposed as Tailwind color utilities. The values live in the
+ * generated `src/theme/md3-tokens.css` (`--md-sys-color-*`) and switch with the
+ * `.dark`/`.night` class on `<html>`. These give components proper token
+ * utilities (e.g. `text-on-primary`, `bg-surface-container`,
+ * `text-on-surface-variant`) instead of legacy `text-black`/`text-gray-*`
+ * pairs. Opacity modifiers are not supported on these `var()` colors; use the
+ * `opacity-*` utilities for de-emphasis.
+ */
+const md3Role = (role) => `var(--md-sys-color-${role})`;
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -70,6 +81,27 @@ export default {
         orange: {
           500: "rgb(var(--color-orange-500) / <alpha-value>)",
         },
+        // M3 semantic roles (generated tokens; see md3Role above).
+        "on-primary": md3Role("on-primary"),
+        "primary-container": md3Role("primary-container"),
+        "on-primary-container": md3Role("on-primary-container"),
+        "secondary-container": md3Role("secondary-container"),
+        "on-secondary-container": md3Role("on-secondary-container"),
+        "tertiary-container": md3Role("tertiary-container"),
+        "on-tertiary-container": md3Role("on-tertiary-container"),
+        error: md3Role("error"),
+        "on-error": md3Role("on-error"),
+        "error-container": md3Role("error-container"),
+        "on-error-container": md3Role("on-error-container"),
+        "on-surface": md3Role("on-surface"),
+        "on-surface-variant": md3Role("on-surface-variant"),
+        outline: md3Role("outline"),
+        "outline-variant": md3Role("outline-variant"),
+        "surface-container-lowest": md3Role("surface-container-lowest"),
+        "surface-container-low": md3Role("surface-container-low"),
+        "surface-container": md3Role("surface-container"),
+        "surface-container-high": md3Role("surface-container-high"),
+        "surface-container-highest": md3Role("surface-container-highest"),
       },
       fontFamily: {
         sans: ["Roboto Flex", "Inter", "sans-serif"],

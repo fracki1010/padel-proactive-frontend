@@ -27,7 +27,7 @@ export const TimeFilterTabs = ({
           variant={activeFilter === filter.id ? "solid" : "flat"}
           aria-label={filter.label}
           className={`flex-grow h-14 rounded-full font-bold border border-black/5 dark:border-white/10 transition-all ${activeFilter === filter.id
-              ? "bg-primary text-black shadow-lg shadow-primary/20"
+              ? "bg-primary text-black dark:text-white shadow-lg shadow-primary/20"
               : "bg-dark-100 text-gray-500 hover:text-foreground"
             }`}
           onClick={() => onFilterChange(filter.id)}

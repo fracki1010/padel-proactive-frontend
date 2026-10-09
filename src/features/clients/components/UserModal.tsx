@@ -83,7 +83,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
       placement="right"
       backdrop="blur"
     >
-      <DrawerContent className="bg-dark-300 text-foreground dark">
+      <DrawerContent className="bg-surface-container-high text-foreground dark">
         <DrawerHeader className="flex flex-col gap-1 border-b border-black/5 dark:border-white/5 pb-4">
           <h2 className="text-2xl font-black">
             {mode === "create" ? "Nuevo Socio" : "Editar Socio"}

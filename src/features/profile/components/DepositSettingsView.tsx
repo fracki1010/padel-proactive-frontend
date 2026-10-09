@@ -163,7 +163,7 @@ export const DepositSettingsView = ({
             </div>
 
             <Button
-              className="h-12 w-full sm:w-auto bg-primary text-black rounded-md font-black uppercase"
+              className="h-12 w-full sm:w-auto bg-primary text-black dark:text-white rounded-md font-black uppercase"
               onPress={onSaveSettings}
               isLoading={isSavingSettings}
               isDisabled={!canSaveSettings}

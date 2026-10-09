@@ -192,7 +192,7 @@ const FixedTurnsEditor = ({
         </div>
 
         {fixedTurns.length === 0 ? (
-          <p className="text-gray-500">No tiene turnos fijos asignados.</p>
+          <p className="text-on-surface-variant">No tiene turnos fijos asignados.</p>
         ) : (
           <div className="space-y-3">
             {fixedTurns.map((fixedTurn, index) => (
@@ -208,7 +208,7 @@ const FixedTurnsEditor = ({
                     className="dark"
                     classNames={{
                       trigger: "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
-                      label: "text-gray-400 font-bold mb-2",
+                      label: "text-on-surface-variant font-bold mb-2",
                       value: "text-foreground font-bold",
                       popoverContent:
                         "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
@@ -240,7 +240,7 @@ const FixedTurnsEditor = ({
                     className="dark"
                     classNames={{
                       trigger: "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
-                      label: "text-gray-400 font-bold mb-2",
+                      label: "text-on-surface-variant font-bold mb-2",
                       value: "text-foreground font-bold",
                       popoverContent:
                         "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
@@ -264,7 +264,7 @@ const FixedTurnsEditor = ({
                     className="dark"
                     classNames={{
                       trigger: "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
-                      label: "text-gray-400 font-bold mb-2",
+                      label: "text-on-surface-variant font-bold mb-2",
                       value: "text-foreground font-bold",
                       popoverContent:
                         "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
@@ -487,7 +487,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
     return (
       <div className="space-y-4">
         <Button variant="light" onPress={() => navigate("/socios")}>Volver</Button>
-        <p className="text-gray-400">No encontramos el socio solicitado.</p>
+        <p className="text-on-surface-variant">No encontramos el socio solicitado.</p>
       </div>
     );
   }
@@ -546,7 +546,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
         <CardBody className="p-6 space-y-5">
           <div>
             <p className="text-3xl font-black text-foreground tracking-tight">{user.name}</p>
-            <p className="text-gray-400 font-semibold flex items-center gap-2 mt-1">
+            <p className="text-on-surface-variant font-semibold flex items-center gap-2 mt-1">
               <Smartphone size={14} />
               {formatPhoneForDisplay(user.phoneNumber)}
             </p>
@@ -608,7 +608,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
               <p className="text-sm font-black text-foreground uppercase tracking-wide">
                 Exento de seña
               </p>
-              <p id="deposit-exempt-hint" className="text-[11px] text-gray-400">
+              <p id="deposit-exempt-hint" className="text-[11px] text-on-surface-variant">
                 {setDepositExemption.isPending
                   ? "Guardando…"
                   : hasExemptablePhone
@@ -734,20 +734,20 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
           {isLoadingHistory ? (
             <SkeletonTable rows={5} columns={7} />
           ) : filteredHistory.length === 0 ? (
-            <p className="text-gray-500">No hay historial para este socio.</p>
+            <p className="text-on-surface-variant">No hay historial para este socio.</p>
           ) : (
             <div className="space-y-3">
               <div className="overflow-x-auto rounded-md border border-black/10 dark:border-white/10">
                 <table className="w-full min-w-[860px]">
                   <thead className="bg-black/10 dark:bg-white/5">
                     <tr className="text-left">
-                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Fecha</th>
-                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Hora</th>
-                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Cancha</th>
-                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Turno</th>
-                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Pago</th>
-                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Monto</th>
-                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-gray-500">Origen</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-on-surface-variant">Fecha</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-on-surface-variant">Hora</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-on-surface-variant">Cancha</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-on-surface-variant">Turno</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-on-surface-variant">Pago</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-on-surface-variant">Monto</th>
+                      <th className="px-3 py-2 text-[11px] font-semibold tracking-wider text-on-surface-variant">Origen</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -755,7 +755,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
                       <tr key={booking._id} className="border-t border-black/10 dark:border-white/10">
                         <td className="px-3 py-3 align-top">
                           <p className="font-bold">{toShortDate(booking.date)}</p>
-                          <p className="text-xs text-gray-500">{formatDate(booking.date)}</p>
+                          <p className="text-xs text-on-surface-variant">{formatDate(booking.date)}</p>
                         </td>
                         <td className="px-3 py-3 align-top font-semibold">{booking.timeSlot?.startTime || "--:--"}</td>
                         <td className="px-3 py-3 align-top font-semibold">{booking.court?.name || "Sin cancha"}</td>

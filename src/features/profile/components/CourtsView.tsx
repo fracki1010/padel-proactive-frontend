@@ -139,7 +139,7 @@ export const CourtsView = ({
           Mis Canchas
         </h3>
         <Button
-          className="ml-auto bg-primary text-black font-black rounded-md uppercase"
+          className="ml-auto bg-primary text-black dark:text-white font-black rounded-md uppercase"
           onPress={() => setIsCreateDrawerOpen(true)}
           startContent={<Plus size={16} />}
         >
@@ -157,20 +157,20 @@ export const CourtsView = ({
               <div className="flex flex-row items-start justify-between gap-3">
                 <div className="flex items-center gap-4 min-w-0">
                   <div
-                    className={`w-12 h-12 ${court.isActive ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-gray-500"} rounded-md flex items-center justify-center transition-colors`}
+                    className={`w-12 h-12 ${court.isActive ? "bg-primary/10 text-primary" : "bg-black/5 dark:bg-white/5 text-on-surface-variant"} rounded-md flex items-center justify-center transition-colors`}
                   >
                     <MapPin size={24} />
                   </div>
                   <div className="min-w-0">
                     <p
-                      className={`font-bold ${court.isActive ? "text-foreground" : "text-gray-500"} text-lg transition-colors truncate`}
+                      className={`font-bold ${court.isActive ? "text-foreground" : "text-on-surface-variant"} text-lg transition-colors truncate`}
                     >
                       {court.name}
                     </p>
-                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                    <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">
                       Estado: {court.isActive ? "Activa" : "Inactiva"}
                     </p>
-                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                    <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">
                       {court.courtType || defaultCourtType} · {court.surface || defaultSurface}
                     </p>
                   </div>
@@ -307,7 +307,7 @@ export const CourtsView = ({
               </DrawerBody>
               <DrawerFooter className="p-6 pt-0">
                 <Button
-                  className="w-full h-12 bg-primary text-black rounded-md font-black uppercase"
+                  className="w-full h-12 bg-primary text-black dark:text-white rounded-md font-black uppercase"
                   onPress={handleCreateFromDrawer}
                   isLoading={createCourtPending}
                 >
@@ -417,7 +417,7 @@ export const CourtsView = ({
               </DrawerBody>
               <DrawerFooter className="p-6 pt-0">
                 <Button
-                  className="w-full h-12 bg-primary text-black rounded-md font-black uppercase"
+                  className="w-full h-12 bg-primary text-black dark:text-white rounded-md font-black uppercase"
                   onPress={handleSaveFromDrawer}
                   isLoading={updateCourtPending}
                   startContent={<Save size={16} />}

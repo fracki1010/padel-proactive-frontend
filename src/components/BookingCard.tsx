@@ -9,7 +9,7 @@ interface BookingCardProps {
 }
 
 const statusColorMap: Record<string, string> = {
-  confirmado: "bg-primary text-black",
+  confirmado: "bg-primary text-black dark:text-white",
   reservado: "bg-orange-500 text-white",
   cancelado: "bg-red-500 text-white",
 };

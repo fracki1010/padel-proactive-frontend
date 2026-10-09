@@ -41,7 +41,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
             </p>
             <button
               onClick={this.handleReset}
-              className="mt-2 px-6 py-2 rounded-xl bg-primary text-black font-bold text-sm"
+              className="mt-2 px-6 py-2 rounded-xl bg-primary text-black dark:text-white font-bold text-sm"
             >
               Recargar aplicación
             </button>

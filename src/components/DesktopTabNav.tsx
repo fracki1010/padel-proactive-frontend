@@ -35,7 +35,7 @@ export const DesktopTabNav = ({
               className={cn(
                 "h-11 px-4 rounded-xl font-bold transition-all whitespace-nowrap",
                 isActive
-                  ? "bg-primary text-black shadow-lg shadow-primary/20"
+                  ? "bg-primary text-black dark:text-white shadow-lg shadow-primary/20"
                   : "text-gray-500 hover:text-foreground",
               )}
               onPress={() => onTabChange(tab.id)}
@@ -48,7 +48,7 @@ export const DesktopTabNav = ({
 
       <Button
         color="primary"
-        className="h-11 px-5 rounded-xl text-black font-black shadow-lg shadow-primary/20"
+        className="h-11 px-5 rounded-xl text-on-primary font-black shadow-lg shadow-primary/20"
         startContent={<Plus size={18} />}
         onPress={onCreateBooking}
       >

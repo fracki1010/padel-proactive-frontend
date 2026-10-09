@@ -143,7 +143,7 @@ export const BotAutomationSettingsView = ({
             </div>
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
                   Botón: Activar recordatorio
                 </p>
                 <p className="text-foreground font-bold text-sm">
@@ -172,11 +172,11 @@ export const BotAutomationSettingsView = ({
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                   input: "text-foreground font-bold",
-                  label: "text-gray-400 font-bold mb-2",
+                  label: "text-on-surface-variant font-bold mb-2",
                 }}
               />
               <Button
-                className="h-12 bg-primary text-black rounded-md font-black uppercase"
+                className="h-12 bg-primary text-black dark:text-white rounded-md font-black uppercase"
                 onPress={onSaveReminderMinutes}
                 isLoading={isSavingReminderMinutes}
                 startContent={<Save size={18} />}
@@ -184,7 +184,7 @@ export const BotAutomationSettingsView = ({
                 Guardar minutos
               </Button>
             </div>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-on-surface-variant">
               El botón guarda cuántos minutos antes se dispara el aviso.
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
@@ -201,11 +201,11 @@ export const BotAutomationSettingsView = ({
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                   input: "text-foreground font-bold",
-                  label: "text-gray-400 font-bold mb-2",
+                  label: "text-on-surface-variant font-bold mb-2",
                 }}
               />
               <Button
-                className="h-12 bg-primary text-black rounded-md font-black uppercase"
+                className="h-12 bg-primary text-black dark:text-white rounded-md font-black uppercase"
                 onPress={onSaveAttendanceResponseTimeoutMinutes}
                 isLoading={isSavingResponseTimeoutMinutes}
                 startContent={<Save size={18} />}
@@ -213,7 +213,7 @@ export const BotAutomationSettingsView = ({
                 Guardar espera
               </Button>
             </div>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-on-surface-variant">
               Si el cliente no responde dentro de este tiempo, el bot avisa al admin.
             </p>
           </div>
@@ -228,7 +228,7 @@ export const BotAutomationSettingsView = ({
 
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
                   Aviso de hoy
                 </p>
                 <p className="text-foreground font-bold text-sm">
@@ -248,7 +248,7 @@ export const BotAutomationSettingsView = ({
 
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
                   Aviso del dia siguiente
                 </p>
                 <p className="text-foreground font-bold text-sm">
@@ -267,7 +267,7 @@ export const BotAutomationSettingsView = ({
             </div>
 
             <div className="space-y-2">
-              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
                 Formato del mensaje
               </p>
               <div className="flex gap-2">
@@ -278,7 +278,7 @@ export const BotAutomationSettingsView = ({
                   className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-md font-black text-sm uppercase transition-colors ${
                     dailyAvailabilityDigestFormat === "text"
                       ? "bg-sky-300 text-black"
-                      : "bg-black/5 dark:bg-white/5 text-gray-400 hover:bg-black/10 dark:hover:bg-white/10"
+                      : "bg-black/5 dark:bg-white/5 text-on-surface-variant hover:bg-black/10 dark:hover:bg-white/10"
                   } disabled:opacity-40 disabled:cursor-not-allowed`}
                 >
                   <FileText size={16} />
@@ -291,14 +291,14 @@ export const BotAutomationSettingsView = ({
                   className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-md font-black text-sm uppercase transition-colors ${
                     dailyAvailabilityDigestFormat === "image"
                       ? "bg-sky-300 text-black"
-                      : "bg-black/5 dark:bg-white/5 text-gray-400 hover:bg-black/10 dark:hover:bg-white/10"
+                      : "bg-black/5 dark:bg-white/5 text-on-surface-variant hover:bg-black/10 dark:hover:bg-white/10"
                   } disabled:opacity-40 disabled:cursor-not-allowed`}
                 >
                   <Image size={16} />
                   Imagen
                 </button>
               </div>
-              <p className="text-[11px] text-gray-400">
+              <p className="text-[11px] text-on-surface-variant">
                 "Imagen" envía una tarjeta visual al grupo; "Texto" envía el mensaje plano.
               </p>
             </div>
@@ -325,7 +325,7 @@ export const BotAutomationSettingsView = ({
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                   input: "text-foreground font-bold",
-                  label: "text-gray-400 font-bold mb-2",
+                  label: "text-on-surface-variant font-bold mb-2",
                 }}
               />
               <Button
@@ -353,7 +353,7 @@ export const BotAutomationSettingsView = ({
                 Primero configurá el grupo de WhatsApp en la seccion WhatsApp Web.
               </p>
             ) : (
-              <p className="text-[11px] text-gray-400">
+              <p className="text-[11px] text-on-surface-variant">
                 El admin decide si quiere aviso del dia actual, del dia siguiente y a qué hora.
               </p>
             )}
@@ -380,7 +380,7 @@ export const BotAutomationSettingsView = ({
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                   input: "text-foreground font-bold",
-                  label: "text-gray-400 font-bold mb-2",
+                  label: "text-on-surface-variant font-bold mb-2",
                 }}
               />
               <Button
@@ -392,7 +392,7 @@ export const BotAutomationSettingsView = ({
                 Guardar bloqueo
               </Button>
             </div>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-on-surface-variant">
               Si faltan menos horas que este valor, el cliente no podrá cancelar por bot y deberá contactar al admin.
             </p>
             <div className="flex items-center gap-3 pt-1">
@@ -415,7 +415,7 @@ export const BotAutomationSettingsView = ({
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                   input: "text-foreground font-bold",
-                  label: "text-gray-400 font-bold mb-2",
+                  label: "text-on-surface-variant font-bold mb-2",
                 }}
               />
               <Button
@@ -427,7 +427,7 @@ export const BotAutomationSettingsView = ({
                 Guardar umbral
               </Button>
             </div>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-on-surface-variant">
               El botón define cuántas confirmaciones necesita un cliente para dejar de recibir ese aviso.
             </p>
           </div>
@@ -450,7 +450,7 @@ export const BotAutomationSettingsView = ({
               </Chip>
             </div>
             <div>
-              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
                 Botón: Activar penalizaciones
               </p>
               <p className="text-foreground font-bold text-sm">
@@ -478,7 +478,7 @@ export const BotAutomationSettingsView = ({
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                   input: "text-foreground font-bold",
-                  label: "text-gray-400 font-bold mb-2",
+                  label: "text-on-surface-variant font-bold mb-2",
                 }}
               />
               <Button
@@ -491,7 +491,7 @@ export const BotAutomationSettingsView = ({
                 Guardar limite
               </Button>
             </div>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-on-surface-variant">
               El botón guarda cuántas cancelaciones disparan suspensión automática.
             </p>
           </div>

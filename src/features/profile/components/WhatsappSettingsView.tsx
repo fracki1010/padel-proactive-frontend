@@ -182,7 +182,7 @@ export const WhatsappSettingsView = ({
             <Button
               variant="flat"
               color="warning"
-              className="font-black uppercase text-black"
+              className="font-black uppercase text-warning"
               isLoading={updateWhatsappPending}
               isDisabled={updateWhatsappPending || !canManageSession}
               onPress={onSwitchWhatsappDevice}
@@ -341,7 +341,7 @@ export const WhatsappSettingsView = ({
                     size="sm"
                     color="warning"
                     variant="flat"
-                    className="font-black uppercase text-black"
+                    className="font-black uppercase text-warning"
                     onPress={() => setAllowExternalQrRender(true)}
                   >
                     Renderizar QR externo
