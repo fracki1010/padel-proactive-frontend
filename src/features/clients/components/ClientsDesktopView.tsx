@@ -124,7 +124,7 @@ export const ClientsDesktopView = ({
             <Input
               isClearable
               placeholder="Buscar por nombre o teléfono..."
-              startContent={<Search size={16} className="text-gray-500" />}
+              startContent={<Search size={16} className="text-on-surface-variant" />}
               value={filterValue}
               onValueChange={onFilterChange}
               className="max-w-xl"
@@ -155,7 +155,7 @@ export const ClientsDesktopView = ({
                   key={item.id}
                   size="sm"
                   variant="light"
-                  className={`rounded-xl px-4 uppercase text-[11px] font-black tracking-wider ${isActive ? "bg-primary text-black" : "text-gray-400 hover:text-foreground"}`}
+                  className={`rounded-xl px-4 uppercase text-[11px] font-black tracking-wider ${isActive ? "bg-primary text-on-primary" : "text-on-surface-variant hover:text-foreground"}`}
                   onPress={() => setDesktopFilter(item.id as DesktopFilter)}
                 >
                   {item.label}
@@ -168,7 +168,7 @@ export const ClientsDesktopView = ({
         <div className="shrink-0 space-y-4 pt-2">
           <Button
             color="primary"
-            className="h-12 px-6 rounded-full text-black font-black text-base shadow-xl shadow-primary/25"
+            className="h-12 px-6 rounded-full text-on-primary font-black text-base shadow-xl shadow-primary/25"
             startContent={<Plus size={20} />}
             onPress={onCreate}
           >
@@ -176,7 +176,7 @@ export const ClientsDesktopView = ({
           </Button>
           <div className="grid grid-cols-3 gap-4 text-right">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant">
                 Total
               </p>
               <p className="text-3xl font-black text-foreground">{stats.total}</p>
@@ -202,7 +202,7 @@ export const ClientsDesktopView = ({
           <SkeletonTable rows={8} columns={4} />
         ) : filteredUsers.length === 0 ? (
           <div className="rounded-md bg-dark-200/60 border border-black/10 dark:border-white/10 py-16 text-center">
-            <p className="text-gray-500 font-bold">
+            <p className="text-on-surface-variant font-bold">
               No se encontraron socios para este filtro.
             </p>
           </div>
@@ -244,7 +244,7 @@ export const ClientsDesktopView = ({
                   <p className="text-xl font-black text-foreground truncate leading-tight">
                     {client.name}
                   </p>
-                  <p className="text-gray-400 font-semibold flex items-center gap-2 mt-1">
+                  <p className="text-on-surface-variant font-semibold flex items-center gap-2 mt-1">
                     <Smartphone size={14} />
                     {formatPhoneForDisplay(client.phoneNumber)}
                   </p>
@@ -316,7 +316,7 @@ export const ClientsDesktopView = ({
                 </div>
 
                 <div className="min-w-[190px]">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-1">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant mb-1">
                     Penalizaciones
                   </p>
                   <div className="flex items-center gap-2">
@@ -325,7 +325,7 @@ export const ClientsDesktopView = ({
                       {penalties}/{penaltyLimit}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500 font-bold">
+                  <p className="mt-1 text-xs text-on-surface-variant font-bold">
                     Asistencia: {attendanceCount}/{trustedThreshold}
                   </p>
                 </div>
@@ -334,7 +334,7 @@ export const ClientsDesktopView = ({
                   <Button
                     isIconOnly
                     variant="flat"
-                    className="w-12 h-12 rounded-xl bg-black/10 dark:bg-white/10 text-gray-300"
+                    className="w-12 h-12 rounded-xl bg-black/10 dark:bg-white/10 text-on-surface-variant"
                     onPress={() => onHistory(client)}
                   >
                     <History size={18} />
@@ -347,7 +347,7 @@ export const ClientsDesktopView = ({
                       <Button
                         isIconOnly
                         variant="flat"
-                        className="w-12 h-12 rounded-xl bg-black/10 dark:bg-white/10 text-gray-300"
+                        className="w-12 h-12 rounded-xl bg-black/10 dark:bg-white/10 text-on-surface-variant"
                       >
                         <MoreVertical size={18} />
                       </Button>

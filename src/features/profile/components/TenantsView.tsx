@@ -233,7 +233,7 @@ export const TenantsView = ({
           <h3 className="text-xl font-black text-foreground uppercase italic">
             {isSuperAdmin ? "Multiempresa" : "Datos del club"}
           </h3>
-          <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+          <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
             {isSuperAdmin
               ? "Gestioná empresas y administradores"
               : "Editá nombre, slug y dirección de tu club"}
@@ -244,7 +244,7 @@ export const TenantsView = ({
       {isSuperAdmin && (
         <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-lg">
           <CardBody className="p-6 space-y-3">
-            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
               Crear Empresa / Bootstrap
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
@@ -259,7 +259,7 @@ export const TenantsView = ({
                 }}
               />
               <Button
-                className="h-12 bg-primary text-black font-black rounded-md uppercase text-[10px]"
+                className="h-12 bg-primary text-on-primary font-black rounded-md uppercase text-[10px]"
                 onPress={onCreateCompany}
                 isLoading={createCompanyPending}
               >
@@ -280,7 +280,7 @@ export const TenantsView = ({
       {isSuperAdmin && (
         <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-lg">
           <CardBody className="p-6 space-y-3">
-            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
               Crear Admin de Empresa
             </p>
             <Input
@@ -326,7 +326,7 @@ export const TenantsView = ({
               ))}
             </select>
             <Button
-              className="h-12 bg-primary text-black font-black rounded-md uppercase text-[10px]"
+              className="h-12 bg-primary text-on-primary font-black rounded-md uppercase text-[10px]"
               onPress={onCreateAdmin}
               isLoading={createAdminPending}
             >
@@ -337,14 +337,14 @@ export const TenantsView = ({
       )}
 
       <div className="space-y-3">
-        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">
+        <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest px-1">
           {isSuperAdmin ? "Empresas" : "Mi club"}
         </p>
         {companies.length === 0 && (
           <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-[1.5rem]">
             <CardBody className="p-6 text-center">
               <p className="text-sm font-bold text-foreground">No hay clubes para mostrar</p>
-              <p className="text-[11px] text-gray-500 mt-1">
+              <p className="text-[11px] text-on-surface-variant mt-1">
                 Cuando exista una empresa asignada, va a aparecer acá.
               </p>
             </CardBody>
@@ -372,7 +372,7 @@ export const TenantsView = ({
                       <Chip
                         size="sm"
                         variant="flat"
-                        className="bg-black/10 dark:bg-white/10 text-gray-200 font-bold uppercase text-[10px]"
+                        className="bg-black/10 dark:bg-white/10 text-on-surface-variant font-bold uppercase text-[10px]"
                       >
                         {company.slug || "sin-slug"}
                       </Chip>
@@ -399,14 +399,14 @@ export const TenantsView = ({
               <div className="p-5 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider mb-1.5">
+                    <p className="text-[10px] text-on-surface-variant uppercase font-black tracking-wider mb-1.5">
                       Nombre del club
                     </p>
                     <Input
                       value={nameDraftByCompany[company._id] ?? String(company.name || "")}
                       onValueChange={(value) => updateNameDraft(company._id, value)}
                       placeholder="Ej: Padel Center Norte"
-                      startContent={<PencilLine size={14} className="text-gray-500" />}
+                      startContent={<PencilLine size={14} className="text-on-surface-variant" />}
                       classNames={{
                         inputWrapper:
                           "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 data-[hover=true]:border-black/20 dark:border-white/20 rounded-xl h-11",
@@ -415,14 +415,14 @@ export const TenantsView = ({
                     />
                   </div>
                   <div>
-                    <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider mb-1.5">
+                    <p className="text-[10px] text-on-surface-variant uppercase font-black tracking-wider mb-1.5">
                       Slug
                     </p>
                     <Input
                       value={slugDraftByCompany[company._id] ?? String(company.slug || "")}
                       onValueChange={(value) => updateSlugDraft(company._id, value)}
                       placeholder="padel-center-norte"
-                      startContent={<Link2 size={14} className="text-gray-500" />}
+                      startContent={<Link2 size={14} className="text-on-surface-variant" />}
                       classNames={{
                         inputWrapper:
                           "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 data-[hover=true]:border-black/20 dark:border-white/20 rounded-xl h-11",
@@ -433,14 +433,14 @@ export const TenantsView = ({
                 </div>
 
                 <div>
-                  <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider mb-1.5">
+                  <p className="text-[10px] text-on-surface-variant uppercase font-black tracking-wider mb-1.5">
                     Dirección
                   </p>
                   <Input
                     value={addressDraftByCompany[company._id] ?? String(company.address || "")}
                     onValueChange={(value) => updateAddressDraft(company._id, value)}
                     placeholder="Dirección del club"
-                    startContent={<MapPin size={14} className="text-gray-500" />}
+                    startContent={<MapPin size={14} className="text-on-surface-variant" />}
                     classNames={{
                       inputWrapper:
                         "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 data-[hover=true]:border-black/20 dark:border-white/20 rounded-xl h-11",
@@ -450,7 +450,7 @@ export const TenantsView = ({
                 </div>
 
                 <div>
-                  <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider mb-2">
+                  <p className="text-[10px] text-on-surface-variant uppercase font-black tracking-wider mb-2">
                     Foto de portada
                   </p>
                   <div className="flex items-center gap-3">
@@ -462,7 +462,7 @@ export const TenantsView = ({
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <Image size={22} className="text-gray-400" />
+                        <Image size={22} className="text-on-surface-variant" />
                       )}
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -498,7 +498,7 @@ export const TenantsView = ({
 
                 <div className="flex flex-col sm:flex-row gap-2 pt-1">
                   <Button
-                    className="h-11 bg-primary text-black font-black rounded-xl uppercase text-[10px] sm:min-w-[160px]"
+                    className="h-11 bg-primary text-on-primary font-black rounded-xl uppercase text-[10px] sm:min-w-[160px]"
                     isLoading={updateCompanyPending}
                     onPress={() => handleSaveCompany(company)}
                     startContent={<Save size={14} />}
@@ -532,7 +532,7 @@ export const TenantsView = ({
 
       {isSuperAdmin && (
         <div className="space-y-3">
-          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">
+          <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest px-1">
             Admins
           </p>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
@@ -544,7 +544,7 @@ export const TenantsView = ({
                 <CardBody className="p-4 flex items-center justify-between gap-3">
                   <div>
                     <p className="font-bold text-foreground">{admin.username}</p>
-                    <p className="text-[10px] text-gray-500 uppercase font-bold">
+                    <p className="text-[10px] text-on-surface-variant uppercase font-bold">
                       {admin.companyId?.name || "Sin empresa"} • {admin.role}
                     </p>
                   </div>

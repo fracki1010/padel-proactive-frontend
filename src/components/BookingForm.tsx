@@ -247,7 +247,7 @@ export const BookingForm = ({
                 classNames: {
                   inputWrapper:
                     "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
-                  label: "text-gray-400 font-bold mb-2",
+                  label: "text-on-surface-variant font-bold mb-2",
                   input: "text-foreground font-bold",
                 },
               }}
@@ -266,7 +266,7 @@ export const BookingForm = ({
                     />
                     <div className="flex flex-col">
                       <span className="text-sm font-bold">{u.name}</span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-on-surface-variant">
                         {formatPhoneForDisplay(u.phoneNumber)}
                       </span>
                     </div>
@@ -292,7 +292,7 @@ export const BookingForm = ({
                 classNames={{
                   trigger:
                     "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
-                  label: "text-gray-400 font-bold mb-2",
+                  label: "text-on-surface-variant font-bold mb-2",
                   value: "text-foreground font-bold",
                   popoverContent:
                     "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
@@ -320,11 +320,11 @@ export const BookingForm = ({
                 classNames={{
                   inputWrapper:
                     "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
-                  label: "text-gray-400 font-bold mb-2",
+                  label: "text-on-surface-variant font-bold mb-2",
                   input: "text-foreground font-bold",
                 }}
                 startContent={
-                  <MessageSquare size={18} className="text-gray-500" />
+                  <MessageSquare size={18} className="text-on-surface-variant" />
                 }
               />
             </div>
@@ -362,13 +362,13 @@ export const BookingForm = ({
                 }
                 classNames={{
                   trigger: "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
-                  label: "text-gray-400 font-bold mb-2",
+                  label: "text-on-surface-variant font-bold mb-2",
                   value: "text-foreground font-bold",
                   popoverContent:
                     "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
                   listbox: "text-foreground",
                 }}
-                startContent={<MapPin size={18} className="text-gray-500" />}
+                startContent={<MapPin size={18} className="text-on-surface-variant" />}
               >
                 {courts.map((c) => (
                   <SelectItem key={c._id} className="text-foreground">
@@ -385,7 +385,7 @@ export const BookingForm = ({
                 classNames={{
                   inputWrapper:
                     "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
-                  label: "text-gray-400 font-bold mb-2",
+                  label: "text-on-surface-variant font-bold mb-2",
                   input: "text-foreground font-bold",
                 }}
               />
@@ -401,12 +401,12 @@ export const BookingForm = ({
               }
               classNames={{
                 trigger: "bg-dark-100/50 border-black/10 dark:border-white/10 h-14 rounded-xl",
-                label: "text-gray-400 font-bold mb-2",
+                label: "text-on-surface-variant font-bold mb-2",
                 value: "text-foreground font-bold",
                 popoverContent: "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
                 listbox: "text-foreground",
               }}
-              startContent={<Clock size={18} className="text-gray-500" />}
+              startContent={<Clock size={18} className="text-on-surface-variant" />}
             >
               {slots.map((s) => (
                 <SelectItem
@@ -434,8 +434,8 @@ export const BookingForm = ({
               type="button"
               className={`h-14 rounded-md font-bold transition-all ${
                 paymentStatus === "pagado"
-                  ? "bg-primary text-black shadow-lg shadow-primary/20"
-                  : "bg-dark-100/50 text-gray-500 border border-black/5 dark:border-white/5"
+                  ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
+                  : "bg-dark-100/50 text-on-surface-variant border border-black/5 dark:border-white/5"
               }`}
               onClick={() => setPaymentStatus("pagado")}
             >
@@ -446,7 +446,7 @@ export const BookingForm = ({
               className={`h-14 rounded-md font-bold transition-all ${
                 paymentStatus === "pendiente"
                   ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
-                  : "bg-dark-100/50 text-gray-500 border border-black/5 dark:border-white/5"
+                  : "bg-dark-100/50 text-on-surface-variant border border-black/5 dark:border-white/5"
               }`}
               onClick={() => setPaymentStatus("pendiente")}
             >
@@ -458,7 +458,7 @@ export const BookingForm = ({
         <Button
           type="submit"
           isLoading={createMutation.isPending}
-          className="w-full h-16 bg-primary text-black font-bold text-lg rounded-md shadow-xl shadow-primary/20 mt-8"
+          className="w-full h-16 bg-primary text-on-primary font-bold text-lg rounded-md shadow-xl shadow-primary/20 mt-8"
         >
           <Save size={20} /> Guardar Reserva
         </Button>

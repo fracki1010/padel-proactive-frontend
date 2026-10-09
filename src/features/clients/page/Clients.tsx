@@ -167,7 +167,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
             <h1 className="text-2xl sm:text-3xl font-black text-foreground">
               Gestión de Socios
             </h1>
-            <p className="text-gray-500 text-sm sm:text-base">
+            <p className="text-on-surface-variant text-sm sm:text-base">
               Administra tus clientes, historial y turnos fijos
             </p>
           </div>
@@ -186,7 +186,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
             isClearable
             className="w-full"
             placeholder="Buscar por nombre o teléfono..."
-            startContent={<UserIcon className="text-gray-400" size={18} />}
+            startContent={<UserIcon className="text-on-surface-variant" size={18} />}
             value={filterValue}
             onValueChange={onFilterChange}
             variant="flat"
@@ -204,8 +204,8 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="col-span-full bg-dark-200/50 rounded-md p-12 text-center border border-dashed border-black/10 dark:border-white/10">
-              <UserIcon size={48} className="mx-auto text-gray-600 mb-4" />
-              <p className="text-gray-400 font-medium">
+              <UserIcon size={48} className="mx-auto text-on-surface-variant mb-4" />
+              <p className="text-on-surface-variant font-medium">
                 No se encontraron socios que coincidan con la búsqueda.
               </p>
             </div>
@@ -242,7 +242,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                           </Chip>
                         )}
                       </div>
-                      <div className="flex items-center gap-1.5 text-gray-500 text-sm mt-0.5">
+                      <div className="flex items-center gap-1.5 text-on-surface-variant text-sm mt-0.5">
                         <Smartphone size={14} />
                         <span>{formatPhoneForDisplay(client.phoneNumber)}</span>
                       </div>
@@ -329,7 +329,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                   </div>
                 )}
                 {!hasMore && filteredUsers.length > 12 && (
-                  <p className="text-center text-gray-600 text-xs font-bold uppercase tracking-wide py-4">
+                  <p className="text-center text-on-surface-variant text-xs font-bold uppercase tracking-wide py-4">
                     {filteredUsers.length} socios cargados
                   </p>
                 )}
