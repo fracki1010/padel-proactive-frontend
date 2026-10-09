@@ -27,7 +27,9 @@
       (() => {
         const key = "padexa-theme";
         const saved = localStorage.getItem(key);
-        const isDark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const isDark = saved
+          ? saved === "dark" || saved === "night"
+          : window.matchMedia("(prefers-color-scheme: dark)").matches;
         document.documentElement.classList.toggle("dark", isDark);
         document.documentElement.style.colorScheme = isDark ? "dark" : "light";
         const themeColor = isDark ? "#191c1d" : "#fbfcfe";
