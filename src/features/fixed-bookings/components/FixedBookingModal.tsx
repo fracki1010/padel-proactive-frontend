@@ -11,7 +11,7 @@ import {
   Textarea,
 } from "@heroui/react";
 import { ChevronDown, User as UserIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { fieldSelectClassNames } from "../../../components/ui/fieldStyles";
 import { useCourts, useSlots } from "../../../hooks/useData";
@@ -21,6 +21,7 @@ import { WEEKDAYS } from "../constants";
 import { ClientPickerDrawer } from "./ClientPickerDrawer";
 import {
   useCreateFixedBooking,
+  useFixedBookings,
   useUpdateFixedBooking,
 } from "../hooks/useFixedBookings";
 
@@ -52,6 +53,7 @@ export const FixedBookingModal = ({
   const isDesktop = useIsDesktop();
   const { data: courtsData, isLoading: isLoadingCourts } = useCourts();
   const { data: slotsData, isLoading: isLoadingSlots } = useSlots();
+  const { data: fixedBookingsData } = useFixedBookings();
   const createFixedBooking = useCreateFixedBooking();
   const updateFixedBooking = useUpdateFixedBooking();
 
@@ -74,9 +76,34 @@ export const FixedBookingModal = ({
   }, [isOpen, editing]);
 
   const courts = courtsData?.data ?? [];
-  const slots = slotsData?.data ?? [];
+  const slots = useMemo(() => slotsData?.data ?? [], [slotsData]);
   const isSaving =
     createFixedBooking.isPending || updateFixedBooking.isPending;
+
+  // Slots already taken by another active fixed turn on the selected
+  // court + weekday. When editing, the edited turn's own slot stays
+  // selectable so the user can re-save it unchanged.
+  const occupiedSlotIds = useMemo(() => {
+    const occupied = new Set<string>();
+    if (!court || weekday === "") return occupied;
+
+    const day = Number(weekday);
+    for (const fixed of fixedBookingsData?.data ?? []) {
+      if (fixed.status !== "active") continue;
+      if (fixed.weekday !== day) continue;
+      if (refId(fixed.court) !== court) continue;
+      if (editing && fixed._id === editing._id) continue;
+      const slotId = refId(fixed.timeSlot);
+      if (slotId) occupied.add(slotId);
+    }
+
+    return occupied;
+  }, [court, weekday, fixedBookingsData, editing]);
+
+  const availableSlots = useMemo(
+    () => slots.filter((slot) => !occupiedSlotIds.has(slot._id)),
+    [slots, occupiedSlotIds],
+  );
 
   const handleSubmit = async () => {
     if (!court || !timeSlot || weekday === "") {
@@ -202,12 +229,20 @@ export const FixedBookingModal = ({
                 size="lg"
                 classNames={fieldSelectClassNames.lg}
               >
-                {slots.map((slot) => (
+                {availableSlots.map((slot) => (
                   <SelectItem key={slot._id}>
                     {`${slot.startTime} – ${slot.endTime}`}
                   </SelectItem>
                 ))}
               </Select>
+              {!!court &&
+                weekday !== "" &&
+                slots.length > 0 &&
+                availableSlots.length === 0 && (
+                  <p className="text-sm text-on-surface-variant">
+                    No hay horarios disponibles para esta cancha ese día.
+                  </p>
+                )}
             </div>
           </div>
 
