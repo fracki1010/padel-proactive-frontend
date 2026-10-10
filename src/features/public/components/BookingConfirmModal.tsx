@@ -9,7 +9,7 @@ import {
 } from "@heroui/react";
 import { Clock, Copy, ExternalLink, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { publicService } from "../../../services/publicService";
+import { useCreateBooking, useRegeneratePaymentLink } from "../hooks/usePortalMutations";
 import { formatCountdown } from "../../../utils/formatters";
 import { openPaymentLink } from "../../../utils/openPaymentLink";
 
@@ -84,19 +84,22 @@ export const BookingConfirmModal = ({
   onDepositPending,
   onDepositLinkChange,
 }: Props) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
+  const createBooking = useCreateBooking(slug);
+  const regeneratePaymentLink = useRegeneratePaymentLink(slug);
   const [pending, setPending] = useState<PendingPayment | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   // Set when the backend rejects the hold as already expired (409).
   const [expiredLocally, setExpiredLocally] = useState(false);
+
+  // The modal is blocked while a mutation is in flight.
+  const isLoading = createBooking.isPending;
+  const isRegenerating = regeneratePaymentLink.isPending;
 
   // Clear the payment step whenever the modal is dismissed, so a fresh open
   // always starts from the confirmation step.
   useEffect(() => {
     if (!isOpen) {
       setPending(null);
-      setIsRegenerating(false);
       setSecondsLeft(null);
       setExpiredLocally(false);
     }
@@ -137,9 +140,8 @@ export const BookingConfirmModal = ({
 
   const handleConfirm = async () => {
     if (!court || !slot || !date) return;
-    setIsLoading(true);
     try {
-      const res = await publicService.createBooking(slug, {
+      const res = await createBooking.mutateAsync({
         courtId: court._id,
         slotId: slot._id,
         date,
@@ -192,8 +194,6 @@ export const BookingConfirmModal = ({
         onClose();
         onConflict?.();
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -214,9 +214,8 @@ export const BookingConfirmModal = ({
 
   const handleRegenerate = async () => {
     if (!pending) return;
-    setIsRegenerating(true);
     try {
-      const res = await publicService.regeneratePaymentLink(slug, pending.bookingId);
+      const res = await regeneratePaymentLink.mutateAsync(pending.bookingId);
       const link = res.data?.initPoint;
       if (!link) throw new Error("empty payment link");
       setPending((prev) => (prev ? { ...prev, link } : prev));
@@ -238,8 +237,6 @@ export const BookingConfirmModal = ({
           ? "El club no tiene el pago de seña disponible en este momento"
           : response?.data?.error || "No se pudo generar el link de pago. Intentá nuevamente.";
       addToast({ title: message, color: "danger" });
-    } finally {
-      setIsRegenerating(false);
     }
   };
 

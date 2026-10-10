@@ -11,12 +11,17 @@ import { signInWithPopup } from "firebase/auth";
 import { useState } from "react";
 import { firebaseAuth, googleProvider } from "../../../lib/firebase";
 import { useClientAuth } from "../../../context/ClientAuthContext";
-import { publicService } from "../../../services/publicService";
 import { PhoneInput, defaultPhone } from "./PhoneInput";
 import type { PhoneValue } from "./PhoneInput";
 import { normalizePhoneForApi } from "../../../utils/phone";
 import { fieldInputClassNames } from "../../../components/ui/fieldStyles";
 import { useIsDesktop } from "../../../hooks/useIsDesktop";
+import {
+  useCompleteRegistration,
+  useGoogleAuth,
+  useSendOtp,
+  useVerifyOtp,
+} from "../hooks/usePortalMutations";
 
 interface Props {
   isOpen: boolean;
@@ -57,6 +62,10 @@ const GoogleIcon = () => (
 export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => {
   const { loginClient } = useClientAuth();
   const isDesktop = useIsDesktop();
+  const sendOtpMutation = useSendOtp(slug);
+  const verifyOtpMutation = useVerifyOtp(slug);
+  const completeRegistrationMutation = useCompleteRegistration(slug);
+  const googleAuthMutation = useGoogleAuth(slug);
   const [step, setStep] = useState<Step>("phone");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -106,7 +115,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     setIsLoading(true);
     try {
       const { countryCode, localNumber } = normalizePhoneForApi(phone.countryCode, phone.localNumber);
-      const res = await publicService.sendOtp(slug, countryCode, localNumber);
+      const res = await sendOtpMutation.mutateAsync({ countryCode, localNumber });
       setMasked(res.data.masked);
       setStep("otp");
       addToast({ title: `Código enviado a WhatsApp ***${res.data.masked}`, color: "success" });
@@ -126,7 +135,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     setIsLoading(true);
     try {
       const { countryCode, localNumber } = normalizePhoneForApi(phone.countryCode, phone.localNumber);
-      const res = await publicService.verifyOtp(slug, { countryCode, localNumber, otp });
+      const res = await verifyOtpMutation.mutateAsync({ countryCode, localNumber, otp });
       if (res.data.needsName) {
         setStep("name");
         return;
@@ -148,7 +157,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     setIsLoading(true);
     try {
       const { countryCode, localNumber } = normalizePhoneForApi(phone.countryCode, phone.localNumber);
-      const res = await publicService.completeRegistration(slug, {
+      const res = await completeRegistrationMutation.mutateAsync({
         name,
         countryCode,
         localNumber,
@@ -166,7 +175,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     setIsLoading(true);
     try {
       const { countryCode, localNumber } = normalizePhoneForApi(phone.countryCode, phone.localNumber);
-      const res = await publicService.sendOtp(slug, countryCode, localNumber);
+      const res = await sendOtpMutation.mutateAsync({ countryCode, localNumber });
       setMasked(res.data.masked);
       addToast({ title: "Código reenviado", color: "success" });
     } catch (err) {
@@ -183,7 +192,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
       const result = await signInWithPopup(firebaseAuth, googleProvider);
       const idToken = await result.user.getIdToken();
 
-      const res = await publicService.googleAuth(slug, idToken);
+      const res = await googleAuthMutation.mutateAsync({ idToken });
 
       if (!res.data.needsPhone) {
         completeLogin(res.data.token, res.data.client);
@@ -211,7 +220,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     setIsLoading(true);
     try {
       const { countryCode, localNumber } = normalizePhoneForApi(googlePhone.countryCode, googlePhone.localNumber);
-      const res = await publicService.sendOtp(slug, countryCode, localNumber, true);
+      const res = await sendOtpMutation.mutateAsync({ countryCode, localNumber, googleFlow: true });
       setGoogleMasked(res.data.masked);
       setStep("google_otp");
       addToast({ title: `Código enviado a WhatsApp ***${res.data.masked}`, color: "success" });
@@ -231,10 +240,9 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     setIsLoading(true);
     try {
       const { countryCode, localNumber } = normalizePhoneForApi(googlePhone.countryCode, googlePhone.localNumber);
-      const res = await publicService.googleAuth(slug, googleIdToken, {
-        countryCode,
-        localNumber,
-        otp: googleOtp,
+      const res = await googleAuthMutation.mutateAsync({
+        idToken: googleIdToken,
+        phonePayload: { countryCode, localNumber, otp: googleOtp },
       });
       completeLogin(res.data.token, res.data.client);
     } catch (err) {
