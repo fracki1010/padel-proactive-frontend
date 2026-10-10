@@ -7,11 +7,12 @@ import {
   ModalHeader,
   addToast,
 } from "@heroui/react";
-import { Clock, Copy, ExternalLink, RefreshCw } from "lucide-react";
+import { Clock, Copy, ExternalLink, MessageSquare, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCreateBooking, useRegeneratePaymentLink } from "../hooks/usePortalMutations";
 import { formatCountdown } from "../../../utils/formatters";
 import { openPaymentLink } from "../../../utils/openPaymentLink";
+import type { BookingTransfer } from "../../../services/publicService";
 
 interface Slot {
   _id: string;
@@ -35,6 +36,9 @@ interface Props {
   date: string;
   clientName: string;
   holderId?: string;
+  // Club WhatsApp contact for the transfer-proof link (transfer seña). When
+  // missing the modal falls back to plain instructions without a button.
+  contactPhone?: string;
   onConfirmed: () => void;
   onConflict?: () => void;
   // Notifies the portal of a live deposit hold so the payment link stays
@@ -44,6 +48,7 @@ interface Props {
     amount: number;
     link: string;
     expiresAt: string | null;
+    transfer?: BookingTransfer;
   }) => void;
   // Keeps the portal banner's link in sync when it is refreshed here.
   onDepositLinkChange?: (link: string) => void;
@@ -57,6 +62,7 @@ interface PendingPayment {
   courtName: string;
   slotLabel: string;
   dateLabel: string;
+  transfer?: BookingTransfer;
 }
 
 const formatDate = (dateStr: string) => {
@@ -79,6 +85,7 @@ export const BookingConfirmModal = ({
   date,
   clientName,
   holderId,
+  contactPhone = "",
   onConfirmed,
   onConflict,
   onDepositPending,
@@ -149,11 +156,22 @@ export const BookingConfirmModal = ({
       });
       const data = res.data;
       const deposit = data?.deposit;
+      const transfer = data?.transfer;
+      const transferData =
+        transfer && Number(transfer.amount) > 0
+          ? {
+              amount: Number(transfer.amount),
+              alias: transfer.alias || "",
+              cbu: transfer.cbu || "",
+              holder: transfer.holder || "",
+            }
+          : undefined;
+      const isTransfer = Boolean(transferData);
 
       // Deposit required: hold the slot open and show the payment step instead
       // of closing. Non-deposit clubs keep the exact previous behaviour.
       if (deposit?.required && Number(deposit.amount) > 0 && deposit.status === "pendiente") {
-        const link = data?.payment?.initPoint || "";
+        const link = isTransfer ? "" : data?.payment?.initPoint || "";
         setExpiredLocally(false);
         setPending({
           bookingId: data._id,
@@ -163,15 +181,19 @@ export const BookingConfirmModal = ({
           courtName: court.name,
           slotLabel: slot.label || `${slot.startTime} - ${slot.endTime}`,
           dateLabel: formatDate(date),
+          transfer: transferData,
         });
         onDepositPending?.({
           bookingId: data._id,
           amount: Number(deposit.amount),
           link,
           expiresAt: deposit.expiresAt ?? null,
+          ...(transferData ? { transfer: transferData } : {}),
         });
         addToast({
-          title: "Turno retenido. Pagá la seña para confirmarlo",
+          title: isTransfer
+            ? "Turno retenido. Enviá la seña por transferencia"
+            : "Turno retenido. Pagá la seña para confirmarlo",
           color: "warning",
         });
         onConfirmed();
@@ -243,6 +265,23 @@ export const BookingConfirmModal = ({
   if (!pending && (!court || !slot)) return null;
 
   const hasLink = Boolean(pending?.link);
+  const isTransferMode = Boolean(pending?.transfer);
+  const transferPhoneDigits = (contactPhone || "").replace(/\D/g, "");
+  const buildTransferWhatsAppUrl = (): string | null => {
+    if (!transferPhoneDigits || !pending) return null;
+    const message = [
+      `Hola! Soy ${clientName}.`,
+      `Te envié el comprobante de la seña de $${pending.amount.toLocaleString("es-AR")} para mi reserva.`,
+      `Cancha: ${pending.courtName}`,
+      `Horario: ${pending.slotLabel}`,
+      `Fecha: ${pending.dateLabel}`,
+      "Gracias!",
+    ]
+      .filter(Boolean)
+      .join("\n");
+    return `https://wa.me/${transferPhoneDigits}?text=${encodeURIComponent(message)}`;
+  };
+  const transferWhatsAppUrl = isTransferMode ? buildTransferWhatsAppUrl() : null;
 
   return (
     <Modal
@@ -258,7 +297,7 @@ export const BookingConfirmModal = ({
           <>
             <ModalHeader className="flex items-center gap-2">
               <Clock size={18} className="text-warning" />
-              Pagá la seña
+              {isTransferMode ? "Enviá la seña por transferencia" : "Pagá la seña"}
             </ModalHeader>
             <ModalBody>
               <div className="flex flex-col gap-3">
@@ -294,58 +333,122 @@ export const BookingConfirmModal = ({
                       ? "El plazo para pagar la seña venció; el turno se libera automáticamente."
                       : shownSeconds === null
                         ? "Calculando tiempo restante…"
-                        : `Tenés ${formatCountdown(shownSeconds)} para completar el pago.`}
+                        : `Tenés ${formatCountdown(shownSeconds)} para completar el envío.`}
                   </p>
                 )}
 
-                <p className="text-xs text-default-400 text-center">
-                  El pago se realiza en MercadoPago. La seña se descuenta del precio del turno
-                  y queda sujeta a la política de cancelación del club.
-                </p>
-
-                {pending.link && (
-                  <div className="flex items-center gap-2 rounded-lg border border-default-200 bg-default-100 px-3 py-2">
-                    <span className="text-xs text-default-500 truncate flex-1">{pending.link}</span>
-                    <Button
-                      isIconOnly
-                      size="sm"
-                      variant="light"
-                      onPress={handleCopy}
-                      aria-label="Copiar link de pago"
-                      title="Copiar link de pago"
-                    >
-                      <Copy size={15} />
-                    </Button>
+                {isTransferMode && pending.transfer ? (
+                  <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-4 flex flex-col gap-2 text-sm">
+                    <p className="text-emerald-700 dark:text-emerald-300 font-bold">
+                      Enviá la seña de{" "}
+                      <span className="font-black">
+                        ${pending.amount.toLocaleString("es-AR")}
+                      </span>
+                      {pending.transfer.alias ? (
+                        <>
+                          {" "}
+                          al alias{" "}
+                          <span className="font-black tracking-wide">
+                            {pending.transfer.alias}
+                          </span>
+                        </>
+                      ) : null}
+                      {!pending.transfer.alias && pending.transfer.cbu ? (
+                        <>
+                          {" "}
+                          al CBU{" "}
+                          <span className="font-black tracking-wide">
+                            {pending.transfer.cbu}
+                          </span>
+                        </>
+                      ) : null}
+                      {pending.transfer.holder ? (
+                        <>
+                          {" "}
+                          (Titular: {pending.transfer.holder})
+                        </>
+                      ) : null}
+                      . Cuando esté, mandanos el comprobante por WhatsApp.
+                    </p>
+                    {pending.transfer.cbu && pending.transfer.alias ? (
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                        CBU: {pending.transfer.cbu}
+                      </p>
+                    ) : null}
                   </div>
+                ) : (
+                  <>
+                    <p className="text-xs text-default-400 text-center">
+                      El pago se realiza en MercadoPago. La seña se descuenta del precio del turno
+                      y queda sujeta a la política de cancelación del club.
+                    </p>
+
+                    {pending.link && (
+                      <div className="flex items-center gap-2 rounded-lg border border-default-200 bg-default-100 px-3 py-2">
+                        <span className="text-xs text-default-500 truncate flex-1">{pending.link}</span>
+                        <Button
+                          isIconOnly
+                          size="sm"
+                          variant="light"
+                          onPress={handleCopy}
+                          aria-label="Copiar link de pago"
+                          title="Copiar link de pago"
+                        >
+                          <Copy size={15} />
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </ModalBody>
             <ModalFooter className="flex-col gap-2">
-              {!isExpired && (
-                <Button
-                  color="primary"
-                  className="w-full font-bold"
-                  startContent={hasLink ? <ExternalLink size={16} /> : <RefreshCw size={16} />}
-                  onPress={hasLink ? handlePay : handleRegenerate}
-                  isLoading={isRegenerating && !hasLink}
-                >
-                  {hasLink ? "Pagar seña" : "Generar link de pago"}
-                </Button>
+              {isTransferMode ? (
+                <>
+                  {transferWhatsAppUrl ? (
+                    <Button
+                      color="success"
+                      className="w-full font-bold"
+                      startContent={<MessageSquare size={16} />}
+                      onPress={() => window.open(transferWhatsAppUrl, "_blank")}
+                      isDisabled={isExpired}
+                    >
+                      Enviar comprobante por WhatsApp
+                    </Button>
+                  ) : null}
+                  <Button variant="light" className="w-full" onPress={handleClose}>
+                    Cerrar
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {!isExpired && (
+                    <Button
+                      color="primary"
+                      className="w-full font-bold"
+                      startContent={hasLink ? <ExternalLink size={16} /> : <RefreshCw size={16} />}
+                      onPress={hasLink ? handlePay : handleRegenerate}
+                      isLoading={isRegenerating && !hasLink}
+                    >
+                      {hasLink ? "Pagar seña" : "Generar link de pago"}
+                    </Button>
+                  )}
+                  {!isExpired && hasLink && (
+                    <Button
+                      variant="flat"
+                      className="w-full"
+                      startContent={<RefreshCw size={15} />}
+                      onPress={handleRegenerate}
+                      isLoading={isRegenerating}
+                    >
+                      Re-generar link
+                    </Button>
+                  )}
+                  <Button variant="light" className="w-full" onPress={handleClose}>
+                    Cerrar
+                  </Button>
+                </>
               )}
-              {!isExpired && hasLink && (
-                <Button
-                  variant="flat"
-                  className="w-full"
-                  startContent={<RefreshCw size={15} />}
-                  onPress={handleRegenerate}
-                  isLoading={isRegenerating}
-                >
-                  Re-generar link
-                </Button>
-              )}
-              <Button variant="light" className="w-full" onPress={handleClose}>
-                Cerrar
-              </Button>
             </ModalFooter>
           </>
         ) : (

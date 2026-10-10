@@ -23,4 +23,11 @@ export const bookingService = {
     const response = await api.put(`/bookings/${id}`, data);
     return response.data;
   },
+
+  // Admin confirms that a transfer seña (deposit method "transfer") was
+  // received. The backend confirms the booking and notifies the client.
+  confirmDepositReceived: async (id: string) => {
+    const response = await api.post(`/bookings/${id}/deposit-received`);
+    return response.data;
+  },
 };

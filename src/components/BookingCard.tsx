@@ -12,12 +12,14 @@ const statusColorMap: Record<string, string> = {
   confirmado: "bg-primary text-black dark:text-white",
   reservado: "bg-orange-500 text-white",
   cancelado: "bg-red-500 text-white",
+  pendiente_seña: "bg-amber-500 text-black",
 };
 
 const statusLabelMap: Record<string, string> = {
   confirmado: "PAGO",
   reservado: "PENDIENTE",
   cancelado: "CANCELADO",
+  pendiente_seña: "SEÑA",
 };
 
 export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
@@ -92,6 +94,16 @@ export const BookingCard = ({ booking, onClick }: BookingCardProps) => {
                 FIJO
               </Chip>
             )}
+            {booking.status === "pendiente_seña" &&
+              booking.deposit?.method === "transfer" && (
+                <Chip
+                  size="sm"
+                  className="bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 h-5 px-2 text-[10px] font-semibold shrink-0 rounded-lg"
+                  radius="sm"
+                >
+                  SEÑA PENDIENTE (TRANSFERENCIA)
+                </Chip>
+              )}
           </div>
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs">

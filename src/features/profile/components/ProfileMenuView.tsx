@@ -282,8 +282,8 @@ export const ProfileMenuView = ({
 
             <MenuItemButton
               onPress={onGoToDeposits}
-              title="Seña por MercadoPago"
-              subtitle="Cobros y credenciales"
+              title="Seña y pagos"
+              subtitle="Transferencia o MercadoPago"
               icon={<Wallet size={18} />}
               iconClassName="w-10 h-10 bg-sky-500/10 rounded-xl flex items-center justify-center text-sky-400 group-hover:bg-sky-500 group-hover:text-black transition-all"
             />

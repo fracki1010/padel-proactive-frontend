@@ -1,23 +1,42 @@
-import { Button, Card, CardBody, Chip, Input, Switch } from "@heroui/react";
+import {
+  Button,
+  Card,
+  CardBody,
+  Chip,
+  Input,
+  Radio,
+  RadioGroup,
+  Switch,
+} from "@heroui/react";
 import {
   ChevronLeft,
   KeyRound,
+  Landmark,
   Save,
   ShieldCheck,
   Trash2,
   Wallet,
 } from "lucide-react";
 
+import type { DepositMethod } from "../../../services/configService";
+
 type DepositSettingsViewProps = {
   depositEnabled: boolean;
   depositAmountInput: string;
   holdMinutesInput: string;
+  depositMethodInput: DepositMethod;
+  depositAliasInput: string;
+  depositCbuInput: string;
+  depositHolderInput: string;
   accessTokenInput: string;
   credentialConfigured: boolean;
   credentialMasked: string;
   credentialMpUserId: string;
   maxDepositAmount: number;
   maxHoldMinutes: number;
+  maxDepositAlias: number;
+  maxDepositCbu: number;
+  maxDepositHolder: number;
   isLoading: boolean;
   isSavingSettings: boolean;
   isSavingCredential: boolean;
@@ -26,6 +45,10 @@ type DepositSettingsViewProps = {
   onToggleDepositEnabled: (enabled: boolean) => void;
   onDepositAmountChange: (value: string) => void;
   onHoldMinutesChange: (value: string) => void;
+  onDepositMethodChange: (method: DepositMethod) => void;
+  onDepositAliasChange: (value: string) => void;
+  onDepositCbuChange: (value: string) => void;
+  onDepositHolderChange: (value: string) => void;
   onAccessTokenChange: (value: string) => void;
   onSaveSettings: () => void;
   onSaveCredential: () => void;
@@ -42,12 +65,19 @@ export const DepositSettingsView = ({
   depositEnabled,
   depositAmountInput,
   holdMinutesInput,
+  depositMethodInput,
+  depositAliasInput,
+  depositCbuInput,
+  depositHolderInput,
   accessTokenInput,
   credentialConfigured,
   credentialMasked,
   credentialMpUserId,
   maxDepositAmount,
   maxHoldMinutes,
+  maxDepositAlias,
+  maxDepositCbu,
+  maxDepositHolder,
   isLoading,
   isSavingSettings,
   isSavingCredential,
@@ -56,6 +86,10 @@ export const DepositSettingsView = ({
   onToggleDepositEnabled,
   onDepositAmountChange,
   onHoldMinutesChange,
+  onDepositMethodChange,
+  onDepositAliasChange,
+  onDepositCbuChange,
+  onDepositHolderChange,
   onAccessTokenChange,
   onSaveSettings,
   onSaveCredential,
@@ -72,8 +106,16 @@ export const DepositSettingsView = ({
     Number.isInteger(parsedHoldMinutes) &&
     parsedHoldMinutes >= 1 &&
     parsedHoldMinutes <= maxHoldMinutes;
+  const alias = depositAliasInput.trim();
+  const cbu = depositCbuInput.trim();
+  const isTransferDataValid =
+    depositMethodInput !== "transfer" || Boolean(alias) || Boolean(cbu);
   const canSaveSettings =
-    isAmountValid && isHoldValid && !isSavingSettings && !isLoading;
+    isAmountValid &&
+    isHoldValid &&
+    isTransferDataValid &&
+    !isSavingSettings &&
+    !isLoading;
   const canSaveCredential =
     accessTokenInput.trim().length > 0 && !isSavingCredential && !isLoading;
   const statusLabel = credentialConfigured ? "Configurado" : "No configurado";
@@ -91,7 +133,7 @@ export const DepositSettingsView = ({
           <ChevronLeft size={20} />
         </Button>
         <h3 className="text-xl font-black text-foreground uppercase italic">
-          Seña por MercadoPago
+          Seña y pagos
         </h3>
         {isLoading ? (
           <Chip
@@ -162,6 +204,77 @@ export const DepositSettingsView = ({
               />
             </div>
 
+            <RadioGroup
+              value={depositMethodInput}
+              onValueChange={(value) =>
+                onDepositMethodChange(value as DepositMethod)
+              }
+              orientation="horizontal"
+              isDisabled={isLoading}
+              className="gap-3"
+            >
+              <Radio
+                value="transfer"
+                description="Sin costo: el cliente transfiere y te avisa por WhatsApp."
+              >
+                Transferencia (gratis)
+              </Radio>
+              <Radio
+                value="mercadopago"
+                description="Link de pago con Checkout Pro de MercadoPago."
+              >
+                MercadoPago
+              </Radio>
+            </RadioGroup>
+
+            {depositMethodInput === "transfer" ? (
+              <div className="space-y-3 animate-in fade-in duration-200">
+                <div className="flex items-center gap-2">
+                  <Landmark size={16} className="text-emerald-500" />
+                  <p className="text-[11px] font-black text-on-surface-variant uppercase tracking-widest">
+                    Datos de la cuenta para transferencia
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <Input
+                    label="Alias"
+                    labelPlacement="outside"
+                    value={depositAliasInput}
+                    onValueChange={onDepositAliasChange}
+                    placeholder="club.padel"
+                    maxLength={maxDepositAlias}
+                    isDisabled={isLoading}
+                    classNames={fieldClassNames}
+                  />
+                  <Input
+                    label="CBU"
+                    labelPlacement="outside"
+                    value={depositCbuInput}
+                    onValueChange={onDepositCbuChange}
+                    placeholder="0000003100000000000001"
+                    maxLength={maxDepositCbu}
+                    isDisabled={isLoading}
+                    classNames={fieldClassNames}
+                  />
+                </div>
+                <Input
+                  label="Titular de la cuenta"
+                  labelPlacement="outside"
+                  value={depositHolderInput}
+                  onValueChange={onDepositHolderChange}
+                  placeholder="Nombre y apellido / razón social"
+                  maxLength={maxDepositHolder}
+                  isDisabled={isLoading}
+                  className="flex-grow"
+                  classNames={fieldClassNames}
+                />
+                <p className="text-[11px] text-on-surface-variant">
+                  Estos datos se muestran al cliente en el portal para que
+                  transfiera la seña y envíe el comprobante por WhatsApp.
+                </p>
+              </div>
+            ) : null}
+
             <Button
               className="h-12 w-full sm:w-auto bg-primary text-black dark:text-white rounded-md font-black uppercase"
               onPress={onSaveSettings}
@@ -178,81 +291,89 @@ export const DepositSettingsView = ({
             </p>
           </div>
 
-          <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md p-4 space-y-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <KeyRound size={18} className="text-sky-300" />
-                <p className="text-sm font-black text-foreground uppercase tracking-wide">
-                  Credencial de MercadoPago
-                </p>
+          {depositMethodInput === "mercadopago" ? (
+            <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md p-4 space-y-4 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <KeyRound size={18} className="text-sky-300" />
+                  <p className="text-sm font-black text-foreground uppercase tracking-wide">
+                    Credencial de MercadoPago
+                  </p>
+                </div>
+                <Chip
+                  color={credentialConfigured ? "success" : "default"}
+                  size="sm"
+                  variant="flat"
+                  className="font-bold uppercase"
+                >
+                  {statusLabel}
+                </Chip>
               </div>
-              <Chip
-                color={credentialConfigured ? "success" : "default"}
-                size="sm"
-                variant="flat"
-                className="font-bold uppercase"
-              >
-                {statusLabel}
-              </Chip>
-            </div>
 
-            {credentialConfigured ? (
-              <div className="flex items-center gap-2 text-foreground font-bold">
-                <ShieldCheck size={16} className="text-emerald-400" />
-                <span className="tracking-[0.3em]">{credentialMasked}</span>
-                {credentialMpUserId ? (
-                  <span className="text-[11px] text-on-surface-variant font-bold">
-                    MP user: {credentialMpUserId}
-                  </span>
+              {credentialConfigured ? (
+                <div className="flex items-center gap-2 text-foreground font-bold">
+                  <ShieldCheck size={16} className="text-emerald-400" />
+                  <span className="tracking-[0.3em]">{credentialMasked}</span>
+                  {credentialMpUserId ? (
+                    <span className="text-[11px] text-on-surface-variant font-bold">
+                      MP user: {credentialMpUserId}
+                    </span>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="text-[11px] text-on-surface-variant">
+                  Todavía no hay un Access Token configurado para este club.
+                </p>
+              )}
+
+              <Input
+                label="Access Token (solo escritura)"
+                labelPlacement="outside"
+                value={accessTokenInput}
+                onValueChange={onAccessTokenChange}
+                placeholder="APP_USR-..."
+                type="password"
+                autoComplete="off"
+                isDisabled={isLoading}
+                className="flex-grow"
+                classNames={fieldClassNames}
+              />
+
+              <p className="text-[11px] text-on-surface-variant">
+                El token se guarda encriptado y nunca se vuelve a mostrar. Al
+                guardar uno nuevo se reemplaza el anterior.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  className="h-12 bg-sky-300 text-black rounded-md font-black uppercase"
+                  onPress={onSaveCredential}
+                  isLoading={isSavingCredential}
+                  isDisabled={!canSaveCredential}
+                  startContent={<Save size={18} />}
+                >
+                  {credentialConfigured ? "Actualizar token" : "Guardar token"}
+                </Button>
+                {credentialConfigured ? (
+                  <Button
+                    className="h-12 bg-red-500/10 text-red-500 border border-red-500/20 rounded-md font-black uppercase"
+                    onPress={onDeleteCredential}
+                    isLoading={isDeletingCredential}
+                    isDisabled={isDeletingCredential || isLoading}
+                    startContent={<Trash2 size={18} />}
+                  >
+                    Desactivar
+                  </Button>
                 ) : null}
               </div>
-            ) : (
-              <p className="text-[11px] text-on-surface-variant">
-                Todavía no hay un Access Token configurado para este club.
-              </p>
-            )}
-
-            <Input
-              label="Access Token (solo escritura)"
-              labelPlacement="outside"
-              value={accessTokenInput}
-              onValueChange={onAccessTokenChange}
-              placeholder="APP_USR-..."
-              type="password"
-              autoComplete="off"
-              isDisabled={isLoading}
-              className="flex-grow"
-              classNames={fieldClassNames}
-            />
-
-            <p className="text-[11px] text-on-surface-variant">
-              El token se guarda encriptado y nunca se vuelve a mostrar. Al
-              guardar uno nuevo se reemplaza el anterior.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button
-                className="h-12 bg-sky-300 text-black rounded-md font-black uppercase"
-                onPress={onSaveCredential}
-                isLoading={isSavingCredential}
-                isDisabled={!canSaveCredential}
-                startContent={<Save size={18} />}
-              >
-                {credentialConfigured ? "Actualizar token" : "Guardar token"}
-              </Button>
-              {credentialConfigured ? (
-                <Button
-                  className="h-12 bg-red-500/10 text-red-500 border border-red-500/20 rounded-md font-black uppercase"
-                  onPress={onDeleteCredential}
-                  isLoading={isDeletingCredential}
-                  isDisabled={isDeletingCredential || isLoading}
-                  startContent={<Trash2 size={18} />}
-                >
-                  Desactivar
-                </Button>
-              ) : null}
             </div>
-          </div>
+          ) : (
+            <p className="text-[11px] text-on-surface-variant px-1">
+              La credencial de MercadoPago queda guardada pero no se usa mientras
+              la seña se cobre por transferencia. Podés cambiar el método cuando
+              quieras.
+            </p>
+          )}
         </CardBody>
       </Card>
     </div>

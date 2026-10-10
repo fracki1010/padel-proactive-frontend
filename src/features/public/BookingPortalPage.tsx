@@ -17,6 +17,7 @@ import { MyBookingsDrawer } from "./components/MyBookingsDrawer";
 import { SlotSkeleton } from "./components/SlotSkeleton";
 import { useAcquireSlotLock, useRegeneratePaymentLink, useReleaseSlotLock } from "./hooks/usePortalMutations";
 import { useClubInfo, usePortalAnnouncements, usePortalAvailability } from "./hooks/usePortalQueries";
+import type { BookingTransfer } from "../../services/publicService";
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -53,6 +54,7 @@ interface PendingDeposit {
   amount: number;
   link: string;
   expiresAt: string | null;
+  transfer?: BookingTransfer;
 }
 
 // ─── Helpers de fecha ────────────────────────────────────────────────────────
@@ -923,8 +925,13 @@ export const BookingPortalPage = () => {
                     ? ` · ${formatCountdown(seconds)}`
                     : ""}
                 </p>
+                {pendingDeposit.transfer ? (
+                  <p className="text-[11px] text-on-surface-variant font-semibold truncate">
+                    Transferencia: enviá el comprobante por WhatsApp
+                  </p>
+                ) : null}
               </div>
-              {!expired && (
+              {!expired && !pendingDeposit.transfer && (
                 <Button
                   color="primary"
                   radius="lg"
@@ -970,6 +977,7 @@ export const BookingPortalPage = () => {
             date={selectedDate}
             clientName={clientUser?.name || ""}
             holderId={holderId}
+            contactPhone={clubInfo?.club?.contactPhone ?? ""}
             onConfirmed={handleBookingConfirmed}
             onConflict={handleBookingConflict}
             onDepositPending={handleDepositPending}

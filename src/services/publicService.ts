@@ -50,10 +50,18 @@ export interface BookingDeposit {
   amount: number;
   expiresAt: string | null;
   refundable?: boolean;
+  method?: "transfer" | "mercadopago";
 }
 
 export interface BookingPayment {
   initPoint: string;
+}
+
+export interface BookingTransfer {
+  amount: number;
+  alias: string;
+  cbu: string;
+  holder: string;
 }
 
 export interface CreatedBooking {
@@ -61,6 +69,7 @@ export interface CreatedBooking {
   status: string;
   deposit?: BookingDeposit;
   payment?: BookingPayment;
+  transfer?: BookingTransfer;
   [key: string]: unknown;
 }
 
