@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Input,
   Select,
@@ -16,7 +16,9 @@ import {
   useSlots,
   useCreateBooking,
   useUsers,
+  useBookings,
 } from "../hooks/useData";
+import { useFixedBookings } from "../features/fixed-bookings/hooks/useFixedBookings";
 import {
   CheckCircle2,
   AlertCircle,
@@ -58,6 +60,25 @@ const normalizeName = (name: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, " ");
 
+// Bookings store `date` as UTC midnight, so a calendar date's weekday must be
+// derived in UTC (the backend assigns fixed turns using the UTC-midnight day).
+const toDateKey = (value?: string | null): string =>
+  value ? value.slice(0, 10) : "";
+
+const getUtcWeekday = (dateKey: string): number | null => {
+  if (!dateKey) return null;
+  const parsed = new Date(`${dateKey}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.getUTCDay();
+};
+
+const extractId = (
+  ref: { _id?: string } | string | null | undefined,
+): string => {
+  if (!ref) return "";
+  return typeof ref === "string" ? ref : (ref._id ?? "");
+};
+
 export const BookingForm = ({
   initialData,
   onCancel,
@@ -68,6 +89,8 @@ export const BookingForm = ({
   const { data: courtsData } = useCourts();
   const { data: slotsData } = useSlots();
   const { data: usersData } = useUsers();
+  const { data: fixedBookingsData } = useFixedBookings();
+  const { data: bookingsData } = useBookings(undefined, true);
   const createMutation = useCreateBooking();
 
   const [courtId, setCourtId] = useState("");
@@ -83,8 +106,51 @@ export const BookingForm = ({
   const [success, setSuccess] = useState("");
 
   const courts = courtsData?.data || [];
-  const slots = slotsData?.data || [];
   const users = usersData?.data || [];
+
+  // Slots already taken for the selected court + date, by fixed turn or booking.
+  const dateKey = toDateKey(date);
+  const occupiedSlotIds = useMemo(() => {
+    const occupied = new Set<string>();
+    if (!courtId || !dateKey) return occupied;
+
+    const weekday = getUtcWeekday(dateKey);
+
+    for (const fixed of fixedBookingsData?.data ?? []) {
+      if (fixed.status !== "active") continue;
+      if (weekday === null || fixed.weekday !== weekday) continue;
+      if (extractId(fixed.court) !== courtId) continue;
+      const slotId = extractId(fixed.timeSlot);
+      if (slotId) occupied.add(slotId);
+    }
+
+    for (const booking of bookingsData?.data ?? []) {
+      // The booking being edited must stay selectable so the prefilled slot is visible.
+      if (booking._id === initialData?._id) continue;
+      if (booking.status === "cancelado") continue;
+      if (extractId(booking.court) !== courtId) continue;
+      if (toDateKey(booking.date) !== dateKey) continue;
+      const slotId = extractId(booking.timeSlot);
+      if (slotId) occupied.add(slotId);
+    }
+
+    return occupied;
+  }, [courtId, dateKey, fixedBookingsData, bookingsData, initialData]);
+
+  const availableSlots = useMemo(
+    () =>
+      (slotsData?.data ?? []).filter(
+        (slot) => !occupiedSlotIds.has(slot._id),
+      ),
+    [slotsData, occupiedSlotIds],
+  );
+
+  // The turn actually selectable: a previously chosen time that is no longer
+  // available (e.g. date changed to an occupied day) is treated as unset.
+  const activeTime =
+    !!time && availableSlots.some((slot) => slot.startTime === time)
+      ? time
+      : "";
 
   useEffect(() => {
     if (initialData) {
@@ -133,7 +199,7 @@ export const BookingForm = ({
     );
     const existingUser = existingUserByName || existingUserByPhone;
 
-    if (!courtId || !date || !time || !trimmedClientPhone) {
+    if (!courtId || !date || !activeTime || !trimmedClientPhone) {
       const msg = "Completá cancha, fecha, turno y teléfono para continuar.";
       setError(msg);
       addToast({ title: msg, color: "warning" });
@@ -152,7 +218,7 @@ export const BookingForm = ({
       {
         courtId,
         date,
-        time,
+        time: activeTime,
         clientName: existingUser?.name || trimmedClientName,
         clientPhone: trimmedClientPhone,
         paymentStatus,
@@ -395,7 +461,7 @@ export const BookingForm = ({
               label="Turno (Horario)"
               placeholder="Seleccionar turno"
               labelPlacement="outside"
-              selectedKeys={time ? [time] : []}
+              selectedKeys={activeTime ? [activeTime] : []}
               onSelectionChange={(keys) =>
                 setTime(Array.from(keys)[0] as string)
               }
@@ -408,7 +474,7 @@ export const BookingForm = ({
               }}
               startContent={<Clock size={18} className="text-on-surface-variant" />}
             >
-              {slots.map((s) => (
+              {availableSlots.map((s) => (
                 <SelectItem
                   key={s.startTime}
                   textValue={s.startTime}
@@ -418,6 +484,11 @@ export const BookingForm = ({
                 </SelectItem>
               ))}
             </Select>
+            {!!courtId && !!date && availableSlots.length === 0 && (
+              <p className="text-xs text-on-surface-variant font-semibold px-1">
+                No hay horarios disponibles para esta cancha ese día.
+              </p>
+            )}
           </div>
         </section>
 
