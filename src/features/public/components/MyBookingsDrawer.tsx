@@ -17,12 +17,12 @@ import { AlertTriangle, Clock, CreditCard, History, MessageCircle, Phone } from 
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  publicService,
   type BookingDeposit,
   type DepositStatus,
 } from "../../../services/publicService";
 import { openPaymentLink } from "../../../utils/openPaymentLink";
 import { useIsDesktop } from "../../../hooks/useIsDesktop";
+import { useCancelBooking, useRegeneratePaymentLink } from "../hooks/usePortalMutations";
 import {
   useMyBookings,
   type PortalMyBookings,
@@ -178,6 +178,8 @@ const BookingCard = ({
 export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cancellationLockHours, contactPhone }: Props) => {
   const isDesktop = useIsDesktop();
   const queryClient = useQueryClient();
+  const cancelMutation = useCancelBooking(slug);
+  const payMutation = useRegeneratePaymentLink(slug);
   const { data: myBookings, isFetching: isLoading, error } = useMyBookings(
     slug,
     isOpen && isAuthenticated,
@@ -222,11 +224,12 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
     setConfirmBooking(null);
     setCancellingId(id);
     try {
-      await publicService.cancelBooking(slug, id);
+      await cancelMutation.mutateAsync(id);
       addToast({ title: "Turno cancelado", color: "success" });
-      queryClient.invalidateQueries({ queryKey: ["portal-my-bookings", slug] });
-    } catch (err: any) {
-      const response = err?.response;
+    } catch (err: unknown) {
+      const response = (err as {
+        response?: { status?: number; data?: { error?: string; contactPhone?: string } };
+      })?.response;
       const data = response?.data;
       // Defense in depth: the backend may block a paid-deposit cancel even if
       // the local deposit snapshot was stale. Show the same club-contact modal.
@@ -249,7 +252,7 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
       // Mint a fresh link on demand: the list endpoint does not expose
       // `initPoint`, and a stale preference may have expired. `openPaymentLink`
       // falls back to copying the URL when the await loses the popup gesture.
-      const res = await publicService.regeneratePaymentLink(slug, booking._id);
+      const res = await payMutation.mutateAsync(booking._id);
       const link = res.data?.initPoint;
       if (!link) throw new Error("empty payment link");
       await openPaymentLink(link);

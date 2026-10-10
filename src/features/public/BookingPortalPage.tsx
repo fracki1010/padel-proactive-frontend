@@ -6,7 +6,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import logo from "../../assets/logo-8.svg";
 import { useClientAuth } from "../../context/ClientAuthContext";
 import { useAdaptiveHero } from "../../hooks/useAdaptiveHero";
-import { publicService } from "../../services/publicService";
 import { formatCountdown } from "../../utils/formatters";
 import { HAPTIC_BOOKING_CONFIRMED, HAPTIC_TAP, vibrate } from "../../utils/haptics";
 import { getHolderId } from "../../utils/holderId";
@@ -16,6 +15,7 @@ import { BookingConfirmModal } from "./components/BookingConfirmModal";
 import { ClientAuthModal } from "./components/ClientAuthModal";
 import { MyBookingsDrawer } from "./components/MyBookingsDrawer";
 import { SlotSkeleton } from "./components/SlotSkeleton";
+import { useAcquireSlotLock, useRegeneratePaymentLink, useReleaseSlotLock } from "./hooks/usePortalMutations";
 import { useClubInfo, usePortalAnnouncements, usePortalAvailability } from "./hooks/usePortalQueries";
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
@@ -129,6 +129,9 @@ export const BookingPortalPage = () => {
   const [isRegeneratingLink, setIsRegeneratingLink] = useState(false);
 
   const queryClient = useQueryClient();
+  const acquireLockMutation = useAcquireSlotLock(slug);
+  const releaseLockMutation = useReleaseSlotLock(slug);
+  const regenerateLinkMutation = useRegeneratePaymentLink(slug);
   const { data: clubInfo, isLoading: isLoadingInfo } = useClubInfo(slug);
   const { data: announcements = [] } = usePortalAnnouncements(slug);
   const { data: availability, isFetching: isLoadingAvail } = usePortalAvailability(
@@ -215,15 +218,11 @@ export const BookingPortalPage = () => {
   }, [pendingDeposit?.expiresAt]);
 
   const releaseLock = useCallback(
-    async (activeLock: ActiveLock | null) => {
+    (activeLock: ActiveLock | null) => {
       if (!slug || !activeLock) return;
-      try {
-        await publicService.releaseSlotLock(slug, activeLock.lockId, holderId);
-      } catch {
-        // The backend TTL releases it anyway.
-      }
+      releaseLockMutation.mutate({ lockId: activeLock.lockId, holderId });
     },
-    [slug, holderId],
+    [slug, holderId, releaseLockMutation],
   );
 
   const handleCourtSelect = async (court: Court, slot: Slot) => {
@@ -249,7 +248,7 @@ export const BookingPortalPage = () => {
     if (!slug) return;
 
     try {
-      const res = await publicService.acquireSlotLock(slug, {
+      const res = await acquireLockMutation.mutateAsync({
         courtId: court._id,
         slotId: slot._id,
         date: selectedDate,
@@ -329,7 +328,7 @@ export const BookingPortalPage = () => {
     if (!slug || !pendingDeposit) return;
     setIsRegeneratingLink(true);
     try {
-      const res = await publicService.regeneratePaymentLink(slug, pendingDeposit.bookingId);
+      const res = await regenerateLinkMutation.mutateAsync(pendingDeposit.bookingId);
       const link = res.data?.initPoint;
       if (!link) throw new Error("empty payment link");
       setPendingDeposit((prev) => (prev ? { ...prev, link } : prev));
