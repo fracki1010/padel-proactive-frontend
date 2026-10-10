@@ -2,11 +2,11 @@ import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner,
 import { Check, ChevronDown, Clock, Lock, LogIn, LogOut, Plus, Ticket, User, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import logo from "../../assets/logo-8.svg";
 import { useClientAuth } from "../../context/ClientAuthContext";
 import { useAdaptiveHero } from "../../hooks/useAdaptiveHero";
 import { publicService } from "../../services/publicService";
-import type { Announcement } from "../../types";
 import { formatCountdown } from "../../utils/formatters";
 import { HAPTIC_BOOKING_CONFIRMED, HAPTIC_TAP, vibrate } from "../../utils/haptics";
 import { getHolderId } from "../../utils/holderId";
@@ -16,6 +16,7 @@ import { BookingConfirmModal } from "./components/BookingConfirmModal";
 import { ClientAuthModal } from "./components/ClientAuthModal";
 import { MyBookingsDrawer } from "./components/MyBookingsDrawer";
 import { SlotSkeleton } from "./components/SlotSkeleton";
+import { useClubInfo, usePortalAnnouncements, usePortalAvailability } from "./hooks/usePortalQueries";
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -33,13 +34,6 @@ interface Slot {
   price: number;
   label?: string;
   order?: number;
-}
-
-interface AvailabilityItem {
-  courtId: string;
-  slotId: string;
-  available: boolean;
-  locked?: boolean;
 }
 
 interface SelectedSlot {
@@ -134,24 +128,14 @@ export const BookingPortalPage = () => {
   const [pendingSecondsLeft, setPendingSecondsLeft] = useState<number | null>(null);
   const [isRegeneratingLink, setIsRegeneratingLink] = useState(false);
 
-  const [clubInfo, setClubInfo] = useState<{
-    club: { name: string; address?: string; coverImage?: string; companyId?: string; contactPhone?: string };
-    courts: Court[];
-    slots: Slot[];
-    cancellationLockHours: number;
-  } | null>(null);
-
-  const [availability, setAvailability] = useState<{
-    closed: boolean;
-    closureReason?: string;
-    courts: Court[];
-    slots: Slot[];
-    availability: AvailabilityItem[];
-  } | null>(null);
-
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [isLoadingInfo, setIsLoadingInfo] = useState(true);
-  const [isLoadingAvail, setIsLoadingAvail] = useState(false);
+  const queryClient = useQueryClient();
+  const { data: clubInfo, isLoading: isLoadingInfo } = useClubInfo(slug);
+  const { data: announcements = [] } = usePortalAnnouncements(slug);
+  const { data: availability, isFetching: isLoadingAvail } = usePortalAvailability(
+    slug,
+    selectedDate,
+    holderId,
+  );
 
   const dateScrollRef = useRef<HTMLDivElement>(null);
   const setHeroRoot = useAdaptiveHero();
@@ -160,53 +144,38 @@ export const BookingPortalPage = () => {
   const { isOpen: isConfirmOpen, onOpen: openConfirm, onClose: closeConfirm } = useDisclosure();
   const { isOpen: isMyBookingsOpen, onOpen: openMyBookings, onClose: closeMyBookings } = useDisclosure();
 
+  // The club-info query carries the companyId the client token must belong to.
+  // Kept as a side effect reacting to the query data (not inside the queryFn)
+  // so the login check never blocks rendering of the portal data itself.
   useEffect(() => {
-    if (!slug) return;
-    setIsLoadingInfo(true);
-    publicService.getClubInfo(slug)
-      .then((r) => {
-        setClubInfo(r.data);
-        if (clientToken) {
-          try {
-            const parts = clientToken.split(".");
-            if (parts.length !== 3) throw new Error("malformed token");
-            const payload = JSON.parse(atob(parts[1]));
-            if (payload?.companyId && payload.companyId !== r.data?.club?.companyId) {
-              logoutClient();
-            }
-          } catch {
-            logoutClient();
-          }
-        }
-      })
-      .catch(() => setClubInfo(null))
-      .finally(() => setIsLoadingInfo(false));
-  }, [slug]);
+    if (!clubInfo || !clientToken) return;
+    try {
+      const parts = clientToken.split(".");
+      if (parts.length !== 3) throw new Error("malformed token");
+      const payload = JSON.parse(atob(parts[1]));
+      if (payload?.companyId && payload.companyId !== clubInfo.club?.companyId) {
+        logoutClient();
+      }
+    } catch {
+      logoutClient();
+    }
+  }, [clubInfo, clientToken, logoutClient]);
 
-  useEffect(() => {
-    if (!slug) return;
-    publicService
-      .getAnnouncements(slug)
-      .then((r) => setAnnouncements(r.data || []))
-      .catch(() => setAnnouncements([]));
-  }, [slug]);
-
-  const refreshAvailability = useCallback(() => {
-    if (!slug) return;
-    setIsLoadingAvail(true);
-    publicService.getAvailability(slug, selectedDate, holderId)
-      .then((r) => setAvailability(r.data))
-      .catch(() => setAvailability(null))
-      .finally(() => setIsLoadingAvail(false));
-  }, [slug, selectedDate, holderId]);
-
+  // The availability query refetches on its own when slug/date/holderId change;
+  // this effect only resets the selection state tied to the previous grid.
   useEffect(() => {
     if (!slug) return;
     setSelectedSlot(null);
     setLock(null);
     setExpandedSlotId(null);
-    refreshAvailability();
-  }, [slug, selectedDate, holderId, refreshAvailability]);
+  }, [slug, selectedDate, holderId]);
+
+  // Post-mutation refreshes (lock expiry, booking done/conflict) re-fetch the
+  // availability query instead of re-running the service call by hand.
+  const refreshAvailability = useCallback(() => {
+    if (!slug) return;
+    queryClient.invalidateQueries({ queryKey: ["portal-availability"] });
+  }, [slug, queryClient]);
 
   // Countdown for the temporary slot lock.
   useEffect(() => {

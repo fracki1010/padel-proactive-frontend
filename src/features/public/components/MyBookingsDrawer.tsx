@@ -15,6 +15,7 @@ import {
 } from "@heroui/react";
 import { AlertTriangle, Clock, CreditCard, History, MessageCircle, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   publicService,
   type BookingDeposit,
@@ -22,6 +23,10 @@ import {
 } from "../../../services/publicService";
 import { openPaymentLink } from "../../../utils/openPaymentLink";
 import { useIsDesktop } from "../../../hooks/useIsDesktop";
+import {
+  useMyBookings,
+  type PortalMyBookings,
+} from "../hooks/usePortalQueries";
 
 interface Booking {
   _id: string;
@@ -172,9 +177,13 @@ const BookingCard = ({
 
 export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cancellationLockHours, contactPhone }: Props) => {
   const isDesktop = useIsDesktop();
-  const [upcoming, setUpcoming] = useState<Booking[]>([]);
-  const [history, setHistory] = useState<Booking[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
+  const { data: myBookings, isFetching: isLoading, error } = useMyBookings(
+    slug,
+    isOpen && isAuthenticated,
+  );
+  const upcoming = myBookings?.upcoming ?? [];
+  const history = myBookings?.history ?? [];
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [payingId, setPayingId] = useState<string | null>(null);
   const [confirmBooking, setConfirmBooking] = useState<Booking | null>(null);
@@ -183,23 +192,12 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
   // The contact phone may come from the club info prop or the 409 response.
   const [paidDeposit, setPaidDeposit] = useState<{ booking: Booking; contactPhone: string } | null>(null);
 
-  const load = async () => {
-    if (!isAuthenticated) return;
-    setIsLoading(true);
-    try {
-      const res = await publicService.getMyBookings(slug);
-      setUpcoming(res.data?.upcoming || []);
-      setHistory(res.data?.history || []);
-    } catch {
-      addToast({ title: "No se pudieron cargar tus turnos", color: "danger" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Keep the same failure toast the manual fetch used to show.
   useEffect(() => {
-    if (isOpen) load();
-  }, [isOpen]);
+    if (error) {
+      addToast({ title: "No se pudieron cargar tus turnos", color: "danger" });
+    }
+  }, [error]);
 
   const handleCancelPress = (booking: Booking) => {
     // A paid seña never self-cancels: route the client to the club contact.
@@ -226,7 +224,7 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
     try {
       await publicService.cancelBooking(slug, id);
       addToast({ title: "Turno cancelado", color: "success" });
-      setUpcoming((prev) => prev.filter((b) => b._id !== id));
+      queryClient.invalidateQueries({ queryKey: ["portal-my-bookings", slug] });
     } catch (err: any) {
       const response = err?.response;
       const data = response?.data;
@@ -259,13 +257,21 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
       const response = (err as { response?: { data?: { error?: string; code?: string } } })?.response;
       const code = response?.data?.code;
       if (code === "DEPOSIT_EXPIRED") {
-        // Disable the pay action locally instead of only toasting.
-        setUpcoming((prev) =>
-          prev.map((b) =>
-            b._id === booking._id && b.deposit
-              ? { ...b, deposit: { ...b.deposit, status: "expirado" } }
-              : b,
-          ),
+        // Disable the pay action locally instead of only toasting: mirror the
+        // old local state update into the query cache so the list reflects it.
+        queryClient.setQueryData<PortalMyBookings>(
+          ["portal-my-bookings", slug],
+          (current) =>
+            current
+              ? {
+                  ...current,
+                  upcoming: current.upcoming.map((b) =>
+                    b._id === booking._id && b.deposit
+                      ? { ...b, deposit: { ...b.deposit, status: "expirado" } }
+                      : b,
+                  ),
+                }
+              : current,
         );
       }
       const message = code === "DEPOSIT_EXPIRED"
