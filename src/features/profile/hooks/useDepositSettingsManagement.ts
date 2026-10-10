@@ -1,6 +1,7 @@
 import { addToast } from "@heroui/react";
 import { useEffect, useRef, useState } from "react";
 
+import type { DepositMethod } from "../../../services/configService";
 import {
   useDeleteMercadoPagoCredential,
   useDepositSettings,
@@ -11,6 +12,9 @@ import {
 const MAX_DEPOSIT_AMOUNT = 10000000;
 const MAX_HOLD_MINUTES = 1440;
 const DEFAULT_HOLD_MINUTES = 15;
+const MAX_DEPOSIT_ALIAS = 120;
+const MAX_DEPOSIT_CBU = 64;
+const MAX_DEPOSIT_HOLDER = 120;
 
 const resolveErrorMessage = (err: unknown, fallback: string): string => {
   const responseError = (
@@ -32,6 +36,11 @@ export const useDepositSettingsManagement = () => {
   const [holdMinutesInput, setHoldMinutesInput] = useState(
     String(DEFAULT_HOLD_MINUTES),
   );
+  const [depositMethodInput, setDepositMethodInput] =
+    useState<DepositMethod>("transfer");
+  const [depositAliasInput, setDepositAliasInput] = useState("");
+  const [depositCbuInput, setDepositCbuInput] = useState("");
+  const [depositHolderInput, setDepositHolderInput] = useState("");
   const [accessTokenInput, setAccessTokenInput] = useState("");
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isSavingCredential, setIsSavingCredential] = useState(false);
@@ -53,6 +62,14 @@ export const useDepositSettingsManagement = () => {
     setHoldMinutesInput(
       String(depositSettingsData.holdMinutes ?? DEFAULT_HOLD_MINUTES),
     );
+    setDepositMethodInput(
+      depositSettingsData.depositMethod === "mercadopago"
+        ? "mercadopago"
+        : "transfer",
+    );
+    setDepositAliasInput(depositSettingsData.depositAlias ?? "");
+    setDepositCbuInput(depositSettingsData.depositCbu ?? "");
+    setDepositHolderInput(depositSettingsData.depositHolder ?? "");
   }, [depositSettingsData]);
 
   // Never keep the write-only token in memory once the view unmounts.
@@ -100,12 +117,49 @@ export const useDepositSettingsManagement = () => {
       return;
     }
 
+    const alias = depositAliasInput.trim();
+    const cbu = depositCbuInput.trim();
+    const holder = depositHolderInput.trim();
+
+    if (depositMethodInput === "transfer" && !alias && !cbu) {
+      addToast({
+        title: "Para cobrar por transferencia cargá al menos el Alias o el CBU.",
+        color: "danger",
+      });
+      return;
+    }
+    if (alias.length > MAX_DEPOSIT_ALIAS) {
+      addToast({
+        title: `El Alias no puede superar ${MAX_DEPOSIT_ALIAS} caracteres.`,
+        color: "danger",
+      });
+      return;
+    }
+    if (cbu.length > MAX_DEPOSIT_CBU) {
+      addToast({
+        title: `El CBU no puede superar ${MAX_DEPOSIT_CBU} caracteres.`,
+        color: "danger",
+      });
+      return;
+    }
+    if (holder.length > MAX_DEPOSIT_HOLDER) {
+      addToast({
+        title: `El Titular no puede superar ${MAX_DEPOSIT_HOLDER} caracteres.`,
+        color: "danger",
+      });
+      return;
+    }
+
     setIsSavingSettings(true);
     try {
       await updateDepositSettings.mutateAsync({
         depositEnabled: depositEnabledInput,
         depositAmount: parsedAmount,
         holdMinutes: parsedHoldMinutes,
+        depositMethod: depositMethodInput,
+        depositAlias: alias,
+        depositCbu: cbu,
+        depositHolder: holder,
       });
       addToast({ title: "Configuración de seña guardada", color: "success" });
     } catch (err: unknown) {
@@ -184,18 +238,29 @@ export const useDepositSettingsManagement = () => {
     depositEnabledInput,
     depositAmountInput,
     holdMinutesInput,
+    depositMethodInput,
+    depositAliasInput,
+    depositCbuInput,
+    depositHolderInput,
     accessTokenInput,
     credentialConfigured: Boolean(credentials?.configured),
     credentialMasked: credentials?.masked || "",
     credentialMpUserId: credentials?.mpUserId || "",
     maxDepositAmount: MAX_DEPOSIT_AMOUNT,
     maxHoldMinutes: MAX_HOLD_MINUTES,
+    maxDepositAlias: MAX_DEPOSIT_ALIAS,
+    maxDepositCbu: MAX_DEPOSIT_CBU,
+    maxDepositHolder: MAX_DEPOSIT_HOLDER,
     isSavingSettings,
     isSavingCredential,
     isDeletingCredential,
     onToggleDepositEnabled: setDepositEnabledInput,
     onDepositAmountChange: setDepositAmountInput,
     onHoldMinutesChange: setHoldMinutesInput,
+    onDepositMethodChange: setDepositMethodInput,
+    onDepositAliasChange: setDepositAliasInput,
+    onDepositCbuChange: setDepositCbuInput,
+    onDepositHolderChange: setDepositHolderInput,
     onAccessTokenChange: setAccessTokenInput,
     onSaveSettings: handleSaveSettings,
     onSaveCredential: handleSaveCredential,

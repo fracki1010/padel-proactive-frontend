@@ -49,10 +49,18 @@ export interface Booking {
     | "confirmado"
     | "cancelado"
     | "suspendido"
-    | "disponible";
+    | "disponible"
+    | "pendiente_seña";
   paymentStatus?: "pagado" | "pendiente";
   finalPrice: number;
   isFixed?: boolean;
+  deposit?: {
+    required?: boolean;
+    status?: string;
+    amount?: number;
+    method?: "transfer" | "mercadopago";
+    expiresAt?: string | null;
+  } | null;
   createdAt: string;
 }
 

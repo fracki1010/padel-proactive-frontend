@@ -302,10 +302,16 @@ export type DepositCredential = {
   mpUserId: string;
 };
 
+export type DepositMethod = "transfer" | "mercadopago";
+
 export type DepositSettings = {
   depositEnabled: boolean;
   depositAmount: number;
   holdMinutes: number;
+  depositMethod: DepositMethod;
+  depositAlias: string;
+  depositCbu: string;
+  depositHolder: string;
 };
 
 export type DepositSettingsResponse = DepositSettings & {
@@ -316,6 +322,10 @@ export type UpdateDepositSettingsPayload = {
   depositEnabled?: boolean;
   depositAmount?: number;
   holdMinutes?: number;
+  depositMethod?: DepositMethod;
+  depositAlias?: string;
+  depositCbu?: string;
+  depositHolder?: string;
 };
 
 export type SetMercadoPagoCredentialPayload = {

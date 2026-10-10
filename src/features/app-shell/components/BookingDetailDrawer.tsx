@@ -15,6 +15,7 @@ import {
 } from "@heroui/react";
 import {
   AlertTriangle,
+  BadgeCheck,
   Calendar,
   Clock,
   CreditCard,
@@ -24,6 +25,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { useConfirmDepositReceived } from "../../bookings/hooks/useBookingsData";
 import { getInitials, getAvatarColor } from "../../../utils/avatarUtils";
 import { formatDate, formatPhoneForDisplay } from "../../../utils/formatters";
 
@@ -48,6 +50,13 @@ export const BookingDetailDrawer = ({
 }: BookingDetailDrawerProps) => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [applyPenalty, setApplyPenalty] = useState(true);
+
+  // A transfer seña pending: the admin marks it received and the booking is
+  // confirmed (same client confirmation as a MercadoPago approval).
+  const confirmDepositReceived = useConfirmDepositReceived();
+  const isTransferSeñaPending =
+    selectedBooking?.status === "pendiente_seña" &&
+    selectedBooking?.deposit?.method === "transfer";
 
   return (
     <>
@@ -172,6 +181,43 @@ export const BookingDetailDrawer = ({
                 </div>
 
                 <div className="flex flex-col gap-4">
+                  {isTransferSeñaPending ? (
+                    <Button
+                      className="h-16 bg-emerald-500 text-white font-black text-lg rounded-md shadow-xl shadow-emerald-500/20"
+                      isLoading={confirmDepositReceived.isPending}
+                      isDisabled={updateBooking.isPending || deleteBooking.isPending}
+                      onPress={() => {
+                        confirmDepositReceived.mutate(selectedBooking._id, {
+                          onSuccess: (response: {
+                            success?: boolean;
+                            data?: unknown;
+                          }) => {
+                            setSelectedBooking(response.data);
+                            addToast({
+                              title: "Seña recibida: turno confirmado",
+                              color: "success",
+                            });
+                            onOpenChange(false);
+                          },
+                          onError: (err: unknown) => {
+                            addToast({
+                              title:
+                                (
+                                  err as {
+                                    response?: { data?: { error?: string } };
+                                  } | null
+                                )?.response?.data?.error ||
+                                "No se pudo confirmar la seña",
+                              color: "danger",
+                            });
+                          },
+                        });
+                      }}
+                      startContent={<BadgeCheck size={20} />}
+                    >
+                      SEÑA RECIBIDA
+                    </Button>
+                  ) : null}
                   {selectedBooking?.status === "suspendido" ? (
                     <Button
                       className="h-16 bg-red-500 text-white font-black text-lg rounded-md shadow-xl shadow-red-500/20"
