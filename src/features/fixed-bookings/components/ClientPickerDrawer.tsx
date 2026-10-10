@@ -8,14 +8,13 @@ import {
   Spinner,
 } from "@heroui/react";
 import { Search, User as UserIcon, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { fieldInputClassNames } from "../../../components/ui/fieldStyles";
-import { useUsers } from "../../../hooks/useData";
-import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
 import { useIsDesktop } from "../../../hooks/useIsDesktop";
 import type { User } from "../../../types";
 import { formatPhoneForDisplay } from "../../../utils/formatters";
+import { useClientSearch } from "../hooks/useClientSearch";
 
 type ClientPickerDrawerProps = {
   isOpen: boolean;
@@ -23,16 +22,16 @@ type ClientPickerDrawerProps = {
   onSelectClient: (user: User) => void;
 };
 
+const SEARCH_DEBOUNCE_MS = 300;
+
 export const ClientPickerDrawer = ({
   isOpen,
   onClose,
   onSelectClient,
 }: ClientPickerDrawerProps) => {
   const isDesktop = useIsDesktop();
-  const { data: usersData, isLoading: isLoadingUsers } = useUsers();
   const [searchQuery, setSearchQuery] = useState("");
-
-  const users = useMemo(() => usersData?.data ?? [], [usersData]);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Reiniciar la búsqueda cada vez que se abre el picker. Es el patrón de
   // "adjusting state during render" (react.dev/learn/you-might-not-need-an-effect)
@@ -40,27 +39,50 @@ export const ClientPickerDrawer = ({
   const [previousOpen, setPreviousOpen] = useState(isOpen);
   if (previousOpen !== isOpen) {
     setPreviousOpen(isOpen);
-    if (isOpen) setSearchQuery("");
+    if (isOpen) {
+      setSearchQuery("");
+      setDebouncedSearch("");
+    }
   }
 
-  const query = searchQuery.trim().toLowerCase();
+  // Debounce del término: recién después de 300ms sin escribir se dispara la
+  // búsqueda en el servidor, que reinicia desde la página 1.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery.trim());
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-  const filteredUsers = useMemo(() => {
-    if (!query) return users;
-    return users.filter(
-      (user: User) =>
-        user.name.toLowerCase().includes(query) ||
-        user.phoneNumber.includes(query),
+  const {
+    clients,
+    total,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useClientSearch(debouncedSearch);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // Infinite scroll del lado del servidor: cuando el sentinel entra en
+  // pantalla se pide la página siguiente si queda algo por cargar.
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
     );
-  }, [users, query]);
 
-  const { visibleCount, sentinelRef, hasMore } = useInfiniteScroll(
-    12,
-    12,
-    filteredUsers.length,
-  );
-
-  const visibleUsers = filteredUsers.slice(0, visibleCount);
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleSelect = (user: User) => {
     onSelectClient(user);
@@ -107,25 +129,24 @@ export const ClientPickerDrawer = ({
             classNames={fieldInputClassNames.lg}
           />
 
-          {isLoadingUsers ? (
-            <div className="flex justify-center py-12">
+          {isLoading ? (
+            <div className="flex flex-col items-center gap-3 py-12">
               <Spinner color="primary" />
+              <p className="text-on-surface-variant font-medium">Buscando...</p>
             </div>
-          ) : filteredUsers.length === 0 ? (
+          ) : clients.length === 0 ? (
             <div className="bg-dark-200/50 rounded-md p-10 text-center border border-dashed border-black/10 dark:border-white/10">
               <UserIcon
                 size={40}
                 className="mx-auto text-on-surface-variant mb-3"
               />
               <p className="text-on-surface-variant font-medium">
-                {users.length === 0
-                  ? "No hay clientes cargados"
-                  : "Sin resultados"}
+                {debouncedSearch ? "Sin resultados" : "No hay clientes cargados"}
               </p>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {visibleUsers.map((user: User) => (
+              {clients.map((user: User) => (
                 <Button
                   key={user._id}
                   fullWidth
@@ -149,14 +170,14 @@ export const ClientPickerDrawer = ({
               ))}
 
               <div ref={sentinelRef}>
-                {hasMore && (
+                {isFetchingNextPage && (
                   <div className="flex justify-center py-6">
                     <Spinner color="primary" size="sm" />
                   </div>
                 )}
-                {!hasMore && filteredUsers.length > 12 && (
+                {!hasNextPage && total > 10 && (
                   <p className="text-center text-on-surface-variant text-xs font-bold uppercase tracking-wide py-4">
-                    {filteredUsers.length} clientes cargados
+                    {total} {total === 1 ? "cliente" : "clientes"}
                   </p>
                 )}
               </div>
