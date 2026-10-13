@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   KeyRound,
   Landmark,
+  PauseCircle,
   Save,
   ShieldCheck,
   Trash2,
@@ -22,6 +23,7 @@ import type { DepositMethod } from "../../../services/configService";
 
 type DepositSettingsViewProps = {
   depositEnabled: boolean;
+  bookingsPaused: boolean;
   depositAmountInput: string;
   holdMinutesInput: string;
   depositMethodInput: DepositMethod;
@@ -43,6 +45,7 @@ type DepositSettingsViewProps = {
   isDeletingCredential: boolean;
   onBack: () => void;
   onToggleDepositEnabled: (enabled: boolean) => void;
+  onToggleBookingsPaused: (enabled: boolean) => void;
   onDepositAmountChange: (value: string) => void;
   onHoldMinutesChange: (value: string) => void;
   onDepositMethodChange: (method: DepositMethod) => void;
@@ -63,6 +66,7 @@ const fieldClassNames = {
 
 export const DepositSettingsView = ({
   depositEnabled,
+  bookingsPaused,
   depositAmountInput,
   holdMinutesInput,
   depositMethodInput,
@@ -84,6 +88,7 @@ export const DepositSettingsView = ({
   isDeletingCredential,
   onBack,
   onToggleDepositEnabled,
+  onToggleBookingsPaused,
   onDepositAmountChange,
   onHoldMinutesChange,
   onDepositMethodChange,
@@ -148,6 +153,40 @@ export const DepositSettingsView = ({
 
       <Card className="bg-dark-100 border border-black/5 dark:border-white/5 rounded-lg">
         <CardBody className="p-6 space-y-5">
+          <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md p-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <PauseCircle size={18} className="text-red-400" />
+              <p className="text-sm font-black text-foreground uppercase tracking-wide">
+                Reservas
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
+                  Botón: Pausar reservas
+                </p>
+                <p className="text-foreground font-bold text-sm">
+                  Los clientes pueden ver los turnos pero no reservar
+                </p>
+              </div>
+              <Switch
+                isSelected={bookingsPaused}
+                onValueChange={onToggleBookingsPaused}
+                isDisabled={isSavingSettings || isLoading}
+                aria-label="Pausar reservas"
+                color="warning"
+                size="sm"
+              />
+            </div>
+            <p className="text-[11px] text-on-surface-variant">
+              Mientras está activo, los clientes siguen viendo la grilla de
+              disponibilidad pero no pueden tomar turnos (ni desde el portal ni
+              desde el WhatsApp). Las reservas del panel de administración no se
+              ven afectadas.
+            </p>
+          </div>
+
           <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md p-4 space-y-4">
             <div className="flex items-center gap-3">
               <Wallet size={18} className="text-primary" />

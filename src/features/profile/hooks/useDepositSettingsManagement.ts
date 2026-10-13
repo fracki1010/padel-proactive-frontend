@@ -32,6 +32,7 @@ export const useDepositSettingsManagement = () => {
   const deleteMercadoPagoCredential = useDeleteMercadoPagoCredential();
 
   const [depositEnabledInput, setDepositEnabledInput] = useState(false);
+  const [bookingsPausedInput, setBookingsPausedInput] = useState(false);
   const [depositAmountInput, setDepositAmountInput] = useState("");
   const [holdMinutesInput, setHoldMinutesInput] = useState(
     String(DEFAULT_HOLD_MINUTES),
@@ -58,6 +59,7 @@ export const useDepositSettingsManagement = () => {
     if (!depositSettingsData || hasLoadedRef.current) return;
     hasLoadedRef.current = true;
     setDepositEnabledInput(Boolean(depositSettingsData.depositEnabled));
+    setBookingsPausedInput(Boolean(depositSettingsData.bookingsPaused));
     setDepositAmountInput(String(depositSettingsData.depositAmount ?? 0));
     setHoldMinutesInput(
       String(depositSettingsData.holdMinutes ?? DEFAULT_HOLD_MINUTES),
@@ -154,6 +156,7 @@ export const useDepositSettingsManagement = () => {
     try {
       await updateDepositSettings.mutateAsync({
         depositEnabled: depositEnabledInput,
+        bookingsPaused: bookingsPausedInput,
         depositAmount: parsedAmount,
         holdMinutes: parsedHoldMinutes,
         depositMethod: depositMethodInput,
@@ -236,6 +239,7 @@ export const useDepositSettingsManagement = () => {
     isLoading,
     isReady,
     depositEnabledInput,
+    bookingsPausedInput,
     depositAmountInput,
     holdMinutesInput,
     depositMethodInput,
@@ -255,6 +259,7 @@ export const useDepositSettingsManagement = () => {
     isSavingCredential,
     isDeletingCredential,
     onToggleDepositEnabled: setDepositEnabledInput,
+    onToggleBookingsPaused: setBookingsPausedInput,
     onDepositAmountChange: setDepositAmountInput,
     onHoldMinutesChange: setHoldMinutesInput,
     onDepositMethodChange: setDepositMethodInput,

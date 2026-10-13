@@ -312,6 +312,9 @@ export type DepositSettings = {
   depositAlias: string;
   depositCbu: string;
   depositHolder: string;
+  // Per-company "pause bookings" switch: clients can still SEE the grid but
+  // cannot create bookings from the portal or the WhatsApp bot.
+  bookingsPaused: boolean;
 };
 
 export type DepositSettingsResponse = DepositSettings & {
@@ -326,6 +329,7 @@ export type UpdateDepositSettingsPayload = {
   depositAlias?: string;
   depositCbu?: string;
   depositHolder?: string;
+  bookingsPaused?: boolean;
 };
 
 export type SetMercadoPagoCredentialPayload = {
