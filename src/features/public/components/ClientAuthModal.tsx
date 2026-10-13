@@ -252,6 +252,15 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     }
   };
 
+  // Mobile keyboards overlap bottom sheets: after the keyboard opens, bring the
+  // focused input into view so it is never hidden behind it.
+  const revealInput = (e: { target: unknown }) => {
+    const el = e.target as HTMLElement | null;
+    window.setTimeout(() => {
+      el?.scrollIntoView?.({ block: "center", behavior: "smooth" });
+    }, 300);
+  };
+
   return (
     <Drawer
       isOpen={isOpen}
@@ -261,10 +270,10 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
       classNames={{
         base: isDesktop
           ? "rounded-l-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]"
-          : "rounded-t-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]",
+          : "!max-h-[85dvh] rounded-t-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]",
       }}
     >
-      <DrawerContent>
+      <DrawerContent className={isDesktop ? "" : "!max-h-[85dvh] overflow-hidden rounded-t-[var(--md-sys-shape-corner-extra-large)]"}>
         {step === "phone" && (
           <>
             <DrawerHeader className="flex flex-col gap-1">
@@ -273,7 +282,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                 Entrá con tu número de WhatsApp para reservar
               </span>
             </DrawerHeader>
-            <DrawerBody className="pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
+            <DrawerBody className="overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
               <div className="flex flex-col gap-4">
                 <PhoneInput value={phone} onChange={setPhone} isDisabled={isLoading} />
                 <p className="text-xs text-default-400">
@@ -311,7 +320,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                 Te enviamos un código a WhatsApp ***{masked}
               </span>
             </DrawerHeader>
-            <DrawerBody className="pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
+            <DrawerBody className="overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
               <div className="flex flex-col gap-4">
                 <Input
                   label="Código de 6 dígitos"
@@ -324,6 +333,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                   inputMode="numeric"
                   onKeyDown={(e) => e.key === "Enter" && handleVerifyOtp()}
                   autoFocus
+                  onFocus={revealInput}
                 />
                 <Button color="primary" onPress={handleVerifyOtp} isLoading={isLoading} fullWidth>
                   Entrar
@@ -346,7 +356,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
             <DrawerHeader className="flex flex-col gap-1">
               <span className="text-lg font-bold">Completá tu registro</span>
             </DrawerHeader>
-            <DrawerBody className="pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
+            <DrawerBody className="overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
               <div className="flex flex-col gap-4">
                 <p className="text-sm text-warning-600 bg-warning-50 rounded-medium px-3 py-2">
                   ⚠️ Ingresá tu nombre y apellido real — así te identificamos y te encontramos en el club
@@ -360,6 +370,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                   classNames={fieldInputClassNames.sm}
                   onKeyDown={(e) => e.key === "Enter" && handleCompleteRegistration()}
                   autoFocus
+                  onFocus={revealInput}
                 />
                 <Button
                   color="primary"
@@ -385,7 +396,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                 Para entrar con Google necesitamos verificar tu número por WhatsApp
               </span>
             </DrawerHeader>
-            <DrawerBody className="pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
+            <DrawerBody className="overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
               <div className="flex flex-col gap-4">
                 <PhoneInput value={googlePhone} onChange={setGooglePhone} isDisabled={isLoading} />
                 <Button color="primary" onPress={handleGoogleSendOtp} isLoading={isLoading} fullWidth>
@@ -407,7 +418,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                 Te enviamos un código a WhatsApp ***{googleMasked}
               </span>
             </DrawerHeader>
-            <DrawerBody className="pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
+            <DrawerBody className="overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
               <div className="flex flex-col gap-4">
                 <Input
                   label="Código de 6 dígitos"
@@ -420,6 +431,7 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
                   inputMode="numeric"
                   onKeyDown={(e) => e.key === "Enter" && handleGoogleVerifyOtp()}
                   autoFocus
+                  onFocus={revealInput}
                 />
                 <Button color="primary" onPress={handleGoogleVerifyOtp} isLoading={isLoading} fullWidth>
                   Verificar y entrar
