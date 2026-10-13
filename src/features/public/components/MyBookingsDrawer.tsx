@@ -304,13 +304,10 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
           base: isDesktop
             ? "rounded-l-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]"
             : "rounded-t-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]",
-          content: isDesktop
-            ? undefined
-            : "max-h-[75dvh] overflow-y-auto",
         }}
       >
         <DrawerContent
-          className="flex flex-col"
+          className={`${isDesktop ? "" : "max-h-[75dvh]"} flex flex-col`}
           style={
             dragY > 0
               ? { transform: `translateY(${dragY}px)`, transition: "none" }
