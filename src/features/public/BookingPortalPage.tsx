@@ -453,14 +453,7 @@ export const BookingPortalPage = () => {
           <div className="flex items-center justify-between gap-2">
             {/* Logotipo / nombre del club (se intercambian con el scroll) */}
             <div className="flex min-w-0 items-center gap-2.5">
-              {/* Ícono cuadrado redondeado; en modo oscuro suma placa blanca para no perderse. */}
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] shadow-sm dark:bg-white dark:p-[3px]">
-                <img
-                  src={logo}
-                  alt="PADEXA"
-                  className="h-full w-full rounded-[12px] object-cover dark:rounded-[9px]"
-                />
-              </span>
+              <img src={logo} alt="PADEXA" className="h-10 w-10 shrink-0 object-contain" />
               {/* The brand mark yields to the club name once the hero collapses. */}
               <span className="grid min-w-0">
                 <span
