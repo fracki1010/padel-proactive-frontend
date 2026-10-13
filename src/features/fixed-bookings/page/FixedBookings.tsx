@@ -1,5 +1,5 @@
-import { addToast, Button, Chip, Spinner } from "@heroui/react";
-import { CalendarClock, Pause, Pencil, Play, Plus, Trash2 } from "lucide-react";
+import { addToast, Button, Chip, Input, Spinner } from "@heroui/react";
+import { CalendarClock, Pause, Pencil, Play, Plus, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { useConfirm } from "../../../hooks/useConfirm";
@@ -26,6 +26,30 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
   return typeof message === "string" && message ? message : fallback;
 };
 
+type DayFilter = number | "all";
+type StatusFilter = "all" | "active" | "paused";
+
+type FilterChipProps = {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+};
+
+const FilterChip = ({ label, active, onPress }: FilterChipProps) => (
+  <button
+    type="button"
+    onClick={onPress}
+    aria-pressed={active}
+    className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
+      active
+        ? "border-transparent bg-primary text-on-primary"
+        : "border-outline-variant bg-surface-container-high text-on-surface-variant hover:bg-surface-container"
+    }`}
+  >
+    {label}
+  </button>
+);
+
 export const FixedBookings = () => {
   const { data, isLoading, isError } = useFixedBookings();
   const updateFixedBooking = useUpdateFixedBooking();
@@ -34,16 +58,37 @@ export const FixedBookings = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editing, setEditing] = useState<FixedBooking | null>(null);
+  const [dayFilter, setDayFilter] = useState<DayFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [search, setSearch] = useState("");
+
+  const total = data?.data?.length ?? 0;
+
+  const filtered = useMemo(() => {
+    const items = data?.data ?? [];
+    const term = search.trim().toLowerCase();
+    return items.filter((item) => {
+      if (dayFilter !== "all" && item.weekday !== dayFilter) return false;
+      if (statusFilter !== "all" && item.status !== statusFilter) return false;
+      if (term) {
+        const clientMatch = (item.clientName ?? "").toLowerCase().includes(term);
+        const courtMatch = getCourtName(item).toLowerCase().includes(term);
+        if (!clientMatch && !courtMatch) return false;
+      }
+      return true;
+    });
+  }, [data, dayFilter, statusFilter, search]);
 
   const grouped = useMemo(() => {
-    const items = data?.data ?? [];
     return WEEKDAYS.map((day) => ({
       day,
-      items: items
+      items: filtered
         .filter((item) => item.weekday === day.value)
         .sort((a, b) => getSlotTime(a).localeCompare(getSlotTime(b))),
     })).filter((group) => group.items.length > 0);
-  }, [data]);
+  }, [filtered]);
+
+  const countLabel = `${filtered.length} ${filtered.length === 1 ? "turno" : "turnos"}`;
 
   const openCreate = () => {
     setEditing(null);
@@ -118,6 +163,73 @@ export const FixedBookings = () => {
         </Button>
       </div>
 
+      {!isLoading && !isError && total > 0 && (
+        <div className="space-y-4 rounded-lg border border-outline-variant bg-surface-container p-4">
+          <Input
+            size="sm"
+            isClearable
+            value={search}
+            onValueChange={setSearch}
+            placeholder="Buscar cliente o cancha..."
+            startContent={<Search size={16} className="text-on-surface-variant" />}
+            classNames={{
+              inputWrapper:
+                "bg-surface-container-high border border-outline-variant",
+              input: "text-foreground",
+            }}
+          />
+
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">
+              Día
+            </p>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              <FilterChip
+                label="Todos"
+                active={dayFilter === "all"}
+                onPress={() => setDayFilter("all")}
+              />
+              {WEEKDAYS.map((day) => (
+                <FilterChip
+                  key={day.value}
+                  label={day.short}
+                  active={dayFilter === day.value}
+                  onPress={() => setDayFilter(day.value)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">
+                Estado
+              </p>
+              <div className="flex gap-2">
+                <FilterChip
+                  label="Todos"
+                  active={statusFilter === "all"}
+                  onPress={() => setStatusFilter("all")}
+                />
+                <FilterChip
+                  label="Activos"
+                  active={statusFilter === "active"}
+                  onPress={() => setStatusFilter("active")}
+                />
+                <FilterChip
+                  label="Pausados"
+                  active={statusFilter === "paused"}
+                  onPress={() => setStatusFilter("paused")}
+                />
+              </div>
+            </div>
+            <span className="text-xs font-semibold text-on-surface-variant">
+              {countLabel}
+            </span>
+          </div>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="flex justify-center py-20">
           <Spinner color="primary" />
@@ -131,7 +243,7 @@ export const FixedBookings = () => {
             Reintentá en unos segundos.
           </p>
         </div>
-      ) : grouped.length === 0 ? (
+      ) : total === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[280px] text-center p-8 bg-dark-200 rounded-md border border-black/5 dark:border-white/5">
           <CalendarClock size={48} className="text-on-surface-variant mb-4" />
           <h3 className="text-xl font-bold mb-1 text-foreground">
@@ -148,6 +260,13 @@ export const FixedBookings = () => {
           >
             Nuevo turno fijo
           </Button>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center min-h-[280px] text-center p-8 bg-dark-200 rounded-md border border-black/5 dark:border-white/5">
+          <Search size={40} className="text-on-surface-variant mb-4" />
+          <h3 className="text-lg font-bold mb-1 text-foreground">
+            No hay turnos fijos con esos filtros.
+          </h3>
         </div>
       ) : (
         <div className="space-y-10">
