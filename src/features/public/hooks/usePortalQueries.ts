@@ -33,6 +33,8 @@ export interface PortalClubInfo {
     coverImage?: string;
     companyId?: string;
     contactPhone?: string;
+    // When true clients can still SEE the availability grid but cannot book.
+    bookingsPaused: boolean;
   };
   courts: PortalCourt[];
   slots: PortalSlot[];

@@ -240,6 +240,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
       return (
         <DepositSettingsView
           depositEnabled={deposits.depositEnabledInput}
+          bookingsPaused={deposits.bookingsPausedInput}
           depositAmountInput={deposits.depositAmountInput}
           holdMinutesInput={deposits.holdMinutesInput}
           depositMethodInput={deposits.depositMethodInput}
@@ -264,6 +265,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
             setView("menu");
           }}
           onToggleDepositEnabled={deposits.onToggleDepositEnabled}
+          onToggleBookingsPaused={deposits.onToggleBookingsPaused}
           onDepositAmountChange={deposits.onDepositAmountChange}
           onHoldMinutesChange={deposits.onHoldMinutesChange}
           onDepositMethodChange={deposits.onDepositMethodChange}

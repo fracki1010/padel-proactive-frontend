@@ -136,6 +136,9 @@ export const BookingPortalPage = () => {
   const regenerateLinkMutation = useRegeneratePaymentLink(slug);
   const { data: clubInfo, isLoading: isLoadingInfo } = useClubInfo(slug);
   const { data: announcements = [] } = usePortalAnnouncements(slug);
+  // When the club pauses bookings, clients keep read access to the grid but the
+  // selection/lock/confirm flow is disabled (the backend also 409s as a guard).
+  const bookingsPaused = clubInfo?.club?.bookingsPaused === true;
   const { data: availability, isFetching: isLoadingAvail } = usePortalAvailability(
     slug,
     selectedDate,
@@ -229,6 +232,14 @@ export const BookingPortalPage = () => {
 
   const handleCourtSelect = async (court: Court, slot: Slot) => {
     vibrate(HAPTIC_TAP);
+    if (bookingsPaused) {
+      // Keep the grid visible but never reach the lock/confirm flow.
+      addToast({
+        title: "Las reservas están pausadas por el momento — solo podés consultar los turnos",
+        color: "warning",
+      });
+      return;
+    }
     const isSame =
       selectedSlot?.court._id === court._id && selectedSlot?.slot._id === slot._id;
     if (isSame) {
@@ -284,12 +295,13 @@ export const BookingPortalPage = () => {
   };
 
   const handleCompleteBooking = () => {
-    if (!selectedSlot) return;
+    if (bookingsPaused || !selectedSlot) return;
     if (!isClientAuthenticated) openAuth();
     else openConfirm();
   };
 
   const handleAuthSuccess = () => {
+    if (bookingsPaused) return;
     if (selectedSlot) openConfirm();
   };
 
@@ -688,6 +700,20 @@ export const BookingPortalPage = () => {
       {/* ── Avisos del club ───────────────────────────────────────────────── */}
       <Announcements announcements={announcements} />
 
+      {/* ── Reservas pausadas ─────────────────────────────────────────────── */}
+      {bookingsPaused && (
+        <section className="max-w-2xl mx-auto px-4 mb-4">
+          <div className="mx-2 p-4 rounded-md border border-warning-200 bg-warning-50 dark:bg-warning-900/20 text-center">
+            <p className="font-bold text-warning-600 dark:text-warning-400">
+              Reservas pausadas por el momento — solo podés consultar los turnos.
+            </p>
+            <p className="text-xs text-warning-500 mt-1">
+              La grilla sigue disponible para que veas los horarios.
+            </p>
+          </div>
+        </section>
+      )}
+
       {/* ── Horarios disponibles ──────────────────────────────────────────── */}
       <section className="max-w-2xl mx-auto px-4 pb-40">
 
@@ -860,7 +886,7 @@ export const BookingPortalPage = () => {
           fixed bottom-0 left-0 right-0 z-20
           bg-[var(--md-sys-color-surface-container)] border-t border-[var(--md-sys-color-outline-variant)]
           px-4 py-4 transition-transform duration-300 ease-[var(--md-sys-motion-emphasized)]
-          ${selectedSlot ? "translate-y-0" : "translate-y-full"}
+          ${!bookingsPaused && selectedSlot ? "translate-y-0" : "translate-y-full"}
         `}
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
       >
