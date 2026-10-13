@@ -2,6 +2,7 @@ import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner,
 import { ArrowRight, Calendar, Check, ChevronDown, ChevronUp, CircleDot, Clock, LayoutGrid, Leaf, Lock, LogIn, LogOut, MapPin, Plus, Ticket, User, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import logo from "../../assets/logo-8.svg";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClientAuth } from "../../context/ClientAuthContext";
 import { useAdaptiveHero } from "../../hooks/useAdaptiveHero";
@@ -453,7 +454,7 @@ export const BookingPortalPage = () => {
             {/* Logotipo / nombre del club (se intercambian con el scroll) */}
             <div className="flex min-w-0 items-center gap-2.5">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-cyan-500 text-white shadow-md">
-                <CircleDot size={22} strokeWidth={2.5} />
+                <img src={logo} alt="PADEXA" className="h-6 w-6 object-contain" />
               </div>
               {/* The brand mark yields to the club name once the hero collapses. */}
               <span className="grid min-w-0">
@@ -547,12 +548,24 @@ export const BookingPortalPage = () => {
 
           {/* ── Hero del club ── */}
           <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#0c2d3a] via-[#05445e] to-[#189ab4] p-6 text-white shadow-lg">
+            {/* Imagen de portada del club (subida desde Configuración) con overlay para legibilidad */}
+            {clubInfo.club.coverImage && (
+              <>
+                <img
+                  src={clubInfo.club.coverImage}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/45 to-black/20" />
+              </>
+            )}
             {/* Fondo geométrico decorativo */}
             <div className="pointer-events-none absolute -right-8 -top-8 flex h-56 w-56 items-center justify-center rounded-full border-[10px] border-white/10">
               <div className="h-40 w-40 rounded-full border border-white/15" />
             </div>
             <div className="pointer-events-none absolute bottom-2 right-4 text-white opacity-15">
-              <CircleDot size={120} />
+              <img src={logo} alt="" aria-hidden="true" className="h-[120px] w-[120px] object-contain" />
             </div>
 
             <div className="relative z-10 flex flex-col items-start gap-2">
