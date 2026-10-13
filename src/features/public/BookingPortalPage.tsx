@@ -453,11 +453,14 @@ export const BookingPortalPage = () => {
           <div className="flex items-center justify-between gap-2">
             {/* Logotipo / nombre del club (se intercambian con el scroll) */}
             <div className="flex min-w-0 items-center gap-2.5">
-              <img
-                src={logo}
-                alt="PADEXA"
-                className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-md"
-              />
+              {/* El logo es navy: sobre una placa blanca se ve igual en tema claro y oscuro. */}
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white p-[3px] shadow-md">
+                <img
+                  src={logo}
+                  alt="PADEXA"
+                  className="h-full w-full rounded-[9px] object-contain"
+                />
+              </span>
               {/* The brand mark yields to the club name once the hero collapses. */}
               <span className="grid min-w-0">
                 <span
@@ -567,7 +570,7 @@ export const BookingPortalPage = () => {
               <div className="h-40 w-40 rounded-full border border-white/15" />
             </div>
             <div className="pointer-events-none absolute bottom-2 right-4 text-white opacity-15">
-              <img src={logo} alt="" aria-hidden="true" className="h-[120px] w-auto object-contain" />
+              <img src={logo} alt="" aria-hidden="true" className="h-[120px] w-auto object-contain brightness-0 invert" />
             </div>
 
             <div className="relative z-10 flex flex-col items-start gap-2">
