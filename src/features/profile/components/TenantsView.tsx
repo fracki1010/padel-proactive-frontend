@@ -210,8 +210,12 @@ export const TenantsView = ({
       const url = await authService.uploadCoverImage(company._id, file);
       onUpdateCompany(company._id, { coverImage: url });
       addToast({ title: "Foto de portada actualizada", color: "success" });
-    } catch {
-      addToast({ title: "No se pudo subir la imagen", color: "danger" });
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { error?: string } }; message?: string })?.response?.data?.error ||
+        (err as { message?: string })?.message ||
+        "No se pudo subir la imagen";
+      addToast({ title: msg, color: "danger" });
     } finally {
       setUploadingCoverFor(null);
       pendingCompanyRef.current = null;
@@ -565,7 +569,7 @@ export const TenantsView = ({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/*"
         className="hidden"
         onChange={handleCoverImageFileChange}
       />

@@ -16,6 +16,10 @@ export const authService = {
     const response = await api.post("/auth/company/cover", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return response.data?.data?.coverImage;
+    const url = response.data?.data?.coverImage;
+    if (!url) {
+      throw new Error(response.data?.error || "No se pudo guardar la imagen");
+    }
+    return url;
   },
 };
