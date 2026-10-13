@@ -4,15 +4,12 @@ interface SlotSkeletonProps {
 }
 
 const SlotRowSkeleton = () => (
-  <div className="flex items-center gap-4 px-4 py-4 border-b border-default-100 last:border-b-0 animate-pulse">
-    <div className="w-20 shrink-0">
-      <div className="h-6 w-14 rounded bg-default-300" />
-      <div className="h-2.5 w-10 rounded bg-default-200 mt-2" />
+  <div className="flex items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3.5 animate-pulse">
+    <div>
+      <div className="h-6 w-16 rounded bg-surface-container-high" />
+      <div className="h-2.5 w-24 rounded bg-surface-container-high mt-2" />
     </div>
-    <div className="flex-1 min-w-0">
-      <div className="h-4 w-28 rounded bg-default-200" />
-    </div>
-    <div className="w-9 h-9 rounded-full bg-default-200 shrink-0" />
+    <div className="w-10 h-10 rounded-full bg-surface-container-high shrink-0" />
   </div>
 );
 
@@ -24,13 +21,13 @@ export const SlotSkeleton = ({ rows = 6 }: SlotSkeletonProps) => {
   return (
     <div role="status" aria-live="polite" className="flex flex-col gap-3">
       <span className="sr-only">Cargando turnos disponibles</span>
-      <div className="flex items-center justify-between px-2" aria-hidden="true">
-        <div className="h-3 w-20 rounded bg-default-200 animate-pulse" />
-        <div className="h-3 w-24 rounded bg-default-200 animate-pulse" />
+      <div className="flex items-center justify-between px-1" aria-hidden="true">
+        <div className="h-3 w-20 rounded bg-surface-container-high animate-pulse" />
+        <div className="h-3 w-24 rounded bg-surface-container-high animate-pulse" />
       </div>
       <div
         aria-hidden="true"
-        className="flex flex-col rounded-2xl border border-default-200 bg-default-50/60 overflow-hidden"
+        className="flex flex-col gap-3"
       >
         {Array.from({ length: rows }, (_, index) => (
           <SlotRowSkeleton key={index} />

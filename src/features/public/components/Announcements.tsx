@@ -45,7 +45,7 @@ export const Announcements = ({ announcements }: AnnouncementsProps) => {
   if (!announcements || announcements.length === 0) return null;
 
   return (
-    <section className="max-w-2xl mx-auto px-6 mb-6">
+    <section className="w-full">
       <div
         className="flex gap-3 overflow-x-auto pb-1"
         style={{ scrollbarWidth: "none" }}
