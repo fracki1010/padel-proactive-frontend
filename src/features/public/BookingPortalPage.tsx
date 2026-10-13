@@ -2,7 +2,7 @@ import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner,
 import { ArrowRight, Calendar, Check, ChevronDown, ChevronUp, CircleDot, Clock, LayoutGrid, Leaf, Lock, LogIn, LogOut, MapPin, Plus, Ticket, User, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo-8.svg";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClientAuth } from "../../context/ClientAuthContext";
 import { useAdaptiveHero } from "../../hooks/useAdaptiveHero";
@@ -456,7 +456,7 @@ export const BookingPortalPage = () => {
               <img
                 src={logo}
                 alt="PADEXA"
-                className="h-10 w-10 shrink-0 object-contain"
+                className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-md"
               />
               {/* The brand mark yields to the club name once the hero collapses. */}
               <span className="grid min-w-0">
