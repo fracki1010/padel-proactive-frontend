@@ -117,7 +117,7 @@ export const PwaManager = () => {
       )}
 
       {needRefresh && (
-        <div className="fixed left-4 right-4 bottom-[calc(env(safe-area-inset-bottom)+5.2rem)] z-[120]">
+        <div className="fixed left-4 right-4 top-[calc(env(safe-area-inset-top)+4.75rem)] z-[120] mx-auto max-w-md">
           <Card className="bg-surface-container-high border border-outline-variant rounded-md shadow-2xl">
             <CardBody className="p-4 flex flex-col gap-3">
               <div>
