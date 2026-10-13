@@ -14,7 +14,7 @@ import {
   addToast,
 } from "@heroui/react";
 import { AlertTriangle, Clock, CreditCard, History, MessageCircle, Phone } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   type BookingDeposit,
@@ -190,9 +190,11 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
   const [payingId, setPayingId] = useState<string | null>(null);
   const [confirmBooking, setConfirmBooking] = useState<Booking | null>(null);
   const [blockedBooking, setBlockedBooking] = useState<Booking | null>(null);
-  // Paid-deposit bookings cannot be self-cancelled: the club must handle them.
-  // The contact phone may come from the club info prop or the 409 response.
   const [paidDeposit, setPaidDeposit] = useState<{ booking: Booking; contactPhone: string } | null>(null);
+  // Drag down to close (mobile bottom sheet): the sheet follows the finger and
+  // closes past a small threshold; otherwise it springs back.
+  const [dragY, setDragY] = useState(0);
+  const dragStartRef = useRef<number | null>(null);
 
   // Keep the same failure toast the manual fetch used to show.
   useEffect(() => {
@@ -302,10 +304,53 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
           base: isDesktop
             ? "rounded-l-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]"
             : "rounded-t-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]",
+          content: isDesktop
+            ? undefined
+            : "max-h-[75dvh] overflow-y-auto",
         }}
       >
-        <DrawerContent>
-          <DrawerHeader className="flex flex-col gap-1">
+        <DrawerContent
+          className="flex flex-col"
+          style={
+            dragY > 0
+              ? { transform: `translateY(${dragY}px)`, transition: "none" }
+              : { transform: "translateY(0)", transition: "transform 220ms ease-out" }
+          }
+        >
+          {!isDesktop && (
+            <div
+              className="flex shrink-0 cursor-grab touch-none justify-center pt-3 active:cursor-grabbing"
+              onPointerDown={(e) => {
+                if (isDesktop) return;
+                dragStartRef.current = e.clientY;
+                setDragY(0);
+                (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+              }}
+              onPointerMove={(e) => {
+                if (dragStartRef.current === null || isDesktop) return;
+                const next = Math.max(0, e.clientY - dragStartRef.current);
+                setDragY(next);
+              }}
+              onPointerUp={(e) => {
+                if (dragStartRef.current === null || isDesktop) return;
+                const traveled = e.clientY - dragStartRef.current;
+                dragStartRef.current = null;
+                if (traveled > 120) {
+                  onClose();
+                } else {
+                  setDragY(0);
+                }
+              }}
+              onPointerCancel={() => {
+                dragStartRef.current = null;
+                setDragY(0);
+              }}
+              aria-label="Cerrar tirando hacia abajo"
+            >
+              <span className="h-1 w-10 rounded-full bg-outline-variant" />
+            </div>
+          )}
+          <DrawerHeader className="flex flex-col gap-1 pt-2">
             <span className="md3-typescale-title-large">Mis turnos</span>
           </DrawerHeader>
           <DrawerBody className="gap-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
