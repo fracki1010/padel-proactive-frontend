@@ -716,7 +716,7 @@ export const BookingPortalPage = () => {
                 </span>
               </div>
 
-              {slotRows.map(({ slot, availableCourts, past, disabled }) => {
+              {slotRows.filter(({ past }) => !past).map(({ slot, availableCourts, past, disabled }) => {
                 const count = availableCourts.length;
                 const expanded = expandedSlotId === slot._id;
                 const duration = calcDurationMin(slot.startTime, slot.endTime);
@@ -833,20 +833,22 @@ export const BookingPortalPage = () => {
                                 <span className="text-base font-bold tabular-nums text-primary">
                                   {slot.price > 0 ? `$${slot.price.toLocaleString("es-AR")}` : "—"}
                                 </span>
-                                <span
-                                  className={`
-                                    flex h-9 w-9 items-center justify-center rounded-full transition-all
-                                    ${sel
-                                      ? "bg-primary text-on-primary shadow-sm"
-                                      : "bg-secondary-container text-on-secondary-container"}
-                                  `}
-                                >
-                                  {sel ? (
-                                    <Check size={18} strokeWidth={3} />
-                                  ) : (
-                                    <Plus size={18} strokeWidth={3} />
-                                  )}
-                                </span>
+                                {!bookingsPaused && (
+                                  <span
+                                    className={`
+                                      flex h-9 w-9 items-center justify-center rounded-full transition-all
+                                      ${sel
+                                        ? "bg-primary text-on-primary shadow-sm"
+                                        : "bg-secondary-container text-on-secondary-container"}
+                                    `}
+                                  >
+                                    {sel ? (
+                                      <Check size={18} strokeWidth={3} />
+                                    ) : (
+                                      <Plus size={18} strokeWidth={3} />
+                                    )}
+                                  </span>
+                                )}
                               </div>
                             </button>
                           );
