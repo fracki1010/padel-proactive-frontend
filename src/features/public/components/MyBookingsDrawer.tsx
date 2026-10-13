@@ -303,11 +303,12 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
         classNames={{
           base: isDesktop
             ? "rounded-l-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]"
-            : "rounded-t-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]",
+            : "!max-h-[75dvh] rounded-t-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]",
+          wrapper: isDesktop ? undefined : "items-end",
         }}
       >
         <DrawerContent
-          className={`${isDesktop ? "" : "max-h-[75dvh]"} flex flex-col`}
+          className={`${isDesktop ? "" : "!max-h-[75dvh]"} flex flex-col overflow-hidden rounded-t-[var(--md-sys-shape-corner-extra-large)]`}
           style={
             dragY > 0
               ? { transform: `translateY(${dragY}px)`, transition: "none" }
@@ -350,7 +351,7 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
           <DrawerHeader className="flex flex-col gap-1 pt-2">
             <span className="md3-typescale-title-large">Mis turnos</span>
           </DrawerHeader>
-          <DrawerBody className="gap-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
+          <DrawerBody className="gap-6 overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
             {isLoading ? (
               <div className="flex justify-center py-12">
                 <Spinner />
