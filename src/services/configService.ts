@@ -398,12 +398,16 @@ export const configService = {
     await api.delete(`/config/company-images/${id}`);
   },
 
-  getCourts: async (all = false): Promise<ConfigResponse<Court>> => {
-    const response = await api.get(`/config/courts${all ? "?all=true" : ""}`);
+  getCourts: async (all = false, companyId?: string): Promise<ConfigResponse<Court>> => {
+    const params = new URLSearchParams();
+    if (all) params.set("all", "true");
+    if (companyId) params.set("companyId", companyId);
+    const query = params.toString();
+    const response = await api.get(`/config/courts${query ? `?${query}` : ""}`);
     return response.data;
   },
 
-  createCourt: async (data: Partial<Court>): Promise<any> => {
+  createCourt: async (data: Partial<Court> & { companyId?: string }): Promise<any> => {
     const response = await api.post("/config/courts", data);
     return response.data;
   },

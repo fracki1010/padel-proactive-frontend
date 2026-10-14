@@ -318,6 +318,10 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           createCourtPending={courts.createCourtPending}
           updateCourtPending={courts.updateCourtPending}
           deleteCourtPendingId={courts.deleteCourtPendingId}
+          isSuperAdmin={courts.isSuperAdmin}
+          companies={courts.companies}
+          selectedCompanyId={courts.selectedCompanyId}
+          onCompanyChange={courts.setSelectedCompanyId}
           onBack={() => setView("menu")}
           onCreateCourt={courts.handleCreateCourt}
           onToggleCourt={courts.handleToggleCourt}

@@ -9,10 +9,10 @@ import type {
   UpdateDepositSettingsPayload,
 } from "../../../services/configService";
 
-export const useCourts = (all = false, enabled = true) => {
+export const useCourts = (all = false, enabled = true, companyId?: string) => {
   return useQuery({
-    queryKey: ["courts", all],
-    queryFn: () => configService.getCourts(all),
+    queryKey: ["courts", all, companyId ?? null],
+    queryFn: () => configService.getCourts(all, companyId),
     enabled,
     retry: 1,
   });
@@ -35,8 +35,13 @@ export const useCreateCourt = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { name: string; courtType?: string; surface?: string; isIndoor?: boolean }) =>
-      configService.createCourt(data),
+    mutationFn: (data: {
+      name: string;
+      courtType?: string;
+      surface?: string;
+      isIndoor?: boolean;
+      companyId?: string;
+    }) => configService.createCourt(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courts"] });
     },
