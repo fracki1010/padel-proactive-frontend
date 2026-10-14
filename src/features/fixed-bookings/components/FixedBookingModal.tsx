@@ -17,6 +17,7 @@ import { fieldSelectClassNames } from "../../../components/ui/fieldStyles";
 import { useCourts, useSlots } from "../../../hooks/useData";
 import { useIsDesktop } from "../../../hooks/useIsDesktop";
 import type { FixedBooking } from "../../../services/fixedBookingService";
+import { slotsForCourt } from "../../../utils/slots";
 import { WEEKDAYS } from "../constants";
 import { ClientPickerDrawer } from "./ClientPickerDrawer";
 import {
@@ -76,7 +77,11 @@ export const FixedBookingModal = ({
   }, [isOpen, editing]);
 
   const courts = courtsData?.data ?? [];
-  const slots = useMemo(() => slotsData?.data ?? [], [slotsData]);
+  // Per-court override: a court with own slots ignores the general list.
+  const slots = useMemo(
+    () => slotsForCourt(court, slotsData?.data ?? []),
+    [slotsData, court],
+  );
   const isSaving =
     createFixedBooking.isPending || updateFixedBooking.isPending;
 

@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { getInitials, getAvatarColor } from "../utils/avatarUtils";
 import { formatPhoneForDisplay } from "../utils/formatters";
+import { slotsForCourt } from "../utils/slots";
 import {
   composePhoneForStorage,
   DEFAULT_PHONE_COUNTRY_ID,
@@ -137,12 +138,14 @@ export const BookingForm = ({
     return occupied;
   }, [courtId, dateKey, fixedBookingsData, bookingsData, initialData]);
 
+  // Per-court override: the options are the selected court's own slots when it
+  // has any, otherwise the general slots. Without a court, general slots.
   const availableSlots = useMemo(
     () =>
-      (slotsData?.data ?? []).filter(
+      slotsForCourt(courtId, slotsData?.data ?? []).filter(
         (slot) => !occupiedSlotIds.has(slot._id),
       ),
-    [slotsData, occupiedSlotIds],
+    [slotsData, courtId, occupiedSlotIds],
   );
 
   // The turn actually selectable: a previously chosen time that is no longer

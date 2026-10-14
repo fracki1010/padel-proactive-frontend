@@ -7,6 +7,16 @@ import {
   useUpdateSlot,
   useUpdateBasePrice,
 } from "../../../hooks/useData";
+import { generalSlots } from "../../../utils/slots";
+
+const DURATION_MIN = 15;
+const DURATION_MAX = 480;
+
+const errorMessage = (error: unknown, fallback: string): string => {
+  const message = (error as { response?: { data?: { error?: string } } })
+    ?.response?.data?.error;
+  return typeof message === "string" && message ? message : fallback;
+};
 
 export const useScheduleManagement = () => {
   const { data: slotsData } = useSlots(true);
@@ -15,14 +25,16 @@ export const useScheduleManagement = () => {
   const updateBasePrice = useUpdateBasePrice();
 
   const [newSlotStartTime, setNewSlotStartTime] = useState("");
-  const [newSlotEndTime, setNewSlotEndTime] = useState("");
+  const [newSlotDuration, setNewSlotDuration] = useState("");
   const [newSlotPrice, setNewSlotPrice] = useState("");
   const [basePriceInput, setBasePriceInput] = useState("");
   const [slotTogglePendingId, setSlotTogglePendingId] = useState<string | null>(
     null,
   );
 
-  const slots = slotsData?.data || [];
+  // The global schedule view only manages GENERAL slots (court == null);
+  // per-court slots live inside each court's drawer.
+  const slots = generalSlots(slotsData?.data || []);
 
   useEffect(() => {
     if (!slots.length) return;
@@ -31,7 +43,7 @@ export const useScheduleManagement = () => {
     if (typeof firstPrice !== "number") return;
 
     const allSame = slots.every(
-      (slot: any) => Number(slot.price) === Number(firstPrice),
+      (slot) => Number(slot.price) === Number(firstPrice),
     );
     if (allSame) {
       setBasePriceInput(String(firstPrice));
@@ -42,9 +54,19 @@ export const useScheduleManagement = () => {
   }, [slots]);
 
   const handleCreateSlot = () => {
-    if (!newSlotStartTime || !newSlotEndTime) {
+    if (!newSlotStartTime) {
+      addToast({ title: "Completá la hora de inicio", color: "danger" });
+      return;
+    }
+
+    const parsedDuration = Number(newSlotDuration);
+    if (
+      !Number.isInteger(parsedDuration) ||
+      parsedDuration < DURATION_MIN ||
+      parsedDuration > DURATION_MAX
+    ) {
       addToast({
-        title: "Completá hora inicio y fin",
+        title: `La duración debe estar entre ${DURATION_MIN} y ${DURATION_MAX} minutos`,
         color: "danger",
       });
       return;
@@ -62,19 +84,19 @@ export const useScheduleManagement = () => {
     createSlot.mutate(
       {
         startTime: newSlotStartTime,
-        endTime: newSlotEndTime,
+        durationMinutes: parsedDuration,
         price: parsedPrice,
       },
       {
         onSuccess: () => {
           addToast({ title: "Turno creado", color: "success" });
           setNewSlotStartTime("");
-          setNewSlotEndTime("");
+          setNewSlotDuration("");
           setNewSlotPrice("");
         },
-        onError: (err: any) => {
+        onError: (err) => {
           addToast({
-            title: err?.response?.data?.error || "No se pudo crear el turno",
+            title: errorMessage(err, "No se pudo crear el turno"),
             color: "danger",
           });
         },
@@ -87,10 +109,9 @@ export const useScheduleManagement = () => {
     updateSlot.mutate(
       { id, data: { isActive } },
       {
-        onError: (err: any) => {
+        onError: (err) => {
           addToast({
-            title:
-              err?.response?.data?.error || "No se pudo actualizar el turno",
+            title: errorMessage(err, "No se pudo actualizar el turno"),
             color: "danger",
           });
         },
@@ -120,11 +141,9 @@ export const useScheduleManagement = () => {
           color: "success",
         });
       },
-      onError: (err: any) => {
+      onError: (err) => {
         addToast({
-          title:
-            err?.response?.data?.error ||
-            "No se pudo actualizar el precio base",
+          title: errorMessage(err, "No se pudo actualizar el precio base"),
           color: "danger",
         });
       },
@@ -134,14 +153,14 @@ export const useScheduleManagement = () => {
   return {
     slots,
     newSlotStartTime,
-    newSlotEndTime,
+    newSlotDuration,
     newSlotPrice,
     basePriceInput,
     createSlotPending: createSlot.isPending,
     updateBasePricePending: updateBasePrice.isPending,
     slotTogglePendingId,
     setNewSlotStartTime,
-    setNewSlotEndTime,
+    setNewSlotDuration,
     setNewSlotPrice,
     setBasePriceInput,
     handleCreateSlot,

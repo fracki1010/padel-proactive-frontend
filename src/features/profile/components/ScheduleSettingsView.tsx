@@ -2,10 +2,12 @@ import { Button, Card, CardBody, Chip, Input, Switch } from "@heroui/react";
 import { ChevronLeft, Clock, CreditCard, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { formatSlotRange } from "../../../utils/slots";
+
 type ScheduleSettingsViewProps = {
   slots: any[];
   newSlotStartTime: string;
-  newSlotEndTime: string;
+  newSlotDuration: string;
   newSlotPrice: string;
   basePriceInput: string;
   createSlotPending: boolean;
@@ -13,7 +15,7 @@ type ScheduleSettingsViewProps = {
   slotTogglePendingId: string | null;
   onBack: () => void;
   onSlotStartTimeChange: (value: string) => void;
-  onSlotEndTimeChange: (value: string) => void;
+  onSlotDurationChange: (value: string) => void;
   onSlotPriceChange: (value: string) => void;
   onBasePriceChange: (value: string) => void;
   onCreateSlot: () => void;
@@ -24,7 +26,7 @@ type ScheduleSettingsViewProps = {
 export const ScheduleSettingsView = ({
   slots,
   newSlotStartTime,
-  newSlotEndTime,
+  newSlotDuration,
   newSlotPrice,
   basePriceInput,
   createSlotPending,
@@ -32,7 +34,7 @@ export const ScheduleSettingsView = ({
   slotTogglePendingId,
   onBack,
   onSlotStartTimeChange,
-  onSlotEndTimeChange,
+  onSlotDurationChange,
   onSlotPriceChange,
   onBasePriceChange,
   onCreateSlot,
@@ -103,9 +105,12 @@ export const ScheduleSettingsView = ({
           <ChevronLeft size={20} />
         </Button>
         <h3 className="text-xl font-black text-foreground uppercase italic">
-          Horarios y Precios
+          Horarios generales
         </h3>
       </div>
+      <p className="text-xs text-on-surface-variant font-bold">
+        Aplican a las canchas sin horarios propios
+      </p>
 
       <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg p-4 sm:p-5 flex flex-wrap gap-2">
         <Chip size="sm" className="bg-primary/20 text-primary font-bold border border-primary/30">
@@ -216,7 +221,7 @@ export const ScheduleSettingsView = ({
               </p>
             </div>
             <p className="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">
-              Inicio - Fin - Precio
+              Inicio · Duración · Precio
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -231,10 +236,12 @@ export const ScheduleSettingsView = ({
               }}
             />
             <Input
-              type="time"
-              value={newSlotEndTime}
-              onValueChange={onSlotEndTimeChange}
-              placeholder="Fin"
+              type="number"
+              value={newSlotDuration}
+              onValueChange={onSlotDurationChange}
+              placeholder="Duración (min)"
+              min={15}
+              max={480}
               classNames={{
                 inputWrapper: "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
                 input: "text-foreground font-bold",
@@ -305,7 +312,7 @@ export const ScheduleSettingsView = ({
                   </div>
                   <div>
                     <p className="font-bold text-foreground text-base">
-                      {slot.startTime} - {slot.endTime}
+                      {formatSlotRange(slot)}
                     </p>
                     <p className="text-[10px] text-primary font-black uppercase tracking-widest">
                       {formatPrice(slot.price)}

@@ -331,7 +331,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
         <ScheduleSettingsView
           slots={schedule.slots}
           newSlotStartTime={schedule.newSlotStartTime}
-          newSlotEndTime={schedule.newSlotEndTime}
+          newSlotDuration={schedule.newSlotDuration}
           newSlotPrice={schedule.newSlotPrice}
           basePriceInput={schedule.basePriceInput}
           createSlotPending={schedule.createSlotPending}
@@ -339,7 +339,7 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           slotTogglePendingId={schedule.slotTogglePendingId}
           onBack={() => setView("menu")}
           onSlotStartTimeChange={schedule.setNewSlotStartTime}
-          onSlotEndTimeChange={schedule.setNewSlotEndTime}
+          onSlotDurationChange={schedule.setNewSlotDuration}
           onSlotPriceChange={schedule.setNewSlotPrice}
           onBasePriceChange={schedule.setBasePriceInput}
           onCreateSlot={schedule.handleCreateSlot}

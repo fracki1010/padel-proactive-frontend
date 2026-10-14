@@ -172,8 +172,25 @@ export const useCreateSlot = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { startTime: string; endTime: string; price: number }) =>
-      configService.createSlot(data),
+    mutationFn: (data: {
+      startTime: string;
+      durationMinutes: number;
+      price: number;
+      label?: string;
+      court?: string | null;
+    }) => configService.createSlot(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["slots"] });
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+    },
+  });
+};
+
+export const useDeleteSlot = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => configService.deleteSlot(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["slots"] });
       queryClient.invalidateQueries({ queryKey: ["bookings"] });

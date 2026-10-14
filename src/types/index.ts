@@ -12,6 +12,12 @@ export interface TimeSlot {
   startTime: string;
   endTime: string;
   price: number;
+  // null/undefined => GENERAL slot (applies to every court without own slots).
+  court?: string | null;
+  durationMinutes?: number | null;
+  label?: string;
+  isActive?: boolean;
+  order?: number;
 }
 
 export interface FixedTurn {
