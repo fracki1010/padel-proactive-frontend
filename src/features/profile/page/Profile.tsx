@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useAnnouncementsManagement } from "../hooks/useAnnouncementsManagement";
 import { useClubClosuresManagement } from "../hooks/useClubClosuresManagement";
 import { useCourtsManagement } from "../hooks/useCourtsManagement";
-import { useScheduleManagement } from "../hooks/useScheduleManagement";
 import { useTenantsManagement } from "../hooks/useTenantsManagement";
 import { useProfileMenu } from "../hooks/useProfileMenu";
 import { useBotAutomationManagement } from "../hooks/useBotAutomationManagement";
@@ -16,7 +15,6 @@ import { CourtsView } from "../components/CourtsView";
 import { BotAutomationSettingsView } from "../components/BotAutomationSettingsView";
 import { DepositSettingsView } from "../components/DepositSettingsView";
 import { ProfileMenuView } from "../components/ProfileMenuView";
-import { ScheduleSettingsView } from "../components/ScheduleSettingsView";
 import { TenantsView } from "../components/TenantsView";
 import { WhatsappSettingsView } from "../components/WhatsappSettingsView";
 
@@ -27,7 +25,6 @@ interface ProfileProps {
 type ViewType =
   | "menu"
   | "courts"
-  | "schedule"
   | "whatsapp"
   | "bot-automation"
   | "deposits"
@@ -41,7 +38,6 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
   const announcements = useAnnouncementsManagement();
   const clubClosures = useClubClosuresManagement();
   const courts = useCourtsManagement(initialCourts);
-  const schedule = useScheduleManagement();
   const tenants = useTenantsManagement();
   const whatsapp = useWhatsappManagement();
   const botAutomation = useBotAutomationManagement(whatsapp);
@@ -327,28 +323,6 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           onToggleCourt={courts.handleToggleCourt}
           onSaveCourtName={courts.handleSaveCourtName}
           onDeleteCourt={courts.handleDeleteCourt}
-        />
-      );
-
-    case "schedule":
-      return (
-        <ScheduleSettingsView
-          slots={schedule.slots}
-          newSlotStartTime={schedule.newSlotStartTime}
-          newSlotDuration={schedule.newSlotDuration}
-          newSlotPrice={schedule.newSlotPrice}
-          basePriceInput={schedule.basePriceInput}
-          createSlotPending={schedule.createSlotPending}
-          updateBasePricePending={schedule.updateBasePricePending}
-          slotTogglePendingId={schedule.slotTogglePendingId}
-          onBack={() => setView("menu")}
-          onSlotStartTimeChange={schedule.setNewSlotStartTime}
-          onSlotDurationChange={schedule.setNewSlotDuration}
-          onSlotPriceChange={schedule.setNewSlotPrice}
-          onBasePriceChange={schedule.setBasePriceInput}
-          onCreateSlot={schedule.handleCreateSlot}
-          onSaveBasePrice={schedule.handleSaveBasePrice}
-          onToggleSlot={schedule.handleToggleSlot}
         />
       );
 

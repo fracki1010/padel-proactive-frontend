@@ -13,7 +13,6 @@ type UseProfileMenuParams = {
     view:
       | "menu"
       | "courts"
-      | "schedule"
       | "whatsapp"
       | "bot-automation"
       | "deposits"
@@ -73,7 +72,6 @@ export const useProfileMenu = ({
     onToggleTheme: toggleTheme,
     onGoToCourts: () => setView("courts"),
     onGoToWhatsapp: () => setView("whatsapp"),
-    onGoToSchedule: () => setView("schedule"),
     onGoToBotAutomation: () => setView("bot-automation"),
     onGoToDeposits: () => setView("deposits"),
     onGoToTenants: () => setView("tenants"),
