@@ -27,7 +27,7 @@ export const DashboardDesktopView = ({
     activeFilter,
     setActiveFilter,
     slotCounts,
-    filteredSlots,
+    slotsFor,
     stats,
     isLoading,
     fixedKeys,
@@ -126,7 +126,7 @@ export const DashboardDesktopView = ({
                   </h3>
                 </div>
                 <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-3">
-                  {filteredSlots.map((slot: any) => {
+                  {slotsFor(court._id).map((slot: any) => {
                     const slotBookings = getSlotBookings(slot._id, court._id);
                     const activeBooking = slotBookings.find(
                       (booking: any) => booking.status !== "cancelado",
@@ -240,7 +240,7 @@ export const DashboardDesktopView = ({
                 </div>
               </div>
             ))}
-            {!filteredSlots.length && (
+            {!stats.totalSlots && (
               <div className="py-12 text-center">
                 <p className="font-bold text-on-surface-variant">
                   No hay turnos para el filtro seleccionado.
