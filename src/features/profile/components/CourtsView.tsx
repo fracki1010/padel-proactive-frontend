@@ -24,11 +24,8 @@ type CourtFormData = {
 };
 
 const COURT_TYPE_OPTIONS = [
-  "Estándar",
   "Techada",
   "Descubierta",
-  "VIP",
-  "Premium",
 ] as const;
 
 const COURT_SURFACE_OPTIONS = [
