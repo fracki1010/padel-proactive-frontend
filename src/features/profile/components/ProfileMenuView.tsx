@@ -40,7 +40,6 @@ type ProfileMenuViewProps = {
   onToggleTheme: () => void;
   onGoToCourts: () => void;
   onGoToWhatsapp: () => void;
-  onGoToSchedule: () => void;
   onGoToBotAutomation: () => void;
   onGoToDeposits: () => void;
   onGoToTenants: () => void;
@@ -96,7 +95,6 @@ export const ProfileMenuView = ({
   onToggleTheme,
   onGoToCourts,
   onGoToWhatsapp,
-  onGoToSchedule,
   onGoToBotAutomation,
   onGoToDeposits,
   onGoToTenants,
@@ -288,13 +286,6 @@ export const ProfileMenuView = ({
               iconClassName="w-10 h-10 bg-sky-500/10 rounded-xl flex items-center justify-center text-sky-400 group-hover:bg-sky-500 group-hover:text-black transition-all"
             />
 
-            <MenuItemButton
-              onPress={onGoToSchedule}
-              title="Precios y Horarios"
-              subtitle="Configurar tarifas"
-              icon={<Target size={18} />}
-              iconClassName="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all"
-            />
 
             <MenuItemButton
               onPress={onGoToClubClosures}
