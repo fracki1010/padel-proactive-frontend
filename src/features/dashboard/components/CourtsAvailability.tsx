@@ -3,7 +3,7 @@ import { MapPin, Shield, User } from "lucide-react";
 
 type CourtsAvailabilityProps = {
   courts: any[];
-  filteredSlots: any[];
+  slotsFor: (courtId: string) => any[];
   isLoading: boolean;
   selectedDate: string;
   getSlotBookings: (slotId: string, courtId: string) => any[];
@@ -13,7 +13,7 @@ type CourtsAvailabilityProps = {
 
 export const CourtsAvailability = ({
   courts,
-  filteredSlots,
+  slotsFor,
   isLoading,
   selectedDate,
   getSlotBookings,
@@ -21,6 +21,9 @@ export const CourtsAvailability = ({
   fixedKeys,
 }: CourtsAvailabilityProps) => {
   const now = new Date();
+  const hasAnySlots = courts.some(
+    (court: { _id: string }) => slotsFor(court._id).length > 0,
+  );
 
   return (
     <div className="space-y-6">
@@ -42,7 +45,7 @@ export const CourtsAvailability = ({
                   {court.name}
                 </span>
               </div>
-              {filteredSlots.map((slot: any) => {
+              {slotsFor(court._id).map((slot: any) => {
                 const slotBookings = getSlotBookings(slot._id, court._id);
                 const activeBooking = slotBookings.find(
                   (booking: any) => booking.status !== "cancelado",
@@ -226,7 +229,7 @@ export const CourtsAvailability = ({
             </div>
           ))}
 
-          {filteredSlots.length === 0 && (
+          {!hasAnySlots && (
             <p className="text-center text-on-surface-variant py-10 font-bold italic">
               No se encontraron turnos para este horario.
             </p>

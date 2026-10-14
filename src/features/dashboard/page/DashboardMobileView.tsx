@@ -19,7 +19,7 @@ export const DashboardMobileView = ({
     activeFilter,
     setActiveFilter,
     slotCounts,
-    filteredSlots,
+    slotsFor,
     stats,
     isLoading,
     fixedKeys,
@@ -46,7 +46,7 @@ export const DashboardMobileView = ({
 
       <CourtsAvailability
         courts={courts}
-        filteredSlots={filteredSlots}
+        slotsFor={slotsFor}
         isLoading={isLoading}
         selectedDate={selectedDate}
         getSlotBookings={getSlotBookings}
