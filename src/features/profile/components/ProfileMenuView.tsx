@@ -1,21 +1,6 @@
 import { Avatar, Button, Card, CardBody, Chip, Input, Select, SelectItem, Switch } from "@heroui/react";
 import type { ReactNode } from "react";
-import {
-  Bot,
-  Building2,
-  CalendarOff,
-  ChevronRight,
-  CreditCard,
-  LogOut,
-  MapPin,
-  Megaphone,
-  Phone,
-  QrCode,
-  Save,
-  Shield,
-  Target,
-  Wallet,
-} from "lucide-react";
+import { Bot, Building2, CalendarOff, ChevronRight, CreditCard, LogOut, MapPin, Megaphone, Phone, QrCode, Save, Shield, Wallet } from "lucide-react";
 import {
   composePhoneForStorage,
   parseStoredPhone,
