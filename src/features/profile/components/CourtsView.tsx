@@ -41,6 +41,10 @@ type CourtsViewProps = {
   createCourtPending: boolean;
   updateCourtPending: boolean;
   deleteCourtPendingId: string | null;
+  isSuperAdmin?: boolean;
+  companies?: Array<{ _id: string; name?: string }>;
+  selectedCompanyId?: string;
+  onCompanyChange?: (companyId: string) => void;
   onBack: () => void;
   onCreateCourt: (payload: CourtFormData) => Promise<boolean>;
   onToggleCourt: (id: string, isActive: boolean) => void;
@@ -53,6 +57,10 @@ export const CourtsView = ({
   createCourtPending,
   updateCourtPending,
   deleteCourtPendingId,
+  isSuperAdmin = false,
+  companies = [],
+  selectedCompanyId = "",
+  onCompanyChange,
   onBack,
   onCreateCourt,
   onToggleCourt,
@@ -265,6 +273,35 @@ export const CourtsView = ({
               </DrawerHeader>
               <DrawerBody className="p-6">
                 <div className="space-y-4">
+                  {isSuperAdmin && (
+                    <Select
+                      label="Empresa"
+                      placeholder="Seleccioná una empresa"
+                      selectedKeys={selectedCompanyId ? [selectedCompanyId] : []}
+                      onSelectionChange={(keys) => {
+                        const selected = Array.from(keys)[0] as string | undefined;
+                        if (!selected) return;
+                        onCompanyChange?.(selected);
+                      }}
+                      classNames={{
+                        trigger:
+                          "bg-black/5 dark:bg-white/5 border-none h-14 rounded-md px-4",
+                        value: "text-foreground font-bold",
+                        popoverContent:
+                          "bg-dark-200 border border-black/10 dark:border-white/10 text-foreground",
+                        listbox: "text-foreground",
+                      }}
+                    >
+                      {companies.map((company) => (
+                        <SelectItem
+                          key={company._id}
+                          textValue={company.name || company._id}
+                        >
+                          {company.name || company._id}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                  )}
                   <Input
                     value={createCourtName}
                     onValueChange={setCreateCourtName}

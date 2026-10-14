@@ -1,13 +1,15 @@
 import { addToast } from "@heroui/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
+  useCompanies,
   useCourts,
   useCreateCourt,
   useDeleteCourt,
   useUpdateCourt,
 } from "../../../hooks/useData";
 import { useConfirm } from "../../../hooks/useConfirm";
+import { useAuth } from "../../../context/AuthContext";
 
 type CourtFormData = {
   name: string;
@@ -17,7 +19,27 @@ type CourtFormData = {
 
 export const useCourtsManagement = (initialCourts?: any[]) => {
   const confirm = useConfirm();
-  const { data: courtsData } = useCourts(true);
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === "super_admin";
+
+  // Super admins manage courts across clubs, so the courts query and every
+  // create must target the currently selected company.
+  const { data: companiesData } = useCompanies(isSuperAdmin);
+  const companies = useMemo<Array<{ _id: string; name?: string }>>(
+    () => (isSuperAdmin ? companiesData?.data || [] : []),
+    [isSuperAdmin, companiesData],
+  );
+  const [selectedCompanyId, setSelectedCompanyId] = useState("");
+
+  // Default to the first club once the list resolves, without an effect that
+  // would cascade renders. The derived value also backs the courts query.
+  const effectiveCompanyId = selectedCompanyId || companies[0]?._id || "";
+
+  const { data: courtsData } = useCourts(
+    true,
+    true,
+    isSuperAdmin ? effectiveCompanyId || undefined : undefined,
+  );
   const updateCourt = useUpdateCourt();
   const createCourt = useCreateCourt();
   const deleteCourt = useDeleteCourt();
@@ -42,9 +64,18 @@ export const useCourtsManagement = (initialCourts?: any[]) => {
       addToast({ title: "Ingresá la superficie de la cancha", color: "danger" });
       return false;
     }
+    if (isSuperAdmin && !effectiveCompanyId) {
+      addToast({ title: "Seleccioná una empresa", color: "danger" });
+      return false;
+    }
 
     try {
-      await createCourt.mutateAsync({ name, courtType, surface });
+      await createCourt.mutateAsync({
+        name,
+        courtType,
+        surface,
+        ...(isSuperAdmin ? { companyId: effectiveCompanyId } : {}),
+      });
       addToast({ title: "Cancha creada", color: "success" });
       return true;
     } catch (err: any) {
@@ -129,6 +160,10 @@ export const useCourtsManagement = (initialCourts?: any[]) => {
 
   return {
     courts,
+    isSuperAdmin,
+    companies,
+    selectedCompanyId: effectiveCompanyId,
+    setSelectedCompanyId,
     createCourtPending: createCourt.isPending,
     updateCourtPending: updateCourt.isPending,
     deleteCourtPendingId,
