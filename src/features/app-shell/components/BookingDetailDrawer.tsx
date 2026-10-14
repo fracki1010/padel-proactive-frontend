@@ -26,6 +26,10 @@ import {
 import { useState } from "react";
 
 import { useConfirmDepositReceived } from "../../bookings/hooks/useBookingsData";
+import {
+  MOBILE_DRAWER_CONTENT,
+  MOBILE_DRAWER_MAX_HEIGHT,
+} from "../../../components/ui/drawerClasses";
 import { getInitials, getAvatarColor } from "../../../utils/avatarUtils";
 import { formatDate, formatPhoneForDisplay } from "../../../utils/formatters";
 
@@ -70,10 +74,10 @@ export const BookingDetailDrawer = ({
         classNames={{
           base: isDesktop
             ? "bg-surface-container-high border-l border-black/10 dark:border-white/10"
-            : "rounded-t-[3rem] bg-surface-container-high border-t border-black/10 dark:border-white/10",
+            : `${MOBILE_DRAWER_MAX_HEIGHT} rounded-t-[3rem] bg-surface-container-high border-t border-black/10 dark:border-white/10`,
         }}
       >
-        <DrawerContent>
+        <DrawerContent className={isDesktop ? "" : MOBILE_DRAWER_CONTENT}>
           {(onClose) => (
             <>
               <DrawerHeader className="flex flex-col gap-1 p-5 sm:p-8 text-center">

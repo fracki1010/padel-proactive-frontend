@@ -13,6 +13,10 @@ import {
 import { Clock, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import {
+  MOBILE_DRAWER_CONTENT,
+  MOBILE_DRAWER_MAX_HEIGHT,
+} from "../../../components/ui/drawerClasses";
 import { useConfirm } from "../../../hooks/useConfirm";
 import {
   useCreateSlot,
@@ -21,6 +25,7 @@ import {
   useUpdateSlot,
 } from "../../../hooks/useData";
 import { useIsDesktop } from "../../../hooks/useIsDesktop";
+import { useRevealInputOnFocus } from "../../../hooks/useRevealInputOnFocus";
 import type { TimeSlot } from "../../../types";
 import { formatSlotRange, ownSlotsForCourt } from "../../../utils/slots";
 
@@ -59,21 +64,13 @@ const errorMessage = (error: unknown, fallback: string): string => {
   return typeof message === "string" && message ? message : fallback;
 };
 
-// Keyboard fix: scroll the focused field into view after the mobile keyboard
-// settles (same pattern used across the admin forms).
-const scrollIntoViewSoon = (element: HTMLElement | null) => {
-  if (!element) return;
-  window.setTimeout(() => {
-    element.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, 300);
-};
-
 export const CourtSchedulesDrawer = ({
   isOpen,
   onClose,
   court,
 }: CourtSchedulesDrawerProps) => {
   const isDesktop = useIsDesktop();
+  const revealInput = useRevealInputOnFocus();
   const confirm = useConfirm();
   const { data: slotsData, isLoading } = useSlots(true);
   const createSlot = useCreateSlot();
@@ -204,10 +201,10 @@ export const CourtSchedulesDrawer = ({
       classNames={{
         base: isDesktop
           ? "bg-surface-container-high text-foreground dark border-l border-black/10 dark:border-white/10"
-          : "rounded-t-[3rem] bg-surface-container-high text-foreground dark border-t border-black/10 dark:border-white/10",
+          : `${MOBILE_DRAWER_MAX_HEIGHT} rounded-t-[3rem] bg-surface-container-high text-foreground dark border-t border-black/10 dark:border-white/10`,
       }}
     >
-      <DrawerContent>
+      <DrawerContent className={isDesktop ? "" : MOBILE_DRAWER_CONTENT}>
         <DrawerHeader className="flex flex-col gap-1 border-b border-black/5 dark:border-white/5 pb-4">
           <h2 className="text-2xl font-black">
             Horarios de {court?.name || "la cancha"}
@@ -244,7 +241,7 @@ export const CourtSchedulesDrawer = ({
                 aria-label="Inicio"
                 value={startTime}
                 onValueChange={setStartTime}
-                onFocus={(event) => scrollIntoViewSoon(event.currentTarget)}
+                onFocus={revealInput}
                 classNames={{
                   inputWrapper:
                     "bg-black/5 dark:bg-white/5 border-none h-12 rounded-md px-4",
@@ -256,7 +253,7 @@ export const CourtSchedulesDrawer = ({
                 aria-label="Duración en minutos"
                 value={duration}
                 onValueChange={setDuration}
-                onFocus={(event) => scrollIntoViewSoon(event.currentTarget)}
+                onFocus={revealInput}
                 min={DURATION_MIN}
                 max={DURATION_MAX}
                 placeholder="Duración (min)"
@@ -271,7 +268,7 @@ export const CourtSchedulesDrawer = ({
                 aria-label="Precio"
                 value={price}
                 onValueChange={setPrice}
-                onFocus={(event) => scrollIntoViewSoon(event.currentTarget)}
+                onFocus={revealInput}
                 placeholder="Precio"
                 classNames={{
                   inputWrapper:

@@ -15,6 +15,7 @@ import {
 import { ChevronLeft, Clock, MapPin, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
+import { useRevealInputOnFocus } from "../../../hooks/useRevealInputOnFocus";
 import { CourtSchedulesDrawer } from "./CourtSchedulesDrawer";
 
 type CourtFormData = {
@@ -67,6 +68,7 @@ export const CourtsView = ({
   onSaveCourtName,
   onDeleteCourt,
 }: CourtsViewProps) => {
+  const revealInput = useRevealInputOnFocus();
   const defaultSurface = COURT_SURFACE_OPTIONS[0];
   const defaultCourtType = COURT_TYPE_OPTIONS[0];
   const normalizeSurface = (value: string) =>
@@ -305,6 +307,7 @@ export const CourtsView = ({
                   <Input
                     value={createCourtName}
                     onValueChange={setCreateCourtName}
+                    onFocus={revealInput}
                     placeholder="Ej: Cancha 3"
                     label="Nombre"
                     classNames={{
@@ -415,6 +418,7 @@ export const CourtsView = ({
                   <Input
                     value={editingCourtName}
                     onValueChange={setEditingCourtName}
+                    onFocus={revealInput}
                     placeholder="Nombre de la cancha"
                     label="Nombre"
                     classNames={{

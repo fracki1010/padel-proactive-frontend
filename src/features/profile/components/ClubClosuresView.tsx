@@ -12,6 +12,12 @@ import {
 import { CalendarOff, ChevronLeft, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
+import {
+  MOBILE_DRAWER_CONTENT,
+  MOBILE_DRAWER_MAX_HEIGHT,
+} from "../../../components/ui/drawerClasses";
+import { useIsDesktop } from "../../../hooks/useIsDesktop";
+import { useRevealInputOnFocus } from "../../../hooks/useRevealInputOnFocus";
 import type { ClubClosure } from "../../../types";
 
 type ClubClosuresViewProps = {
@@ -40,6 +46,8 @@ export const ClubClosuresView = ({
   onUpdate,
   onDelete,
 }: ClubClosuresViewProps) => {
+  const isDesktop = useIsDesktop();
+  const revealInput = useRevealInputOnFocus();
   const today = new Date().toISOString().slice(0, 10);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -184,8 +192,13 @@ export const ClubClosuresView = ({
       )}
 
       {/* Create drawer */}
-      <Drawer isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} placement="bottom">
-        <DrawerContent>
+      <Drawer
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        placement="bottom"
+        classNames={{ base: isDesktop ? "" : MOBILE_DRAWER_MAX_HEIGHT }}
+      >
+        <DrawerContent className={isDesktop ? "" : MOBILE_DRAWER_CONTENT}>
           <DrawerHeader className="font-black uppercase text-foreground text-sm">
             Nuevo cierre
           </DrawerHeader>
@@ -196,6 +209,7 @@ export const ClubClosuresView = ({
                 type="date"
                 value={createStart}
                 onValueChange={setCreateStart}
+                onFocus={revealInput}
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                   input: "text-foreground font-bold",
@@ -207,6 +221,7 @@ export const ClubClosuresView = ({
                 type="date"
                 value={createEnd}
                 onValueChange={setCreateEnd}
+                onFocus={revealInput}
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                   input: "text-foreground font-bold",
@@ -222,6 +237,7 @@ export const ClubClosuresView = ({
               placeholder="Ej: Cerrado por torneo"
               value={createReason}
               onValueChange={setCreateReason}
+              onFocus={revealInput}
               classNames={{
                 inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                 input: "text-foreground font-bold",
@@ -252,8 +268,13 @@ export const ClubClosuresView = ({
       </Drawer>
 
       {/* Edit drawer */}
-      <Drawer isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} placement="bottom">
-        <DrawerContent>
+      <Drawer
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        placement="bottom"
+        classNames={{ base: isDesktop ? "" : MOBILE_DRAWER_MAX_HEIGHT }}
+      >
+        <DrawerContent className={isDesktop ? "" : MOBILE_DRAWER_CONTENT}>
           <DrawerHeader className="font-black uppercase text-foreground text-sm">
             Editar cierre
           </DrawerHeader>
@@ -264,6 +285,7 @@ export const ClubClosuresView = ({
                 type="date"
                 value={editStart}
                 onValueChange={setEditStart}
+                onFocus={revealInput}
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                   input: "text-foreground font-bold",
@@ -275,6 +297,7 @@ export const ClubClosuresView = ({
                 type="date"
                 value={editEnd}
                 onValueChange={setEditEnd}
+                onFocus={revealInput}
                 classNames={{
                   inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                   input: "text-foreground font-bold",
@@ -290,6 +313,7 @@ export const ClubClosuresView = ({
               placeholder="Ej: Cerrado por torneo"
               value={editReason}
               onValueChange={setEditReason}
+              onFocus={revealInput}
               classNames={{
                 inputWrapper: "bg-black/5 dark:bg-white/5 border-none rounded-md",
                 input: "text-foreground font-bold",

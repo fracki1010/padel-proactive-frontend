@@ -30,6 +30,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import {
+  MOBILE_DRAWER_CONTENT,
+  MOBILE_DRAWER_MAX_HEIGHT,
+} from "../../../components/ui/drawerClasses";
+import { useIsDesktop } from "../../../hooks/useIsDesktop";
+import { useRevealInputOnFocus } from "../../../hooks/useRevealInputOnFocus";
 import type { Announcement, AnnouncementType } from "../../../types";
 import type { AnnouncementFormData } from "../hooks/useAnnouncementsManagement";
 
@@ -136,6 +142,8 @@ const AnnouncementFormDrawer = ({
   onClose,
   onSubmit,
 }: AnnouncementFormDrawerProps) => {
+  const isDesktop = useIsDesktop();
+  const revealInput = useRevealInputOnFocus();
   const seed = initial ?? emptyForm;
   const [title, setTitle] = useState(seed.title);
   const [message, setMessage] = useState(seed.message);
@@ -158,8 +166,13 @@ const AnnouncementFormDrawer = ({
   };
 
   return (
-    <Drawer isOpen={isOpen} onClose={onClose} placement="bottom">
-      <DrawerContent>
+    <Drawer
+      isOpen={isOpen}
+      onClose={onClose}
+      placement="bottom"
+      classNames={{ base: isDesktop ? "" : MOBILE_DRAWER_MAX_HEIGHT }}
+    >
+      <DrawerContent className={isDesktop ? "" : MOBILE_DRAWER_CONTENT}>
         <DrawerHeader className="font-black uppercase text-foreground text-sm">
           {mode === "create" ? "Nuevo aviso" : "Editar aviso"}
         </DrawerHeader>
@@ -169,6 +182,7 @@ const AnnouncementFormDrawer = ({
             placeholder="Ej: Torneo el sábado"
             value={title}
             onValueChange={setTitle}
+            onFocus={revealInput}
             maxLength={120}
             classNames={inputClassNames}
           />
@@ -177,6 +191,7 @@ const AnnouncementFormDrawer = ({
             placeholder="Ej: Turnos hasta las 18h"
             value={message}
             onValueChange={setMessage}
+            onFocus={revealInput}
             minRows={2}
             maxRows={5}
             classNames={inputClassNames}
@@ -209,6 +224,7 @@ const AnnouncementFormDrawer = ({
               type="date"
               value={startsAt}
               onValueChange={setStartsAt}
+              onFocus={revealInput}
               classNames={inputClassNames}
             />
             <Input
@@ -216,6 +232,7 @@ const AnnouncementFormDrawer = ({
               type="date"
               value={endsAt}
               onValueChange={setEndsAt}
+              onFocus={revealInput}
               classNames={inputClassNames}
             />
           </div>

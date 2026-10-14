@@ -11,7 +11,12 @@ import { Search, User as UserIcon, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { fieldInputClassNames } from "../../../components/ui/fieldStyles";
+import {
+  MOBILE_DRAWER_CONTENT,
+  MOBILE_DRAWER_MAX_HEIGHT,
+} from "../../../components/ui/drawerClasses";
 import { useIsDesktop } from "../../../hooks/useIsDesktop";
+import { useRevealInputOnFocus } from "../../../hooks/useRevealInputOnFocus";
 import type { User } from "../../../types";
 import { formatPhoneForDisplay } from "../../../utils/formatters";
 import { useClientSearch } from "../hooks/useClientSearch";
@@ -30,6 +35,7 @@ export const ClientPickerDrawer = ({
   onSelectClient,
 }: ClientPickerDrawerProps) => {
   const isDesktop = useIsDesktop();
+  const revealInput = useRevealInputOnFocus();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -99,10 +105,10 @@ export const ClientPickerDrawer = ({
       classNames={{
         base: isDesktop
           ? "bg-surface-container-high text-foreground dark border-l border-black/10 dark:border-white/10"
-          : "rounded-t-[3rem] bg-surface-container-high text-foreground dark border-t border-black/10 dark:border-white/10",
+          : `${MOBILE_DRAWER_MAX_HEIGHT} rounded-t-[3rem] bg-surface-container-high text-foreground dark border-t border-black/10 dark:border-white/10`,
       }}
     >
-      <DrawerContent>
+      <DrawerContent className={isDesktop ? "" : MOBILE_DRAWER_CONTENT}>
         <DrawerHeader className="flex items-center justify-between gap-4 border-b border-black/5 dark:border-white/5 pb-4">
           <h2 className="text-2xl font-black">Elegir cliente</h2>
           <Button
@@ -124,6 +130,7 @@ export const ClientPickerDrawer = ({
             startContent={<Search size={18} className="text-on-surface-variant" />}
             value={searchQuery}
             onValueChange={setSearchQuery}
+            onFocus={revealInput}
             variant="bordered"
             size="lg"
             classNames={fieldInputClassNames.lg}

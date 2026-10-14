@@ -14,8 +14,13 @@ import { ChevronDown, User as UserIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { fieldSelectClassNames } from "../../../components/ui/fieldStyles";
+import {
+  MOBILE_DRAWER_CONTENT,
+  MOBILE_DRAWER_MAX_HEIGHT,
+} from "../../../components/ui/drawerClasses";
 import { useCourts, useSlots } from "../../../hooks/useData";
 import { useIsDesktop } from "../../../hooks/useIsDesktop";
+import { useRevealInputOnFocus } from "../../../hooks/useRevealInputOnFocus";
 import type { FixedBooking } from "../../../services/fixedBookingService";
 import { slotsForCourt } from "../../../utils/slots";
 import { WEEKDAYS } from "../constants";
@@ -52,6 +57,7 @@ export const FixedBookingModal = ({
   editing,
 }: FixedBookingModalProps) => {
   const isDesktop = useIsDesktop();
+  const revealInput = useRevealInputOnFocus();
   const { data: courtsData, isLoading: isLoadingCourts } = useCourts();
   const { data: slotsData, isLoading: isLoadingSlots } = useSlots();
   const { data: fixedBookingsData } = useFixedBookings();
@@ -164,10 +170,10 @@ export const FixedBookingModal = ({
       classNames={{
         base: isDesktop
           ? "bg-surface-container-high text-foreground dark border-l border-black/10 dark:border-white/10"
-          : "rounded-t-[3rem] bg-surface-container-high text-foreground dark border-t border-black/10 dark:border-white/10",
+          : `${MOBILE_DRAWER_MAX_HEIGHT} rounded-t-[3rem] bg-surface-container-high text-foreground dark border-t border-black/10 dark:border-white/10`,
       }}
     >
-      <DrawerContent>
+      <DrawerContent className={isDesktop ? "" : MOBILE_DRAWER_CONTENT}>
         <DrawerHeader className="flex flex-col gap-1 border-b border-black/5 dark:border-white/5 pb-4">
           <h2 className="text-2xl font-black">
             {editing ? "Editar turno fijo" : "Nuevo turno fijo"}
@@ -292,6 +298,7 @@ export const FixedBookingModal = ({
               placeholder="Ej: Torneo interno, clase, etc."
               value={notes}
               onValueChange={setNotes}
+              onFocus={revealInput}
               variant="bordered"
               minRows={3}
             />
