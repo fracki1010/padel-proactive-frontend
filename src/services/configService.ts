@@ -423,7 +423,13 @@ export const configService = {
     return response.data;
   },
 
-  createSlot: async (data: Partial<TimeSlot> & { startTime: string; endTime: string; price: number }): Promise<any> => {
+  createSlot: async (data: {
+    startTime: string;
+    durationMinutes: number;
+    price: number;
+    label?: string;
+    court?: string | null;
+  }): Promise<any> => {
     const response = await api.post("/config/slots", data);
     return response.data;
   },
@@ -433,8 +439,16 @@ export const configService = {
     return response.data;
   },
 
-  updateBasePrice: async (price: number): Promise<any> => {
-    const response = await api.put("/config/slots/base-price", { price });
+  deleteSlot: async (id: string): Promise<any> => {
+    const response = await api.delete(`/config/slots/${id}`);
+    return response.data;
+  },
+
+  updateBasePrice: async (price: number, court?: string | null): Promise<any> => {
+    const response = await api.put("/config/slots/base-price", {
+      price,
+      ...(court ? { court } : {}),
+    });
     return response.data;
   },
 

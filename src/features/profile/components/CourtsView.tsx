@@ -12,8 +12,10 @@ import {
   SelectItem,
   Switch,
 } from "@heroui/react";
-import { ChevronLeft, MapPin, Pencil, Plus, Save, Trash2, X } from "lucide-react";
+import { ChevronLeft, Clock, MapPin, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { useState } from "react";
+
+import { CourtSchedulesDrawer } from "./CourtSchedulesDrawer";
 
 type CourtFormData = {
   name: string;
@@ -79,6 +81,18 @@ export const CourtsView = ({
   const [editingCourtName, setEditingCourtName] = useState("");
   const [editingCourtType, setEditingCourtType] = useState<string>(defaultCourtType);
   const [editingCourtSurface, setEditingCourtSurface] = useState<string>(defaultSurface);
+  const [scheduleCourt, setScheduleCourt] = useState<{
+    _id: string;
+    name: string;
+  } | null>(null);
+
+  const openScheduleDrawer = (court: any) => {
+    setScheduleCourt({ _id: court._id, name: String(court.name || "") });
+  };
+
+  const closeScheduleDrawer = () => {
+    setScheduleCourt(null);
+  };
 
   const openEditDrawer = (court: any) => {
     setEditingCourtId(court._id);
@@ -136,7 +150,7 @@ export const CourtsView = ({
           <ChevronLeft size={20} />
         </Button>
         <h3 className="text-xl font-black text-foreground uppercase italic">
-          Mis Canchas
+          Mis canchas y horarios
         </h3>
         <Button
           className="ml-auto bg-primary text-black dark:text-white font-black rounded-md uppercase"
@@ -204,6 +218,14 @@ export const CourtsView = ({
                   />
                 </div>
               </div>
+              <Button
+                variant="flat"
+                className="w-full bg-primary/10 text-primary border border-primary/20 rounded-md font-black uppercase text-[10px] tracking-widest"
+                onPress={() => openScheduleDrawer(court)}
+                startContent={<Clock size={16} />}
+              >
+                Horarios
+              </Button>
             </CardBody>
           </Card>
         ))}
@@ -429,6 +451,12 @@ export const CourtsView = ({
           )}
         </DrawerContent>
       </Drawer>
+
+      <CourtSchedulesDrawer
+        isOpen={!!scheduleCourt}
+        court={scheduleCourt}
+        onClose={closeScheduleDrawer}
+      />
     </div>
   );
 };
