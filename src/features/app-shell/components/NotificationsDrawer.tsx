@@ -8,6 +8,10 @@ import {
 } from "@heroui/react";
 import { Bell, CheckCheck, X } from "lucide-react";
 
+import {
+  MOBILE_DRAWER_CONTENT,
+  MOBILE_DRAWER_MAX_HEIGHT,
+} from "../../../components/ui/drawerClasses";
 import type {
   NotificationItem,
   NotificationsResponse,
@@ -87,10 +91,10 @@ export const NotificationsDrawer = ({
       classNames={{
         base: isDesktop
           ? "bg-surface-container-high border-l border-black/10 dark:border-white/10"
-          : "rounded-t-[3rem] bg-surface-container-high border-t border-black/10 dark:border-white/10",
+          : `${MOBILE_DRAWER_MAX_HEIGHT} !min-h-0 rounded-t-[3rem] bg-surface-container-high border-t border-black/10 dark:border-white/10`,
       }}
     >
-      <DrawerContent>
+      <DrawerContent className={isDesktop ? "" : MOBILE_DRAWER_CONTENT}>
         {(onClose) => (
           <>
             <DrawerHeader

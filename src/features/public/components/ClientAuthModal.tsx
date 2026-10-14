@@ -15,7 +15,12 @@ import { PhoneInput, defaultPhone } from "./PhoneInput";
 import type { PhoneValue } from "./PhoneInput";
 import { normalizePhoneForApi } from "../../../utils/phone";
 import { fieldInputClassNames } from "../../../components/ui/fieldStyles";
+import {
+  MOBILE_DRAWER_CONTENT,
+  MOBILE_DRAWER_MAX_HEIGHT,
+} from "../../../components/ui/drawerClasses";
 import { useIsDesktop } from "../../../hooks/useIsDesktop";
+import { useRevealInputOnFocus } from "../../../hooks/useRevealInputOnFocus";
 import {
   useCompleteRegistration,
   useGoogleAuth,
@@ -62,6 +67,7 @@ const GoogleIcon = () => (
 export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => {
   const { loginClient } = useClientAuth();
   const isDesktop = useIsDesktop();
+  const revealInput = useRevealInputOnFocus();
   const sendOtpMutation = useSendOtp(slug);
   const verifyOtpMutation = useVerifyOtp(slug);
   const completeRegistrationMutation = useCompleteRegistration(slug);
@@ -252,15 +258,6 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
     }
   };
 
-  // Mobile keyboards overlap bottom sheets: after the keyboard opens, bring the
-  // focused input into view so it is never hidden behind it.
-  const revealInput = (e: { target: unknown }) => {
-    const el = e.target as HTMLElement | null;
-    window.setTimeout(() => {
-      el?.scrollIntoView?.({ block: "center", behavior: "smooth" });
-    }, 300);
-  };
-
   return (
     <Drawer
       isOpen={isOpen}
@@ -270,10 +267,10 @@ export const ClientAuthModal = ({ isOpen, onClose, slug, onSuccess }: Props) => 
       classNames={{
         base: isDesktop
           ? "rounded-l-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]"
-          : "!max-h-[85dvh] rounded-t-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]",
+          : `${MOBILE_DRAWER_MAX_HEIGHT} rounded-t-[var(--md-sys-shape-corner-extra-large)] bg-[var(--md-sys-color-surface-container)]`,
       }}
     >
-      <DrawerContent className={isDesktop ? "" : "!max-h-[85dvh] overflow-hidden rounded-t-[var(--md-sys-shape-corner-extra-large)]"}>
+      <DrawerContent className={isDesktop ? "" : `${MOBILE_DRAWER_CONTENT} rounded-t-[var(--md-sys-shape-corner-extra-large)]`}>
         {step === "phone" && (
           <>
             <DrawerHeader className="flex flex-col gap-1">

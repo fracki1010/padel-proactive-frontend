@@ -14,7 +14,7 @@ import { BadgeCheck } from "lucide-react";
 import { useState } from "react";
 
 import { useCreateUser, useUpdateUser } from "../../../hooks/useData";
-import { useKeyboardScroll } from "../../../hooks/useKeyboardScroll";
+import { useRevealInputOnFocus } from "../../../hooks/useRevealInputOnFocus";
 import {
   fieldInputClassNames,
   fieldSelectClassNames,
@@ -43,8 +43,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
     initialPhone?.countryId || DEFAULT_PHONE_COUNTRY_ID,
   );
 
-  const nameInputRef = useKeyboardScroll<HTMLInputElement>();
-  const phoneInputRef = useKeyboardScroll<HTMLInputElement>();
+  const revealInput = useRevealInputOnFocus();
 
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
@@ -99,10 +98,10 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
                 Nombre Completo
               </label>
               <Input
-                ref={nameInputRef}
                 placeholder="Ej: Juan Perez"
                 value={name}
                 onValueChange={setName}
+                onFocus={revealInput}
                 variant="bordered"
                 size="lg"
                 classNames={fieldInputClassNames.lg}
@@ -135,10 +134,10 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
                   ))}
                 </Select>
                 <Input
-                  ref={phoneInputRef}
                   placeholder="Ej: 351..."
                   value={phoneLocal}
                   onValueChange={(value) => setPhoneLocal(value.replace(/\D/g, ""))}
+                  onFocus={revealInput}
                   variant="bordered"
                   size="lg"
                   className="flex-grow"
