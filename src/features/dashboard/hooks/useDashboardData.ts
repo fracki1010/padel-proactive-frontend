@@ -43,6 +43,20 @@ const readStoredDashboardFilter = () => {
   return "all";
 };
 
+// Apply the active time-of-day filter to a slot list.
+const filterByTimeOfDay = (
+  list: TimeSlot[],
+  filter: string,
+): TimeSlot[] => {
+  return list.filter((slot) => {
+    const startHour = parseInt(slot.startTime.split(":")[0]);
+    if (filter === "morning") return startHour < 12;
+    if (filter === "afternoon") return startHour >= 12 && startHour < 18;
+    if (filter === "night") return startHour >= 18;
+    return true;
+  });
+};
+
 export const useDashboardData = (courts: Court[] = []) => {
   const [selectedDate, setSelectedDate] = useState(readStoredDashboardDate);
   const [activeFilter, setActiveFilter] = useState(readStoredDashboardFilter);
@@ -70,27 +84,35 @@ export const useDashboardData = (courts: Court[] = []) => {
     return keys;
   }, [fixedBookingsData, selectedDate]);
 
-  const filteredSlots = useMemo(() => {
-    return slots.filter((slot: any) => {
-      const startHour = parseInt(slot.startTime.split(":")[0]);
-      if (activeFilter === "morning") return startHour < 12;
-      if (activeFilter === "afternoon") return startHour >= 12 && startHour < 18;
-      if (activeFilter === "night") return startHour >= 18;
-      return true;
-    });
-  }, [slots, activeFilter]);
+  const filteredSlots = useMemo(
+    () => filterByTimeOfDay(slots, activeFilter),
+    [slots, activeFilter],
+  );
 
-  // Effective slots per court, applying the override rule on top of the
-  // time-of-day filtered set. A court with its own active slots ignores the
-  // general set; otherwise it falls back to the general slots. This is the
-  // source of truth the grid must render — never the global list.
+  // Effective schedule per court: apply the override rule on the COMPLETE slot
+  // list FIRST (a court with its own active slots ignores the general set;
+  // otherwise it falls back to the general slots), THEN apply the time-of-day
+  // filter within that effective set. Deciding the override on the already
+  // filtered set would make a court wrongly fall back to the general slots
+  // whenever the filter excluded its own slots.
+  const effectiveSlotsByCourt = useMemo(() => {
+    const map: Record<string, TimeSlot[]> = {};
+    for (const court of courts) {
+      map[court._id] = slotsForCourt(court._id, slots);
+    }
+    return map;
+  }, [courts, slots]);
+
   const slotsByCourt = useMemo(() => {
     const map: Record<string, TimeSlot[]> = {};
     for (const court of courts) {
-      map[court._id] = slotsForCourt(court._id, filteredSlots);
+      map[court._id] = filterByTimeOfDay(
+        effectiveSlotsByCourt[court._id] ?? [],
+        activeFilter,
+      );
     }
     return map;
-  }, [courts, filteredSlots]);
+  }, [courts, effectiveSlotsByCourt, activeFilter]);
 
   const slotsFor = useCallback(
     (courtId: string): TimeSlot[] => slotsByCourt[courtId] ?? [],
@@ -106,11 +128,12 @@ export const useDashboardData = (courts: Court[] = []) => {
     };
 
     // Count DISTINCT effective start times across every court's effective
-    // schedule so a time that is both a general slot and a court-owned slot is
-    // not counted twice.
+    // schedule (before the time-of-day filter, so each chip shows its own
+    // bucket). Deduping by startTime keeps a time that is both a general slot
+    // and a court-owned slot from being counted twice.
     const seenStartTimes = new Set<string>();
     for (const court of courts) {
-      for (const slot of slotsByCourt[court._id] ?? []) {
+      for (const slot of effectiveSlotsByCourt[court._id] ?? []) {
         if (seenStartTimes.has(slot.startTime)) continue;
         seenStartTimes.add(slot.startTime);
         const startHour = parseInt(slot.startTime.split(":")[0]);
@@ -122,7 +145,7 @@ export const useDashboardData = (courts: Court[] = []) => {
     counts.all = seenStartTimes.size;
 
     return counts;
-  }, [courts, slotsByCourt]);
+  }, [courts, effectiveSlotsByCourt]);
 
   const getSlotBookings = (slotId: string, courtId: string) => {
     return dashboardBookings.filter(
