@@ -13,12 +13,15 @@ import {
 } from "../hooks/useFixedBookings";
 
 const getCourtName = (fixedBooking: FixedBooking): string =>
-  typeof fixedBooking.court === "string" ? "" : fixedBooking.court.name;
+  fixedBooking.court && typeof fixedBooking.court !== "string"
+    ? fixedBooking.court.name
+    : "Cancha no disponible";
 
 const getSlotTime = (fixedBooking: FixedBooking): string =>
-  typeof fixedBooking.timeSlot === "string"
-    ? ""
-    : `${fixedBooking.timeSlot.startTime} – ${fixedBooking.timeSlot.endTime}`;
+  // `null` happens for legacy rows whose slot was deleted: never crash the page.
+  fixedBooking.timeSlot && typeof fixedBooking.timeSlot !== "string"
+    ? `${fixedBooking.timeSlot.startTime} – ${fixedBooking.timeSlot.endTime}`
+    : "Horario no disponible";
 
 const getErrorMessage = (error: unknown, fallback: string): string => {
   const message = (error as { response?: { data?: { error?: string } } })
