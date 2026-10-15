@@ -1,5 +1,5 @@
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner, addToast, useDisclosure } from "@heroui/react";
-import { ArrowRight, Calendar, Check, ChevronDown, ChevronUp, CircleDot, Clock, LayoutGrid, Leaf, Lock, LogIn, LogOut, MapPin, Plus, Ticket, User, X } from "lucide-react";
+import { ArrowRight, Calendar, Check, ChevronDown, ChevronUp, CircleDot, Clock, LayoutGrid, Leaf, Lock, LogIn, LogOut, MapPin, MessageCircle, Plus, Ticket, User, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import logo from "../../assets/logo-8.svg";
@@ -139,6 +139,7 @@ export const BookingPortalPage = () => {
   // When the club pauses bookings, clients keep read access to the grid but the
   // selection/lock/confirm flow is disabled (the backend also 409s as a guard).
   const bookingsPaused = clubInfo?.club?.bookingsPaused === true;
+  const contactPhoneDigits = String(clubInfo?.club?.contactPhone || "").replace(/\D/g, "");
   const { data: availability, isFetching: isLoadingAvail } = usePortalAvailability(
     slug,
     selectedDate,
@@ -662,13 +663,30 @@ export const BookingPortalPage = () => {
 
           {/* ── Reservas pausadas ── */}
           {bookingsPaused && (
-            <div className="rounded-lg border border-warning-200 bg-warning-50 dark:bg-warning-900/20 p-4 text-center">
-              <p className="font-bold text-warning-600 dark:text-warning-400">
-                Reservas pausadas por el momento — solo podés consultar los turnos.
-              </p>
-              <p className="mt-1 text-xs text-warning-500">
-                La grilla sigue disponible para que veas los horarios.
-              </p>
+            <div className="flex flex-col items-center gap-3 rounded-lg border border-warning-200 bg-warning-50 dark:bg-warning-900/20 p-4 text-center">
+              <div>
+                <p className="font-bold text-warning-600 dark:text-warning-400">
+                  Reservas pausadas por el momento — solo podés consultar los turnos.
+                </p>
+                <p className="mt-1 text-xs text-warning-500">
+                  La grilla sigue disponible para que veas los horarios.
+                </p>
+              </div>
+              {contactPhoneDigits && (
+                <Button
+                  as="a"
+                  href={`https://wa.me/${contactPhoneDigits}?text=${encodeURIComponent(
+                    `¡Hola! Quiero reservar un turno en ${clubInfo?.club?.name || "el club"} 🎾`,
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  color="primary"
+                  className="font-bold"
+                  startContent={<MessageCircle size={16} />}
+                >
+                  Reservar por WhatsApp
+                </Button>
+              )}
             </div>
           )}
 
