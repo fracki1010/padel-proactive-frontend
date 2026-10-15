@@ -139,7 +139,9 @@ export const BookingPortalPage = () => {
   // When the club pauses bookings, clients keep read access to the grid but the
   // selection/lock/confirm flow is disabled (the backend also 409s as a guard).
   const bookingsPaused = clubInfo?.club?.bookingsPaused === true;
-  const contactPhoneDigits = String(clubInfo?.club?.contactPhone || "").replace(/\D/g, "");
+  // Número del ADMIN (el de la card "WhatsApp Admin"), no el del bot: es a ese
+  // al que el cliente debe escribir para reservar mientras las reservas están pausadas.
+  const adminPhoneDigits = String((clubInfo?.club as { adminPhone?: string } | undefined)?.adminPhone || "").replace(/\D/g, "");
   const { data: availability, isFetching: isLoadingAvail } = usePortalAvailability(
     slug,
     selectedDate,
@@ -672,10 +674,10 @@ export const BookingPortalPage = () => {
                   La grilla sigue disponible para que veas los horarios.
                 </p>
               </div>
-              {contactPhoneDigits && (
+              {adminPhoneDigits && (
                 <Button
                   as="a"
-                  href={`https://wa.me/${contactPhoneDigits}?text=${encodeURIComponent(
+                  href={`https://wa.me/${adminPhoneDigits}?text=${encodeURIComponent(
                     `¡Hola! Quiero reservar un turno en ${clubInfo?.club?.name || "el club"} 🎾`,
                   )}`}
                   target="_blank"
