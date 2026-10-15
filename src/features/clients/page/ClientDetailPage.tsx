@@ -413,7 +413,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
 
   const handleClearPenalties = async () => {
     if (!user?._id) return;
-    if (!(await confirm("¿Deseas limpiar las penalizaciones y rehabilitar a este socio?", { variant: "default", title: "Limpiar penalizaciones" }))) {
+    if (!(await confirm("¿Deseas limpiar las penalizaciones y rehabilitar a este cliente?", { variant: "default", title: "Limpiar penalizaciones" }))) {
       return;
     }
 
@@ -431,7 +431,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
     try {
       await setDepositExemption.mutateAsync({ id: user._id, enabled });
       addToast({
-        title: enabled ? "Socio exento de seña" : "El socio vuelve a pagar seña",
+        title: enabled ? "Cliente exento de seña" : "El cliente vuelve a pagar seña",
         color: "success",
       });
     } catch {
@@ -441,14 +441,14 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
 
   const handleDeleteUser = async () => {
     if (!user?._id) return;
-    if (!(await confirm("¿Estás seguro de eliminar este socio?", { variant: "danger", title: "Eliminar socio" }))) return;
+    if (!(await confirm("¿Estás seguro de eliminar este cliente?", { variant: "danger", title: "Eliminar cliente" }))) return;
 
     try {
       await deleteUser.mutateAsync(user._id);
-      addToast({ title: "Socio eliminado", color: "success" });
-      navigate("/socios");
+      addToast({ title: "Cliente eliminado", color: "success" });
+      navigate("/clientes");
     } catch {
-      addToast({ title: "Error al eliminar socio", color: "danger" });
+      addToast({ title: "Error al eliminar cliente", color: "danger" });
     }
   };
 
@@ -486,8 +486,8 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
   if (!user) {
     return (
       <div className="space-y-4">
-        <Button variant="light" onPress={() => navigate("/socios")}>Volver</Button>
-        <p className="text-on-surface-variant">No encontramos el socio solicitado.</p>
+        <Button variant="light" onPress={() => navigate("/clientes")}>Volver</Button>
+        <p className="text-on-surface-variant">No encontramos el cliente solicitado.</p>
       </div>
     );
   }
@@ -498,10 +498,10 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
         <Button
           variant="flat"
           startContent={<ArrowLeft size={16} />}
-          onPress={() => navigate("/socios")}
+          onPress={() => navigate("/clientes")}
           className="font-bold"
         >
-          Volver a socios
+          Volver a clientes
         </Button>
 
         <div className="flex flex-wrap gap-2">
@@ -734,7 +734,7 @@ export const ClientDetailPage = ({ clientId }: ClientDetailPageProps) => {
           {isLoadingHistory ? (
             <SkeletonTable rows={5} columns={7} />
           ) : filteredHistory.length === 0 ? (
-            <p className="text-on-surface-variant">No hay historial para este socio.</p>
+            <p className="text-on-surface-variant">No hay historial para este cliente.</p>
           ) : (
             <div className="space-y-3">
               <div className="overflow-x-auto rounded-md border border-black/10 dark:border-white/10">

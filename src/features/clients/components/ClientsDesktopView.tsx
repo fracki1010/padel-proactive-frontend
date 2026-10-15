@@ -119,7 +119,7 @@ export const ClientsDesktopView = ({
         <div className="space-y-4 flex-1 min-w-0">
           <div className="flex items-center gap-5">
             <h2 className="text-xl font-black uppercase text-primary tracking-tight">
-              Socios
+              Clientes
             </h2>
             <Input
               isClearable
@@ -138,7 +138,7 @@ export const ClientsDesktopView = ({
 
           <SectionHeader
             eyebrow="Gestión de Comunidad"
-            title="Socios Registrados"
+            title="Clientes Registrados"
             headingLevel="h1"
           />
 
@@ -172,7 +172,7 @@ export const ClientsDesktopView = ({
             startContent={<Plus size={20} />}
             onPress={onCreate}
           >
-            Nuevo Socio
+            Nuevo Cliente
           </Button>
           <div className="grid grid-cols-3 gap-4 text-right">
             <div>
@@ -203,7 +203,7 @@ export const ClientsDesktopView = ({
         ) : filteredUsers.length === 0 ? (
           <div className="rounded-md bg-dark-200/60 border border-black/10 dark:border-white/10 py-16 text-center">
             <p className="text-on-surface-variant font-bold">
-              No se encontraron socios para este filtro.
+              No se encontraron clientes para este filtro.
             </p>
           </div>
         ) : (
@@ -352,7 +352,7 @@ export const ClientsDesktopView = ({
                         <MoreVertical size={18} />
                       </Button>
                     </DropdownTrigger>
-                    <DropdownMenu aria-label="Acciones de socio" color="primary">
+                    <DropdownMenu aria-label="Acciones de cliente" color="primary">
                       <DropdownItem
                         key="details"
                         startContent={<Eye size={16} />}
@@ -390,7 +390,7 @@ export const ClientsDesktopView = ({
                         }
                         onClick={() => onDelete(client._id)}
                       >
-                        {pendingDeleteUserId === client._id ? "Eliminando..." : "Eliminar Socio"}
+                        {pendingDeleteUserId === client._id ? "Eliminando..." : "Eliminar Cliente"}
                       </DropdownItem>
                       {client.isSuspended || (client.penalties || 0) > 0 ? (
                         <DropdownItem
@@ -406,7 +406,7 @@ export const ClientsDesktopView = ({
                         >
                           {pendingClearPenaltyUserId === client._id
                             ? "Despenalizando..."
-                            : "Despenalizar Socio"}
+                            : "Despenalizar Cliente"}
                         </DropdownItem>
                       ) : (
                         <DropdownItem key="no-clear-penalties" className="hidden" />
@@ -437,7 +437,7 @@ export const ClientsDesktopView = ({
                 onPageChange={setCurrentPage}
                 totalItems={filteredUsers.length}
                 pageSize={PAGE_SIZE}
-                itemsLabel="socios"
+                itemsLabel="clientes"
               />
             )}
           </>

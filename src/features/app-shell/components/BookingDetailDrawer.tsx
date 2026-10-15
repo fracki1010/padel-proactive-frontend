@@ -318,7 +318,7 @@ export const BookingDetailDrawer = ({
                       Aplicar penalización
                     </p>
                     <p className="text-xs text-on-surface-variant">
-                      Si está activo, suma 1 penalización al socio.
+                      Si está activo, suma 1 penalización al cliente.
                     </p>
                   </div>
                   <Switch
@@ -356,7 +356,7 @@ export const BookingDetailDrawer = ({
                             });
                           } else if (applyPenalty && !penalty?.applied) {
                             addToast({
-                              title: "Turno cancelado (sin penalización: socio no encontrado)",
+                              title: "Turno cancelado (sin penalización: cliente no encontrado)",
                               color: "warning",
                             });
                           } else {

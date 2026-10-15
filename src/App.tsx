@@ -82,7 +82,7 @@ const getScreenTitle = (activeTab: string, isCreating: boolean) => {
     case "panel":
       return "Panel Principal";
     case "socios":
-      return "Socios";
+      return "Clientes";
     case "reservas":
       return "Turnos";
     case "turnos-fijos":
@@ -382,7 +382,7 @@ export default function App() {
                   <Navbar
                     title={
                       activeTab === "socios" && clientIdFromPath
-                        ? "Detalle Socio"
+                        ? "Detalle Cliente"
                         : getScreenTitle(activeTab, isCreating)
                     }
                     onAvatarClick={() => navigate("/configuracion")}

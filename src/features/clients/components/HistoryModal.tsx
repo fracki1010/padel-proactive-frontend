@@ -65,7 +65,7 @@ export const HistoryModal = ({
             <div className="text-center py-12 bg-dark-200 rounded-md border border-black/5 dark:border-white/5">
               <Info size={32} className="mx-auto text-on-surface-variant mb-2" />
               <p className="text-on-surface-variant">
-                Este socio aún no tiene actividad registrada.
+                Este cliente aún no tiene actividad registrada.
               </p>
             </div>
           ) : (
