@@ -3,6 +3,7 @@ import { addToast, useDisclosure } from "@heroui/react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import { BottomNav } from "./components/BottomNav";
+import { ScrollToTop } from "./components/ScrollToTop";
 import { DesktopSidebar } from "./components/DesktopSidebar";
 import { GlobalActionOverlay } from "./components/GlobalActionOverlay";
 import { Navbar } from "./components/Navbar";
@@ -344,6 +345,7 @@ export default function App() {
   return (
     <>
       <PwaManager />
+      <ScrollToTop />
       <Routes>
         {/* Portal público de reservas — no requiere auth de admin */}
         <Route path="/reservar/:slug" element={<BookingPortalPage />} />
