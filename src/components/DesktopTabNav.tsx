@@ -12,7 +12,7 @@ const tabs = [
   { id: "panel", label: "Panel", icon: LayoutGrid },
   { id: "reservas", label: "Reservas", icon: Calendar },
   { id: "turnos-fijos", label: "Turnos fijos", icon: CalendarClock },
-  { id: "socios", label: "Socios", icon: Users },
+  { id: "socios", label: "Clientes", icon: Users },
 ];
 
 export const DesktopTabNav = ({

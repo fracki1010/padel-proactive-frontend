@@ -62,15 +62,15 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
 
       if (mode === "create") {
         await createUser.mutateAsync(data);
-        addToast({ title: "Socio creado correctamente", color: "success" });
+        addToast({ title: "Cliente creado correctamente", color: "success" });
       } else if (user) {
         await updateUser.mutateAsync({ id: user._id, data });
-        addToast({ title: "Socio guardado correctamente", color: "success" });
+        addToast({ title: "Cliente guardado correctamente", color: "success" });
       }
 
       onClose();
     } catch {
-      addToast({ title: "Error al guardar socio", color: "danger" });
+      addToast({ title: "Error al guardar cliente", color: "danger" });
     }
   };
 
@@ -85,10 +85,10 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
       <DrawerContent className="bg-surface-container-high text-foreground dark">
         <DrawerHeader className="flex flex-col gap-1 border-b border-black/5 dark:border-white/5 pb-4">
           <h2 className="text-2xl font-black">
-            {mode === "create" ? "Nuevo Socio" : "Editar Socio"}
+            {mode === "create" ? "Nuevo Cliente" : "Editar Cliente"}
           </h2>
           <p className="text-sm text-on-surface-variant font-normal">
-            Completa la información del perfil del socio.
+            Completa la información del perfil del cliente.
           </p>
         </DrawerHeader>
         <DrawerBody className="py-8 space-y-8 dark">
@@ -171,7 +171,7 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
               size="lg"
               isLoading={createUser.isPending || updateUser.isPending}
             >
-              {mode === "create" ? "Crear Socio" : "Guardar Cambios"}
+              {mode === "create" ? "Crear Cliente" : "Guardar Cambios"}
             </Button>
           </div>
         </DrawerFooter>

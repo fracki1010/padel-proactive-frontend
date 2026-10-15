@@ -296,8 +296,8 @@ export const BookingForm = ({
 
           <div className="space-y-6 bg-dark-100/30 p-4 sm:p-6 rounded-md border border-black/5 dark:border-white/5">
             <Autocomplete
-              label="Nombre del Socio"
-              placeholder="Escribe o selecciona un socio"
+              label="Nombre del Cliente"
+              placeholder="Escribe o selecciona un cliente"
               labelPlacement="outside"
               inputValue={clientName}
               onInputChange={(value) => {

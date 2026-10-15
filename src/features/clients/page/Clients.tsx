@@ -110,18 +110,18 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
   };
 
   const handleDetails = (user: User) => {
-    navigate(`/socios/${user._id}`);
+    navigate(`/clientes/${user._id}`);
   };
 
   const handleDelete = async (id: string) => {
     if (pendingDeleteUserId || pendingClearPenaltyUserId) return;
-    if (await confirm("¿Estás seguro de eliminar este socio?", { variant: "danger", title: "Eliminar socio" })) {
+    if (await confirm("¿Estás seguro de eliminar este cliente?", { variant: "danger", title: "Eliminar cliente" })) {
       setPendingDeleteUserId(id);
       try {
         await deleteUser.mutateAsync(id);
-        addToast({ title: "Socio eliminado", color: "success" });
+        addToast({ title: "Cliente eliminado", color: "success" });
       } catch (_error) {
-        addToast({ title: "Error al eliminar socio", color: "danger" });
+        addToast({ title: "Error al eliminar cliente", color: "danger" });
       } finally {
         setPendingDeleteUserId(null);
       }
@@ -130,7 +130,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
 
   const handleClearPenalties = async (id: string) => {
     if (pendingDeleteUserId || pendingClearPenaltyUserId) return;
-    if (await confirm("¿Deseas limpiar las penalizaciones y rehabilitar a este socio?", { variant: "default", title: "Limpiar penalizaciones" })) {
+    if (await confirm("¿Deseas limpiar las penalizaciones y rehabilitar a este cliente?", { variant: "default", title: "Limpiar penalizaciones" })) {
       setPendingClearPenaltyUserId(id);
       try {
         await clearPenalties.mutateAsync(id);
@@ -165,7 +165,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground">
-              Gestión de Socios
+              Gestión de Clientes
             </h1>
             <p className="text-on-surface-variant text-sm sm:text-base">
               Administra tus clientes, historial y turnos fijos
@@ -177,7 +177,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
             startContent={<Plus size={20} />}
             onClick={handleCreate}
           >
-            Nuevo Socio
+            Nuevo Cliente
           </Button>
         </div>
 
@@ -206,7 +206,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
             <div className="col-span-full bg-dark-200/50 rounded-md p-12 text-center border border-dashed border-black/10 dark:border-white/10">
               <UserIcon size={48} className="mx-auto text-on-surface-variant mb-4" />
               <p className="text-on-surface-variant font-medium">
-                No se encontraron socios que coincidan con la búsqueda.
+                No se encontraron clientes que coincidan con la búsqueda.
               </p>
             </div>
           ) : (
@@ -330,7 +330,7 @@ export const Clients = ({ filterValue, onFilterChange }: ClientsProps) => {
                 )}
                 {!hasMore && filteredUsers.length > 12 && (
                   <p className="text-center text-on-surface-variant text-xs font-bold uppercase tracking-wide py-4">
-                    {filteredUsers.length} socios cargados
+                    {filteredUsers.length} clientes cargados
                   </p>
                 )}
               </div>
