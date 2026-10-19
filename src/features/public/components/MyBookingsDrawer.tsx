@@ -13,7 +13,7 @@ import {
   Spinner,
   addToast,
 } from "@heroui/react";
-import { AlertTriangle, Clock, CreditCard, History, MessageCircle, Phone } from "lucide-react";
+import { AlertTriangle, Clock, Copy, CreditCard, History, MessageCircle, Phone, Wallet } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -117,10 +117,14 @@ const BookingCard = ({
   cancellingId,
   payingId,
   showCancel,
+  onSeeTransfer,
+  clubDeposit,
 }: {
   booking: Booking;
   onCancelPress?: (b: Booking) => void;
   onPayPress?: (b: Booking) => void;
+  onSeeTransfer: (b: Booking) => void;
+  clubDeposit?: Props["deposit"];
   cancellingId: string | null;
   payingId: string | null;
   showCancel: boolean;
@@ -131,6 +135,10 @@ const BookingCard = ({
   const canPay =
     (booking.status === "pendiente_seña" || booking.status === "reservado") &&
     deposit?.status === "pendiente";
+  // Respeta el método configurado: si es transferencia NO se abre un link MP.
+  const isTransfer =
+    deposit?.method === "transfer" ||
+    (!deposit?.method && clubDeposit?.method === "transfer");
 
   return (
     <div className="rounded-xl border border-default-200 bg-default-50 p-4 flex flex-col gap-2">
@@ -156,7 +164,18 @@ const BookingCard = ({
           </Chip>
         </div>
       )}
-      {canPay && onPayPress && (
+      {canPay && isTransfer && (
+        <Button
+          size="sm"
+          color="primary"
+          onPress={() => onSeeTransfer(booking)}
+          className="mt-1 font-bold"
+          startContent={<Wallet size={15} />}
+        >
+          Ver datos de la seña
+        </Button>
+      )}
+      {canPay && !isTransfer && onPayPress && (
         <Button
           size="sm"
           color="primary"
@@ -200,6 +219,17 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
   const [confirmBooking, setConfirmBooking] = useState<Booking | null>(null);
   const [blockedBooking, setBlockedBooking] = useState<Booking | null>(null);
   const [paidDeposit, setPaidDeposit] = useState<{ booking: Booking; contactPhone: string } | null>(null);
+  // Datos de la seña por transferencia de una reserva existente ("Ver datos").
+  const [transferBooking, setTransferBooking] = useState<Booking | null>(null);
+
+  const copyToClipboard = async (value: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      addToast({ title: `${label} copiado`, color: "success" });
+    } catch {
+      addToast({ title: `${label}: ${value}`, color: "warning" });
+    }
+  };
   // Drag down to close (mobile bottom sheet): the sheet follows the finger and
   // closes past a small threshold; otherwise it springs back.
   const [dragY, setDragY] = useState(0);
@@ -413,6 +443,8 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
                           booking={b}
                           onCancelPress={handleCancelPress}
                           onPayPress={handlePayDeposit}
+                          onSeeTransfer={setTransferBooking}
+                          clubDeposit={deposit}
                           cancellingId={cancellingId}
                           payingId={payingId}
                           showCancel
@@ -437,6 +469,8 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
                         <BookingCard
                           key={b._id}
                           booking={b}
+                          onSeeTransfer={setTransferBooking}
+                          clubDeposit={deposit}
                           cancellingId={cancellingId}
                           payingId={payingId}
                           showCancel={false}
@@ -544,6 +578,76 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
                 </Button>
               </>
             )}
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={!!transferBooking} onClose={() => setTransferBooking(null)} size="sm">
+        <ModalContent>
+          <ModalHeader className="flex flex-col gap-1">Datos para la seña</ModalHeader>
+          <ModalBody className="gap-4">
+            <p className="text-sm text-default-500">
+              Transferí la seña
+              {typeof deposit?.amount === "number" && deposit.amount > 0
+                ? ` de $${deposit.amount.toLocaleString("es-AR")}`
+                : ""}{" "}
+              y después enviá el comprobante por WhatsApp.
+            </p>
+
+            {deposit?.alias ? (
+              <div className="rounded-lg border border-default-200 bg-default-50 p-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-default-400">Alias</p>
+                <div className="mt-1 flex items-center justify-between gap-2">
+                  <span className="font-mono text-base font-bold">{deposit.alias}</span>
+                  <Button size="sm" variant="flat" isIconOnly aria-label="Copiar alias"
+                    onPress={() => copyToClipboard(deposit.alias || "", "Alias")}>
+                    <Copy size={15} />
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+
+            {deposit?.cbu ? (
+              <div className="rounded-lg border border-default-200 bg-default-50 p-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-default-400">CBU</p>
+                <div className="mt-1 flex items-center justify-between gap-2">
+                  <span className="font-mono text-sm font-bold">{deposit.cbu}</span>
+                  <Button size="sm" variant="flat" isIconOnly aria-label="Copiar CBU"
+                    onPress={() => copyToClipboard(deposit.cbu || "", "CBU")}>
+                    <Copy size={15} />
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+
+            {deposit?.holder ? (
+              <div className="rounded-lg border border-default-200 bg-default-50 p-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-default-400">Titular</p>
+                <p className="mt-1 text-sm font-bold">{deposit.holder}</p>
+              </div>
+            ) : null}
+
+            <p className="text-xs text-amber-600">
+              El turno todavía no es tuyo: queda reservado hasta acreditar la seña.
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="flat" onPress={() => setTransferBooking(null)}>Cerrar</Button>
+            {paidPhoneDigits ? (
+              <Button
+                as="a"
+                href={`https://wa.me/${paidPhoneDigits}?text=${encodeURIComponent(
+                  `¡Hola! Envío el comprobante de la seña del turno ${transferBooking?.court?.name || ""} ${transferBooking?.date || ""} ${transferBooking?.timeSlot?.startTime || ""} 🎾`,
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                color="primary"
+                className="font-bold"
+                startContent={<MessageCircle size={15} />}
+              >
+                Enviar comprobante
+              </Button>
+            ) : null}
           </ModalFooter>
         </ModalContent>
       </Modal>
