@@ -1016,7 +1016,8 @@ export const BookingPortalPage = () => {
               isAuthenticated={isClientAuthenticated}
               cancellationLockHours={clubInfo?.cancellationLockHours ?? 0}
               contactPhone={clubInfo?.club?.contactPhone ?? ""}
-            />
+            deposit={clubInfo?.club?.deposit}
+              />
           </>
         )}
       </div>
