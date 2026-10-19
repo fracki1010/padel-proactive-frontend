@@ -46,6 +46,15 @@ interface Props {
   // Club's WhatsApp bot number (digits, may include non-digits). Shown when a
   // paid-deposit booking cannot be self-cancelled.
   contactPhone?: string;
+  // Club transfer data (alias/CBU/holder) for pending-transfer señas.
+  deposit?: {
+    enabled?: boolean;
+    amount?: number;
+    method?: string;
+    alias?: string;
+    cbu?: string;
+    holder?: string;
+  };
 }
 
 const phoneDigits = (phone?: string) => (phone || "").replace(/\D/g, "");
@@ -175,7 +184,7 @@ const BookingCard = ({
   );
 };
 
-export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cancellationLockHours, contactPhone }: Props) => {
+export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cancellationLockHours, contactPhone, deposit }: Props) => {
   const isDesktop = useIsDesktop();
   const queryClient = useQueryClient();
   const cancelMutation = useCancelBooking(slug);
@@ -371,8 +380,36 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
                   ) : (
                     <div className="flex flex-col gap-3">
                       {upcoming.map((b) => (
+                        <div key={b._id} className="flex flex-col gap-2">
+                        {b.deposit?.status === "pendiente" &&
+                          (b.deposit?.method === "transfer" || (!b.deposit?.method && deposit?.method === "transfer")) && (
+                            <div className="rounded-lg border border-warning-200 bg-warning-50 dark:bg-warning-900/20 p-3 text-xs">
+                              <p className="font-bold text-warning-600 dark:text-warning-400">
+                                Falta tu seña ({deposit?.amount != null ? `$${deposit.amount}` : "seña"}): el turno todavía no es tuyo.
+                              </p>
+                              <p className="mt-1 text-warning-600/90 dark:text-warning-400/90">
+                                Transferí{deposit?.alias ? ` al alias ${deposit.alias}` : ""}
+                                {deposit?.cbu ? ` (CBU ${deposit.cbu})` : ""}
+                                {deposit?.holder ? ` — Titular: ${deposit.holder}` : ""} y enviá el comprobante.
+                              </p>
+                              {paidPhoneDigits && (
+                                <Button
+                                  as="a"
+                                  href={`https://wa.me/${paidPhoneDigits}?text=${encodeURIComponent(
+                                    `¡Hola! Envío el comprobante de la seña del turno ${b.court?.name || ""} ${b.date} ${b.timeSlot?.startTime || ""} 🎾`,
+                                  )}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  size="sm"
+                                  className="mt-2 font-bold"
+                                  startContent={<MessageCircle size={14} />}
+                                >
+                                  Enviar comprobante
+                                </Button>
+                              )}
+                            </div>
+                          )}
                         <BookingCard
-                          key={b._id}
                           booking={b}
                           onCancelPress={handleCancelPress}
                           onPayPress={handlePayDeposit}
@@ -380,6 +417,7 @@ export const MyBookingsDrawer = ({ isOpen, onClose, slug, isAuthenticated, cance
                           payingId={payingId}
                           showCancel
                         />
+                        </div>
                       ))}
                     </div>
                   )}
