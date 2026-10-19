@@ -283,6 +283,16 @@ export const BookingConfirmModal = ({
   };
   const transferWhatsAppUrl = isTransferMode ? buildTransferWhatsAppUrl() : null;
 
+  const copyTransferValue = async (value: string, label: string) => {
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      addToast({ title: `${label} copiado`, color: "success" });
+    } catch {
+      addToast({ title: `${label}: ${value}`, color: "warning" });
+    }
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -348,9 +358,19 @@ export const BookingConfirmModal = ({
                         <>
                           {" "}
                           al alias{" "}
-                          <span className="font-black tracking-wide">
+                          <span className="font-mono font-black tracking-wide">
                             {pending.transfer.alias}
                           </span>
+                          <Button
+                            size="sm"
+                            variant="flat"
+                            isIconOnly
+                            aria-label="Copiar alias"
+                            className="ml-1 align-middle"
+                            onPress={() => copyTransferValue(pending.transfer?.alias || "", "Alias")}
+                          >
+                            <Copy size={14} />
+                          </Button>
                         </>
                       ) : null}
                       {!pending.transfer.alias && pending.transfer.cbu ? (
