@@ -43,6 +43,7 @@ export const useDepositSettingsManagement = () => {
   const [depositCbuInput, setDepositCbuInput] = useState("");
   const [depositHolderInput, setDepositHolderInput] = useState("");
   const [accessTokenInput, setAccessTokenInput] = useState("");
+  const [webhookSecretInput, setWebhookSecretInput] = useState("");
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isSavingCredential, setIsSavingCredential] = useState(false);
   const [isDeletingCredential, setIsDeletingCredential] = useState(false);
@@ -191,10 +192,13 @@ export const useDepositSettingsManagement = () => {
 
     setIsSavingCredential(true);
     try {
+      const normalizedSecret = webhookSecretInput.trim();
       await setMercadoPagoCredential.mutateAsync({
         accessToken: normalizedToken,
+        ...(normalizedSecret ? { webhookSecret: normalizedSecret } : {}),
       });
       setAccessTokenInput("");
+      setWebhookSecretInput("");
       addToast({ title: "Credencial de MercadoPago guardada", color: "success" });
     } catch (err: unknown) {
       addToast({
@@ -247,6 +251,8 @@ export const useDepositSettingsManagement = () => {
     depositCbuInput,
     depositHolderInput,
     accessTokenInput,
+    webhookSecretInput,
+    credentialHasWebhookSecret: Boolean(credentials?.hasWebhookSecret),
     credentialConfigured: Boolean(credentials?.configured),
     credentialMasked: credentials?.masked || "",
     credentialMpUserId: credentials?.mpUserId || "",
@@ -267,6 +273,7 @@ export const useDepositSettingsManagement = () => {
     onDepositCbuChange: setDepositCbuInput,
     onDepositHolderChange: setDepositHolderInput,
     onAccessTokenChange: setAccessTokenInput,
+    setWebhookSecretInput,
     onSaveSettings: handleSaveSettings,
     onSaveCredential: handleSaveCredential,
     onDeleteCredential: handleDeleteCredential,

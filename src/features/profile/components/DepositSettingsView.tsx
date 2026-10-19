@@ -53,6 +53,9 @@ type DepositSettingsViewProps = {
   onDepositCbuChange: (value: string) => void;
   onDepositHolderChange: (value: string) => void;
   onAccessTokenChange: (value: string) => void;
+  webhookSecretInput: string;
+  onWebhookSecretChange: (value: string) => void;
+  credentialHasWebhookSecret: boolean;
   onSaveSettings: () => void;
   onSaveCredential: () => void;
   onDeleteCredential: () => void;
@@ -96,6 +99,9 @@ export const DepositSettingsView = ({
   onDepositCbuChange,
   onDepositHolderChange,
   onAccessTokenChange,
+  webhookSecretInput,
+  onWebhookSecretChange,
+  credentialHasWebhookSecret,
   onSaveSettings,
   onSaveCredential,
   onDeleteCredential,
@@ -378,9 +384,30 @@ export const DepositSettingsView = ({
                 classNames={fieldClassNames}
               />
 
+              <Input
+                label="Webhook secret (clave secreta de MercadoPago)"
+                labelPlacement="outside"
+                value={webhookSecretInput}
+                onValueChange={onWebhookSecretChange}
+                placeholder="Pegá la clave secreta de Webhooks de MP"
+                type="password"
+                autoComplete="off"
+                isDisabled={isLoading}
+                className="flex-grow"
+                classNames={fieldClassNames}
+              />
+
+              {!credentialHasWebhookSecret ? (
+                <p className="text-[11px] font-bold text-amber-400">
+                  ⚠️ Sin esta clave el backend no puede verificar la firma de
+                  MercadoPago y los pagos NO se confirman automáticamente
+                  (quedarían pendientes de revisión).
+                </p>
+              ) : null}
+
               <p className="text-[11px] text-on-surface-variant">
-                El token se guarda encriptado y nunca se vuelve a mostrar. Al
-                guardar uno nuevo se reemplaza el anterior.
+                El token y la clave se guardan encriptados y nunca se vuelven a
+                mostrar. Al guardar se reemplazan los anteriores.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-2">

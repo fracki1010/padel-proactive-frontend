@@ -244,6 +244,9 @@ export const Profile = ({ courts: initialCourts }: ProfileProps) => {
           depositCbuInput={deposits.depositCbuInput}
           depositHolderInput={deposits.depositHolderInput}
           accessTokenInput={deposits.accessTokenInput}
+          webhookSecretInput={deposits.webhookSecretInput}
+          onWebhookSecretChange={deposits.setWebhookSecretInput}
+          credentialHasWebhookSecret={deposits.credentialHasWebhookSecret}
           credentialConfigured={deposits.credentialConfigured}
           credentialMasked={deposits.credentialMasked}
           credentialMpUserId={deposits.credentialMpUserId}

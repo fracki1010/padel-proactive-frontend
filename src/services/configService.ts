@@ -300,6 +300,7 @@ export type DepositCredential = {
   provider: string;
   masked: string;
   mpUserId: string;
+  hasWebhookSecret?: boolean;
 };
 
 export type DepositMethod = "transfer" | "mercadopago";
