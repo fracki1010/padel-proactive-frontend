@@ -361,16 +361,6 @@ export const BookingConfirmModal = ({
                           <span className="font-mono font-black tracking-wide">
                             {pending.transfer.alias}
                           </span>
-                          <Button
-                            size="sm"
-                            variant="flat"
-                            isIconOnly
-                            aria-label="Copiar alias"
-                            className="ml-1 align-middle"
-                            onPress={() => copyTransferValue(pending.transfer?.alias || "", "Alias")}
-                          >
-                            <Copy size={14} />
-                          </Button>
                         </>
                       ) : null}
                       {!pending.transfer.alias && pending.transfer.cbu ? (
@@ -390,6 +380,50 @@ export const BookingConfirmModal = ({
                       ) : null}
                       . Cuando esté, mandanos el comprobante por WhatsApp.
                     </p>
+
+                    {(pending.transfer.alias || pending.transfer.cbu) && (
+                      <div className="mt-2 flex flex-col gap-2">
+                        {pending.transfer.alias ? (
+                          <div className="flex items-center justify-between gap-2 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2">
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-700/70 dark:text-emerald-300/70">
+                                Alias
+                              </p>
+                              <p className="font-mono text-sm font-black truncate">{pending.transfer.alias}</p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="flat"
+                              className="shrink-0 font-bold"
+                              startContent={<Copy size={14} />}
+                              onPress={() => copyTransferValue(pending.transfer?.alias || "", "Alias")}
+                            >
+                              Copiar
+                            </Button>
+                          </div>
+                        ) : null}
+                        {pending.transfer.cbu ? (
+                          <div className="flex items-center justify-between gap-2 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2">
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-700/70 dark:text-emerald-300/70">
+                                CBU
+                              </p>
+                              <p className="font-mono text-sm font-black truncate">{pending.transfer.cbu}</p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="flat"
+                              className="shrink-0 font-bold"
+                              startContent={<Copy size={14} />}
+                              onPress={() => copyTransferValue(pending.transfer?.cbu || "", "CBU")}
+                            >
+                              Copiar
+                            </Button>
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
+
                     {pending.transfer.cbu && pending.transfer.alias ? (
                       <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
                         CBU: {pending.transfer.cbu}

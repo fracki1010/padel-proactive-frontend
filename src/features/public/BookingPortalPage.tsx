@@ -1,5 +1,5 @@
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner, addToast, useDisclosure } from "@heroui/react";
-import { ArrowRight, Calendar, Check, ChevronDown, ChevronUp, CircleDot, Clock, LayoutGrid, Leaf, Lock, LogIn, LogOut, MapPin, MessageCircle, Plus, Ticket, User, X } from "lucide-react";
+import { ArrowRight, Calendar, Check, Copy, ChevronDown, ChevronUp, CircleDot, Clock, LayoutGrid, Leaf, Lock, LogIn, LogOut, MapPin, MessageCircle, Plus, Ticket, User, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import logo from "../../assets/logo-8.svg";
@@ -141,6 +141,8 @@ export const BookingPortalPage = () => {
   const bookingsPaused = clubInfo?.club?.bookingsPaused === true;
   // Número del ADMIN (el de la card "WhatsApp Admin"), no el del bot: es a ese
   // al que el cliente debe escribir para reservar mientras las reservas están pausadas.
+  // Número del BOT (es el que lee los comprobantes por WhatsApp).
+  const contactPhoneDigits = String(clubInfo?.club?.contactPhone || "").replace(/\D/g, "");
   const adminPhoneDigits = String((clubInfo?.club as { adminPhone?: string } | undefined)?.adminPhone || "").replace(/\D/g, "");
   const { data: availability, isFetching: isLoadingAvail } = usePortalAvailability(
     slug,
@@ -320,6 +322,16 @@ export const BookingPortalPage = () => {
     setSelectedSlot(null);
     setLock(null);
     refreshAvailability();
+  };
+
+  const copyDepositAlias = async (value: string, label: string) => {
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      addToast({ title: `${label} copiado`, color: "success" });
+    } catch {
+      addToast({ title: `${label}: ${value}`, color: "warning" });
+    }
   };
 
   const handleDepositPending = useCallback(
@@ -952,11 +964,51 @@ export const BookingPortalPage = () => {
                       : ""}
                   </p>
                   {pendingDeposit.transfer ? (
-                    <p className="text-[11px] text-on-surface-variant font-semibold truncate">
-                      Transferencia: enviá el comprobante por WhatsApp
-                    </p>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <p className="text-[11px] text-on-surface-variant font-semibold truncate">
+                        Alias:{" "}
+                        <span className="font-mono font-black text-foreground">
+                          {pendingDeposit.transfer.alias || pendingDeposit.transfer.cbu || ""}
+                        </span>
+                      </p>
+                      {(pendingDeposit.transfer.alias || pendingDeposit.transfer.cbu) && (
+                        <Button
+                          isIconOnly
+                          size="sm"
+                          variant="light"
+                          className="shrink-0"
+                          aria-label="Copiar alias"
+                          title="Copiar alias"
+                          onPress={() =>
+                            copyDepositAlias(
+                              pendingDeposit.transfer?.alias || pendingDeposit.transfer?.cbu || "",
+                              pendingDeposit.transfer?.alias ? "Alias" : "CBU",
+                            )
+                          }
+                        >
+                          <Copy size={15} />
+                        </Button>
+                      )}
+                    </div>
                   ) : null}
                 </div>
+                {!expired && pendingDeposit.transfer && contactPhoneDigits && (
+                  <Button
+                    as="a"
+                    href={`https://wa.me/${contactPhoneDigits}?text=${encodeURIComponent(
+                      "¡Hola! Envío el comprobante de la seña 🎾",
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    color="primary"
+                    radius="full"
+                    size="sm"
+                    className="font-bold shrink-0"
+                    startContent={<MessageCircle size={14} />}
+                  >
+                    Comprobante
+                  </Button>
+                )}
                 {!expired && !pendingDeposit.transfer && (
                   <Button
                     color="primary"
