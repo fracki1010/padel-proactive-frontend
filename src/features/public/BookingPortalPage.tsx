@@ -395,23 +395,48 @@ export const BookingPortalPage = () => {
 
   // Group availability by time slot: one row per horario with the count of
   // free courts, then the court list when expanded.
-  const slotRows = useMemo(() => {
+  const slotGroups = useMemo(() => {
     const availableByKey = new Map<string, boolean>();
     (availability?.availability || []).forEach((item) => {
       availableByKey.set(`${item.courtId}_${item.slotId}`, item.available);
     });
-    return slots.map((slot) => {
-      const availableCourts = courts.filter(
-        (court) => availableByKey.get(`${court._id}_${slot._id}`) === true,
-      );
-      const past = isSlotPast(slot.startTime, selectedDate);
-      return {
-        slot,
-        availableCourts,
-        past,
-        disabled: past || availableCourts.length === 0,
-      };
-    });
+
+    // Cada cancha tiene su PROPIO horario (documento distinto, misma hora), así
+    // que se agrupa por hora de inicio para mostrar UNA fila con todas las canchas.
+    const byTime = new Map<string, Map<string, Slot>>();
+    for (const slot of slots) {
+      const courtId = String((slot as { court?: string }).court || "");
+      if (!byTime.has(slot.startTime)) byTime.set(slot.startTime, new Map());
+      byTime.get(slot.startTime)!.set(courtId, slot);
+    }
+
+    return [...byTime.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([startTime, slotsByCourt]) => {
+        const entries = courts
+          .map((court) => {
+            const slot = slotsByCourt.get(String(court._id));
+            if (!slot) return null;
+            if (availableByKey.get(`${court._id}_${slot._id}`) !== true) return null;
+            return { court, slot };
+          })
+          .filter((entry): entry is { court: Court; slot: Slot } => Boolean(entry));
+
+        const prices = entries
+          .map(({ slot }) => Number(slot.price) || 0)
+          .filter((price) => price > 0);
+        const first = [...slotsByCourt.values()][0];
+        const past = isSlotPast(startTime, selectedDate);
+
+        return {
+          startTime,
+          duration: first ? calcDurationMin(first.startTime, first.endTime) : 0,
+          entries,
+          minPrice: prices.length ? Math.min(...prices) : 0,
+          past,
+          disabled: past || entries.length === 0,
+        };
+      });
   }, [slots, courts, availability, selectedDate]);
 
   // Derived display labels for the restyled hero and docked action bar. Purely
@@ -741,14 +766,13 @@ export const BookingPortalPage = () => {
                 </span>
               </div>
 
-              {slotRows.filter(({ past }) => !past).map(({ slot, availableCourts, past, disabled }) => {
-                const count = availableCourts.length;
-                const expanded = expandedSlotId === slot._id;
-                const duration = calcDurationMin(slot.startTime, slot.endTime);
+              {slotGroups.filter(({ past }) => !past).map(({ startTime, entries, minPrice, past, disabled, duration }) => {
+                const count = entries.length;
+                const expanded = expandedSlotId === startTime;
 
                 return (
                   <article
-                    key={slot._id}
+                    key={startTime}
                     className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low shadow-sm transition-all"
                   >
                     {/* Fila de horario (accordion header) */}
@@ -758,7 +782,7 @@ export const BookingPortalPage = () => {
                       aria-expanded={expanded}
                       onClick={() => {
                         vibrate(HAPTIC_TAP);
-                        setExpandedSlotId(expanded ? null : slot._id);
+                        setExpandedSlotId(expanded ? null : startTime);
                       }}
                       className={`
                         flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors
@@ -771,7 +795,7 @@ export const BookingPortalPage = () => {
                       <div>
                         <div className="flex items-baseline gap-2">
                           <span className={`text-2xl font-bold tabular-nums leading-none ${disabled ? "text-on-surface-variant" : "text-on-surface"}`}>
-                            {slot.startTime}
+                            {startTime}
                           </span>
                           {duration > 0 && (
                             <span className="text-xs font-medium uppercase tracking-wider text-outline">
@@ -794,6 +818,11 @@ export const BookingPortalPage = () => {
                             {count} {count === 1 ? "cancha libre" : "canchas libres"}
                           </span>
                         )}
+                        {!disabled && minPrice > 0 && (
+                          <span className="mt-0.5 block text-[11px] font-semibold text-on-surface-variant">
+                            desde ${minPrice.toLocaleString("es-AR")}
+                          </span>
+                        )}
                       </div>
 
                       {!disabled && (
@@ -811,7 +840,7 @@ export const BookingPortalPage = () => {
                     {/* Canchas disponibles del horario */}
                     {expanded && count > 0 && (
                       <div className="space-y-2.5 bg-surface-container-low p-3">
-                        {availableCourts.map((court) => {
+                        {entries.map(({ court, slot }) => {
                           const sel =
                             selectedSlot?.court._id === court._id &&
                             selectedSlot?.slot._id === slot._id;
