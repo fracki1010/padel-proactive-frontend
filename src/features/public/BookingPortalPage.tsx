@@ -1,4 +1,4 @@
-import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner, addToast, useDisclosure } from "@heroui/react";
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner, addToast, useDisclosure } from "@heroui/react";
 import { ArrowRight, Calendar, Check, Copy, ChevronDown, ChevronUp, CircleDot, Clock, LayoutGrid, Leaf, Lock, LogIn, LogOut, MapPin, MessageCircle, Plus, Ticket, User, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -81,6 +81,16 @@ const MONTH_NAMES = [
   "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE",
 ];
 
+const formatLongDate = (iso: string) => {
+  const date = new Date(`${iso}T00:00:00`);
+  const label = date.toLocaleDateString("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+};
+
 const getDateParts = (iso: string) => {
   const [y, m, d] = iso.split("-").map(Number);
   const date = new Date(y, m - 1, d);
@@ -118,6 +128,8 @@ export const BookingPortalPage = () => {
   const [selectedDate, setSelectedDate] = useState(dates[0]);
   const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
   const [expandedSlotId, setExpandedSlotId] = useState<string | null>(null);
+  // Sin seña: no se crea reserva, se coordina por WhatsApp con el admin.
+  const [whatsappBooking, setWhatsappBooking] = useState<SelectedSlot | null>(null);
 
   const [lock, setLock] = useState<ActiveLock | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
@@ -301,6 +313,17 @@ export const BookingPortalPage = () => {
 
   const handleCompleteBooking = () => {
     if (bookingsPaused || !selectedSlot) return;
+
+    // El club no cobra seña: no se crea la reserva; se coordina por WhatsApp.
+    const depositsDisabled = clubInfo?.club?.deposit?.enabled === false;
+    if (depositsDisabled && adminPhoneDigits) {
+      vibrate(HAPTIC_TAP);
+      releaseLock(lock);
+      setLock(null);
+      setWhatsappBooking(selectedSlot);
+      return;
+    }
+
     if (!isClientAuthenticated) openAuth();
     else openConfirm();
   };
@@ -1099,6 +1122,63 @@ export const BookingPortalPage = () => {
               contactPhone={clubInfo?.club?.contactPhone ?? ""}
             deposit={clubInfo?.club?.deposit}
               />
+
+        {/* Sin seña: coordinar por WhatsApp (no se crea la reserva) */}
+        <Modal isOpen={Boolean(whatsappBooking)} onClose={() => setWhatsappBooking(null)} size="sm">
+          <ModalContent>
+            <ModalHeader className="flex flex-col gap-1">Reservá por WhatsApp</ModalHeader>
+            <ModalBody className="gap-4">
+              <p className="text-sm text-on-surface-variant">
+                Este club coordina las reservas por WhatsApp. No se crea la reserva
+                automáticamente: escribinos y te la confirman.
+              </p>
+              {whatsappBooking && (
+                <div className="rounded-lg border border-outline-variant bg-surface-container-low p-3 text-sm">
+                  <p className="font-bold text-on-surface">
+                    {whatsappBooking.court.name} · {whatsappBooking.slot.startTime} hs
+                  </p>
+                  <p className="text-on-surface-variant">
+                    {formatLongDate(selectedDate)}
+                    {whatsappBooking.slot.price > 0
+                      ? ` · $${whatsappBooking.slot.price.toLocaleString("es-AR")}`
+                      : ""}
+                  </p>
+                </div>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="flat" onPress={() => setWhatsappBooking(null)}>
+                Cancelar
+              </Button>
+              {adminPhoneDigits && (
+                <Button
+                  as="a"
+                  href={`https://wa.me/${adminPhoneDigits}?text=${encodeURIComponent(
+                    [
+                      "¡Hola! Quiero reservar este turno:",
+                      `Cancha: ${whatsappBooking?.court.name || ""}`,
+                      `Fecha: ${formatLongDate(selectedDate)}`,
+                      `Hora: ${whatsappBooking?.slot.startTime || ""} hs`,
+                      whatsappBooking?.slot.price
+                        ? `Precio: $${whatsappBooking.slot.price.toLocaleString("es-AR")}`
+                        : "",
+                      clientUser?.name ? `Mi nombre: ${clientUser.name}` : "",
+                    ]
+                      .filter(Boolean)
+                      .join("\n"),
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  color="primary"
+                  className="font-bold"
+                  startContent={<MessageCircle size={16} />}
+                >
+                  Abrir WhatsApp
+                </Button>
+              )}
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
           </>
         )}
       </div>
