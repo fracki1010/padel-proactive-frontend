@@ -32,7 +32,7 @@ import { useIsDesktop } from "./hooks/useIsDesktop";
 const APP_ACTIVE_TAB_KEY = "padexa:last-active-tab";
 const APP_FILTER_VALUE_KEY = "padexa:last-filter-value";
 const APP_SELECTED_COURT_KEY = "padexa:last-selected-court";
-const ALLOWED_APP_TABS = new Set(["panel", "reservas", "turnos-fijos", "socios", "configuracion"]);
+const ALLOWED_APP_TABS = new Set(["panel", "reservas", "turnos-fijos", "clientes", "configuracion"]);
 
 const readStoredString = (key: string, fallback = "") => {
   if (typeof window === "undefined") return fallback;
@@ -42,7 +42,9 @@ const readStoredString = (key: string, fallback = "") => {
 
 const readStoredTab = () => {
   const storedTab = readStoredString(APP_ACTIVE_TAB_KEY, "panel");
-  return ALLOWED_APP_TABS.has(storedTab) ? storedTab : "panel";
+  // Compatibilidad: antes la pestaña se llamaba "socios".
+  const normalizedTab = storedTab === "socios" ? "clientes" : storedTab;
+  return ALLOWED_APP_TABS.has(normalizedTab) ? normalizedTab : "panel";
 };
 
 const getTabFromPathname = (pathname: string): string | null => {
@@ -61,7 +63,7 @@ const getBookingIdFromPathname = (pathname: string): string | null => {
 
 const getClientIdFromPathname = (pathname: string): string | null => {
   const [firstSegment = "", secondSegment = ""] = pathname.split("/").filter(Boolean);
-  if (firstSegment !== "socios") return null;
+  if (firstSegment !== "clientes") return null;
   if (!secondSegment) return null;
   return secondSegment;
 };
@@ -82,7 +84,7 @@ const getScreenTitle = (activeTab: string, isCreating: boolean) => {
   switch (activeTab) {
     case "panel":
       return "Panel Principal";
-    case "socios":
+    case "clientes":
       return "Clientes";
     case "reservas":
       return "Turnos";
@@ -383,7 +385,7 @@ export default function App() {
                 >
                   <Navbar
                     title={
-                      activeTab === "socios" && clientIdFromPath
+                      activeTab === "clientes" && clientIdFromPath
                         ? "Detalle Cliente"
                         : getScreenTitle(activeTab, isCreating)
                     }

@@ -20,7 +20,7 @@ const navItems = [
   { id: "panel", label: "Dashboard", icon: LayoutGrid },
   { id: "reservas", label: "Turnos", icon: Calendar },
   { id: "turnos-fijos", label: "Turnos fijos", icon: CalendarClock },
-  { id: "socios", label: "Clientes", icon: Users },
+  { id: "clientes", label: "Clientes", icon: Users },
 ];
 
 export const DesktopSidebar = ({

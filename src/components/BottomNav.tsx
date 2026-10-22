@@ -18,7 +18,7 @@ export const BottomNav = ({
     { id: "reservas", label: "Reservas", icon: Calendar },
     { id: "fab", isFab: true },
     { id: "turnos-fijos", label: "Turnos fijos", icon: CalendarClock },
-    { id: "socios", label: "Clientes", icon: Users },
+    { id: "clientes", label: "Clientes", icon: Users },
   ];
 
   return (
