@@ -49,7 +49,7 @@ export const AppMainContent = ({
   switch (activeTab) {
     case "panel":
       return <Dashboard courts={courts} onBookingClick={onBookingClick} />;
-    case "socios":
+    case "clientes":
       return clientIdFromPath ? (
         <ClientDetailPage clientId={clientIdFromPath} />
       ) : (
