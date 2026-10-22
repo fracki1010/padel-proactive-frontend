@@ -6,6 +6,7 @@ import { formatCurrency, formatPhoneForDisplay, toIsoDateKey } from "../../../ut
 import { Pagination } from "../../../components/ui/Pagination";
 import { StatCard } from "../../../components/ui/StatCard";
 import { SectionHeader } from "../../../components/ui/SectionHeader";
+import { attendanceToneClasses, resolveAttendanceDisplay } from "../../../utils/attendance";
 
 type BookingsDesktopViewProps = {
   bookings: any[];
@@ -37,11 +38,15 @@ export const BookingsDesktopView = ({
   const totalPages = Math.max(1, Math.ceil(bookings.length / PAGE_SIZE));
   const activePage = Math.min(currentPage, totalPages);
 
-  const paidCount = useMemo(
-    () => bookings.filter((booking) => booking.paymentStatus === "pagado").length,
-    [bookings],
-  );
-  const pendingCount = Math.max(0, bookings.length - paidCount);
+  const attendanceCounts = useMemo(() => {
+    const attended = bookings.filter(
+      (booking) => resolveAttendanceDisplay(booking).label === "Asistió",
+    ).length;
+    const absent = bookings.filter(
+      (booking) => resolveAttendanceDisplay(booking).label === "No asistió",
+    ).length;
+    return { attended, absent, unmarked: Math.max(0, bookings.length - attended - absent) };
+  }, [bookings]);
   const selectedCourtLabel = useMemo(() => {
     if (selectedCourt === "all") return "Todas las canchas";
     return courts.find((court) => court._id === selectedCourt)?.name || "Cancha filtrada";
@@ -133,8 +138,8 @@ export const BookingsDesktopView = ({
 
         <div className="mt-4 grid grid-cols-2 xl:grid-cols-4 gap-2">
           <StatCard label="Total" value={bookings.length} variant="mini" />
-          <StatCard label="Pagadas" value={paidCount} variant="mini" />
-          <StatCard label="Pendientes" value={pendingCount} variant="mini" />
+          <StatCard label="Asistieron" value={attendanceCounts.attended} variant="mini" />
+          <StatCard label="No asistieron" value={attendanceCounts.absent} variant="mini" />
           <StatCard label="Filtro actual" value={selectedCourtLabel} variant="mini" />
         </div>
       </div>
@@ -169,9 +174,9 @@ export const BookingsDesktopView = ({
               <div className="flex items-center gap-2">
                 <Chip
                   size="sm"
-                  className={`font-black uppercase ${booking.paymentStatus === "pagado" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-red-500/20 text-red-300 border border-red-500/30"}`}
+                  className={`font-black uppercase ${attendanceToneClasses[resolveAttendanceDisplay(booking).tone]}`}
                 >
-                  {booking.paymentStatus === "pagado" ? "Pagado" : "Pendiente"}
+                  {resolveAttendanceDisplay(booking).label}
                 </Chip>
                 <p className="font-black text-foreground">{formatCurrency(Number(booking.finalPrice) || 0)}</p>
               </div>

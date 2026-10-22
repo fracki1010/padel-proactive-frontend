@@ -19,6 +19,10 @@ export const bookingService = {
     return response.data;
   },
 
+  setAttendance: async (id: string, status: "attended" | "absent" | "unmarked") => {
+    const response = await api.patch(`/bookings/${id}/attendance`, { status });
+    return response.data;
+  },
   updateBooking: async (id: string, data: any) => {
     const response = await api.put(`/bookings/${id}`, data);
     return response.data;

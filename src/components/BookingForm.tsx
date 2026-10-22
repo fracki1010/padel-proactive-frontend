@@ -102,7 +102,6 @@ export const BookingForm = ({
   const [clientPhoneCountry, setClientPhoneCountry] = useState<PhoneCountryId>(
     DEFAULT_PHONE_COUNTRY_ID,
   );
-  const [paymentStatus, setPaymentStatus] = useState("pagado");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -167,8 +166,6 @@ export const BookingForm = ({
         setClientPhoneLocal(parsedPhone.localNumber);
         setClientPhoneCountry(parsedPhone.countryId);
       }
-      if (initialData.paymentStatus)
-        setPaymentStatus(initialData.paymentStatus);
     }
   }, [initialData]);
 
@@ -224,7 +221,6 @@ export const BookingForm = ({
         time: activeTime,
         clientName: existingUser?.name || trimmedClientName,
         clientPhone: trimmedClientPhone,
-        paymentStatus,
       },
       {
         onSuccess: () => {
@@ -497,36 +493,6 @@ export const BookingForm = ({
 
         {/* Payment Status */}
         <section className="space-y-6">
-          <div className="flex items-center gap-2 px-1">
-            <CheckCircle2 size={16} className="text-primary" />
-            <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">
-              Estado del Pago
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-dark-100/30 p-4 rounded-lg border border-black/5 dark:border-white/5">
-            <Button
-              type="button"
-              className={`h-14 rounded-md font-bold transition-all ${
-                paymentStatus === "pagado"
-                  ? "bg-primary text-black dark:text-white shadow-lg shadow-primary/20"
-                  : "bg-dark-100/50 text-on-surface-variant border border-black/5 dark:border-white/5"
-              }`}
-              onClick={() => setPaymentStatus("pagado")}
-            >
-              <CheckCircle2 size={18} /> Pagado
-            </Button>
-            <Button
-              type="button"
-              className={`h-14 rounded-md font-bold transition-all ${
-                paymentStatus === "pendiente"
-                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
-                  : "bg-dark-100/50 text-on-surface-variant border border-black/5 dark:border-white/5"
-              }`}
-              onClick={() => setPaymentStatus("pendiente")}
-            >
-              <AlertCircle size={18} /> Pendiente
-            </Button>
-          </div>
         </section>
 
         <Button

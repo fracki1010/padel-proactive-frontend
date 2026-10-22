@@ -49,6 +49,17 @@ export const useUpdateBooking = () => {
 // Marks a transfer seña as received from the booking detail. The transition
 // also confirms the client by WhatsApp, so the bookings list and any other
 // reads must refresh afterwards.
+export const useSetBookingAttendance = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: "attended" | "absent" | "unmarked" }) =>
+      bookingService.setAttendance(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+    },
+  });
+};
+
 export const useConfirmDepositReceived = () => {
   const queryClient = useQueryClient();
 
