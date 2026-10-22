@@ -52,12 +52,24 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
 
   const handleSave = async () => {
     try {
-      const data: { name: string; phoneNumber?: string } = { name };
+      const trimmedName = name.trim();
+      if (!trimmedName) {
+        addToast({ title: "Ingresá el nombre del cliente", color: "warning" });
+        return;
+      }
+
+      const data: { name: string; phoneNumber?: string } = { name: trimmedName };
 
       // Verified clients have a phone verified via WhatsApp OTP; never resend
       // it so the backend phone-lock guard is not triggered.
       if (!isPhoneLocked) {
-        data.phoneNumber = composePhoneForStorage(phoneCountry, phoneLocal);
+        const phone = composePhoneForStorage(phoneCountry, phoneLocal);
+        // El modelo exige teléfono: validamos acá para no fallar con un error crudo.
+        if (!phoneLocal.trim() || !phone) {
+          addToast({ title: "Ingresá el teléfono del cliente", color: "warning" });
+          return;
+        }
+        data.phoneNumber = phone;
       }
 
       if (mode === "create") {
@@ -69,8 +81,11 @@ export const UserModal = ({ isOpen, onClose, user, mode }: UserModalProps) => {
       }
 
       onClose();
-    } catch {
-      addToast({ title: "Error al guardar cliente", color: "danger" });
+    } catch (err) {
+      const message =
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+        "Error al guardar cliente";
+      addToast({ title: message, color: "danger" });
     }
   };
 
