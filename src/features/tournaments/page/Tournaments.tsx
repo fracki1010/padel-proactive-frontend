@@ -4,28 +4,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useConfirm } from "../../../hooks/useConfirm";
-import type {
-  Tournament,
-  TournamentStatus,
-} from "../../../services/tournamentService";
+import { getErrorMessage } from "../../../services/apiError";
+import type { Tournament } from "../../../services/tournamentService";
 import { TournamentFormModal } from "../components/TournamentFormModal";
+import { TOURNAMENT_STATUS_META } from "../constants";
 import { useDeleteTournament, useTournaments } from "../hooks/useTournaments";
-
-const STATUS_META: Record<
-  TournamentStatus,
-  { label: string; color: "default" | "primary" | "success" | "danger" }
-> = {
-  draft: { label: "Borrador", color: "default" },
-  in_progress: { label: "En curso", color: "primary" },
-  finished: { label: "Finalizado", color: "success" },
-  cancelled: { label: "Cancelado", color: "danger" },
-};
-
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  const message = (error as { response?: { data?: { error?: string } } })
-    ?.response?.data?.error;
-  return typeof message === "string" && message ? message : fallback;
-};
 
 const courtCountLabel = (count: number): string =>
   `${count} ${count === 1 ? "cancha" : "canchas"}`;
@@ -129,7 +112,7 @@ export const Tournaments = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {tournaments.map((tournament) => {
-            const status = STATUS_META[tournament.status];
+            const status = TOURNAMENT_STATUS_META[tournament.status];
             return (
               <article
                 key={tournament._id}

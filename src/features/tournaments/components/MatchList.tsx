@@ -2,13 +2,12 @@ import { Spinner } from "@heroui/react";
 
 import { useCourts, useSlots } from "../../../hooks/useData";
 import type {
-  Tournament, TournamentBracket, TournamentCategory, TournamentTeam,
+  Tournament, TournamentCategory, TournamentTeam,
 } from "../../../services/tournamentService";
 import { useBracket } from "../hooks/useTournaments";
+import { courtName, flattenMatches, slotLabel } from "../utils/bracket";
+import { MatchActionsNotice } from "./MatchActionsNotice";
 import { MatchCard } from "./MatchCard";
-
-const flattenMatches = (bracket?: TournamentBracket | null) =>
-  bracket?.rounds.flatMap((round) => round.matches) ?? [];
 
 type MatchListProps = {
   mode: "schedule" | "results";
@@ -27,11 +26,17 @@ export const MatchList = ({ mode, tournamentId, tournament, category, teams }: M
   const matches = allMatches
     .filter((match) => (mode === "schedule" ? match.status === "ready" : match.status === "ready" || match.status === "played"))
     .sort((left, right) => left.round - right.round || left.position - right.position);
-  const courtName = (id: string) => (courtsData?.data ?? []).find((court) => court._id === id)?.name ?? "Cancha";
-  const slotLabel = (id: string) => {
-    const slot = (slotsData?.data ?? []).find((item) => item._id === id);
-    return slot ? `${slot.startTime} - ${slot.endTime}` : "Horario";
-  };
+  const courts = courtsData?.data ?? [];
+  const slots = slotsData?.data ?? [];
+  const resolveCourtName = (id: string) => courtName(courts, id);
+  const resolveSlotLabel = (id: string) => slotLabel(slots, id);
+
+  const notice = (
+    <MatchActionsNotice
+      bracketStale={category.bracketStale}
+      tournamentStatus={tournament.status}
+    />
+  );
 
   if (isLoading) return <div className="flex justify-center py-12"><Spinner color="primary" /></div>;
   if (isError) {
@@ -64,6 +69,7 @@ export const MatchList = ({ mode, tournamentId, tournament, category, teams }: M
 
   return (
     <div className="space-y-4">
+      {notice}
       <p className="text-sm text-on-surface-variant">
         {mode === "schedule"
           ? "Elegí cancha, fecha y horario de cada partido. Programar no crea una reserva."
@@ -73,7 +79,7 @@ export const MatchList = ({ mode, tournamentId, tournament, category, teams }: M
         {matches.map((match) => (
           <MatchCard key={match._id} tournamentId={tournamentId} categoryId={category._id}
             tournament={tournament} match={match} teams={teams} allMatches={allMatches}
-            bracketStale={category.bracketStale} courtName={courtName} slotLabel={slotLabel} />
+            bracketStale={category.bracketStale} courtName={resolveCourtName} slotLabel={resolveSlotLabel} />
         ))}
       </div>
     </div>

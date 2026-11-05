@@ -75,10 +75,19 @@ export interface TournamentMatch {
 
 export interface BracketRound { round: number; matches: TournamentMatch[] }
 export interface TournamentBracket { bracketSize: number | null; rounds: BracketRound[] }
+// The backend normalizes `champion` to a team id or null. Older responses may
+// still return the populated team object, so keep both shapes tolerated.
+export type ChampionRef = string | { _id?: string | null } | null;
+export const resolveChampionId = (champion?: ChampionRef): string | null =>
+  champion == null
+    ? null
+    : typeof champion === "string"
+      ? champion
+      : (champion._id ?? null);
 export interface GenerateBracketResponse extends TournamentBracket {
-  bracketSize: number; champion: string | null; drawSeed: number;
+  bracketSize: number; champion: ChampionRef; drawSeed: number;
 }
-export interface MatchResultResponse { match: TournamentMatch; champion: string | null }
+export interface MatchResultResponse { match: TournamentMatch; champion: ChampionRef }
 export interface ScheduleMatchPayload { court: string; date: string; timeSlot: string }
 
 const unwrap = <T>(response: { data?: { data?: T } }): T =>
@@ -174,13 +183,18 @@ export const tournamentService = {
   getBracket: async (tournamentId: string, categoryId: string): Promise<TournamentBracket> =>
     unwrap(await api.get(`/tournaments/${tournamentId}/categories/${categoryId}/bracket`)),
 
-  generateBracket: async (tournamentId: string, categoryId: string, seed?: number): Promise<GenerateBracketResponse> =>
-    unwrap(await api.post(`/tournaments/${tournamentId}/categories/${categoryId}/bracket`, seed != null ? { seed } : {})),
+  generateBracket: async (tournamentId: string, categoryId: string): Promise<GenerateBracketResponse> =>
+    unwrap(await api.post(`/tournaments/${tournamentId}/categories/${categoryId}/bracket`, {})),
 
   recordResult: async (
     tournamentId: string, categoryId: string, matchId: string, scoreA: number, scoreB: number,
   ): Promise<MatchResultResponse> =>
     unwrap(await api.post(`/tournaments/${tournamentId}/categories/${categoryId}/matches/${matchId}/result`, { scoreA, scoreB })),
+
+  updateResult: async (
+    tournamentId: string, categoryId: string, matchId: string, scoreA: number, scoreB: number,
+  ): Promise<MatchResultResponse> =>
+    unwrap(await api.put(`/tournaments/${tournamentId}/categories/${categoryId}/matches/${matchId}/result`, { scoreA, scoreB })),
 
   clearResult: async (tournamentId: string, categoryId: string, matchId: string): Promise<TournamentMatch> =>
     unwrap(await api.delete(`/tournaments/${tournamentId}/categories/${categoryId}/matches/${matchId}/result`)),

@@ -15,11 +15,13 @@ import { useState } from "react";
 
 import { fieldInputClassNames, fieldSelectClassNames } from "../../../components/ui/fieldStyles";
 import { useCourts } from "../../../hooks/useData";
-import type { Tournament } from "../../../services/tournamentService";
+import { getApiConflicts, getErrorMessage } from "../../../services/apiError";
+import type { Tournament, TournamentConflict, TournamentPayload } from "../../../services/tournamentService";
 import {
   useCreateTournament,
   useUpdateTournament,
 } from "../hooks/useTournaments";
+import { TournamentConflictsModal } from "./TournamentConflictsModal";
 
 type TournamentFormModalProps = {
   isOpen: boolean;
@@ -28,18 +30,13 @@ type TournamentFormModalProps = {
 };
 
 const MAX_TOURNAMENT_DAYS = 120;
-
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  const message = (error as { response?: { data?: { error?: string } } })
-    ?.response?.data?.error;
-  return typeof message === "string" && message ? message : fallback;
-};
+const MS_PER_DAY = 86_400_000;
 
 const daySpan = (startDate: string, endDate: string): number =>
   Math.round(
     (Date.parse(`${endDate}T00:00:00.000Z`) -
       Date.parse(`${startDate}T00:00:00.000Z`)) /
-      86400000,
+      MS_PER_DAY,
   ) + 1;
 
 const labelClass =
@@ -60,6 +57,7 @@ export const TournamentFormModal = ({
   const [startDate, setStartDate] = useState(editing?.startDate ?? "");
   const [endDate, setEndDate] = useState(editing?.endDate ?? "");
   const [courtIds, setCourtIds] = useState<string[]>(editing?.courts ?? []);
+  const [conflicts, setConflicts] = useState<TournamentConflict[] | null>(null);
 
   const availableCourts = (courtsData?.data ?? []).filter(
     (court) => court.isActive !== false,
@@ -84,6 +82,19 @@ export const TournamentFormModal = ({
     return null;
   };
 
+  const buildPayload = (): TournamentPayload => ({
+    name: name.trim(),
+    description: description.trim(),
+    startDate,
+    endDate,
+    courts: courtIds,
+  });
+
+  const closeAll = () => {
+    setConflicts(null);
+    onClose();
+  };
+
   const handleSubmit = async () => {
     const validationError = validate();
     if (validationError) {
@@ -91,22 +102,38 @@ export const TournamentFormModal = ({
       return;
     }
 
-    const payload = {
-      name: name.trim(),
-      description: description.trim(),
-      startDate,
-      endDate,
-      courts: courtIds,
-    };
-
     try {
       if (editing) {
-        await updateTournament.mutateAsync({ id: editing._id, data: payload });
+        await updateTournament.mutateAsync({ id: editing._id, data: buildPayload() });
         addToast({ title: "Torneo actualizado", color: "success" });
       } else {
-        await createTournament.mutateAsync(payload);
+        await createTournament.mutateAsync(buildPayload());
         addToast({ title: "Torneo creado", color: "success" });
       }
+      closeAll();
+    } catch (error) {
+      const conflictList = editing ? getApiConflicts(error) : null;
+      if (conflictList) {
+        setConflicts(conflictList);
+        return;
+      }
+      addToast({
+        title: getErrorMessage(error, "No se pudo guardar el torneo"),
+        color: "danger",
+      });
+    }
+  };
+
+  const handleConfirmConflicts = async () => {
+    if (!editing) return;
+    try {
+      await updateTournament.mutateAsync({
+        id: editing._id,
+        data: buildPayload(),
+        confirmConflicts: true,
+      });
+      setConflicts(null);
+      addToast({ title: "Torneo actualizado", color: "success" });
       onClose();
     } catch (error) {
       addToast({
@@ -117,9 +144,10 @@ export const TournamentFormModal = ({
   };
 
   return (
+    <>
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeAll}
       size="2xl"
       backdrop="blur"
       className="bg-surface-container-high text-foreground dark"
@@ -136,8 +164,9 @@ export const TournamentFormModal = ({
 
         <ModalBody className="space-y-5">
           <div className="space-y-2">
-            <label className={labelClass}>Nombre</label>
+            <label htmlFor="tournament-name" className={labelClass}>Nombre</label>
             <Input
+              id="tournament-name"
               value={name}
               onValueChange={setName}
               placeholder="Copa de verano"
@@ -148,8 +177,9 @@ export const TournamentFormModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className={labelClass}>Descripción</label>
+            <label htmlFor="tournament-description" className={labelClass}>Descripción</label>
             <Textarea
+              id="tournament-description"
               value={description}
               onValueChange={setDescription}
               placeholder="Opcional"
@@ -160,8 +190,9 @@ export const TournamentFormModal = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div className="space-y-2">
-              <label className={labelClass}>Inicio</label>
+              <label htmlFor="tournament-start-date" className={labelClass}>Inicio</label>
               <Input
+                id="tournament-start-date"
                 type="date"
                 value={startDate}
                 onValueChange={setStartDate}
@@ -171,8 +202,9 @@ export const TournamentFormModal = ({
               />
             </div>
             <div className="space-y-2">
-              <label className={labelClass}>Fin</label>
+              <label htmlFor="tournament-end-date" className={labelClass}>Fin</label>
               <Input
+                id="tournament-end-date"
                 type="date"
                 value={endDate}
                 onValueChange={setEndDate}
@@ -184,9 +216,9 @@ export const TournamentFormModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className={labelClass}>Canchas</label>
+            <label id="tournament-courts-label" className={labelClass}>Canchas</label>
             <Select
-              aria-label="Canchas"
+              aria-labelledby="tournament-courts-label"
               selectionMode="multiple"
               placeholder="Elegí una o más canchas"
               selectedKeys={courtIds}
@@ -210,7 +242,7 @@ export const TournamentFormModal = ({
         </ModalBody>
 
         <ModalFooter>
-          <Button variant="light" onPress={onClose} isDisabled={isSaving}>
+          <Button variant="light" onPress={closeAll} isDisabled={isSaving}>
             Cancelar
           </Button>
           <Button
@@ -224,5 +256,16 @@ export const TournamentFormModal = ({
         </ModalFooter>
       </ModalContent>
     </Modal>
+    <TournamentConflictsModal
+      isOpen={Boolean(conflicts)}
+      conflicts={conflicts}
+      courts={courtsData?.data ?? []}
+      onClose={() => setConflicts(null)}
+      onConfirm={handleConfirmConflicts}
+      isLoading={updateTournament.isPending}
+      description="Guardar estos cambios bloqueará las canchas y fechas nuevas, pero no cancelará ninguna reserva. Revisalas antes de continuar."
+      confirmText="Guardar de todos modos"
+    />
+    </>
   );
 };

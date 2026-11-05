@@ -5,8 +5,9 @@ import { useState } from "react";
 
 import { fieldInputClassNames } from "../../../components/ui/fieldStyles";
 import { useConfirm } from "../../../hooks/useConfirm";
-import type { TournamentMatch, TournamentTeam } from "../../../services/tournamentService";
-import { useClearResult, useRecordResult } from "../hooks/useTournaments";
+import { getErrorMessage } from "../../../services/apiError";
+import { resolveChampionId, type TournamentMatch, type TournamentTeam } from "../../../services/tournamentService";
+import { useClearResult, useRecordResult, useUpdateResult } from "../hooks/useTournaments";
 
 type ResultModalProps = {
   isOpen: boolean;
@@ -17,16 +18,13 @@ type ResultModalProps = {
   teams: TournamentTeam[];
 };
 
-const getErrorText = (error: unknown, fallback: string): string => {
-  const message = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
-  return typeof message === "string" && message ? message : fallback;
-};
 const teamName = (teams: TournamentTeam[], id: string | null): string =>
   (id && teams.find((team) => team._id === id)?.name) || "Por definir";
 
 export const ResultModal = ({ isOpen, onClose, tournamentId, categoryId, match, teams }: ResultModalProps) => {
   const confirm = useConfirm();
   const recordResult = useRecordResult(tournamentId, categoryId);
+  const updateResult = useUpdateResult(tournamentId, categoryId);
   const clearResult = useClearResult(tournamentId, categoryId);
   const [scoreA, setScoreA] = useState(match.scoreA != null ? String(match.scoreA) : "");
   const [scoreB, setScoreB] = useState(match.scoreB != null ? String(match.scoreB) : "");
@@ -47,12 +45,14 @@ export const ResultModal = ({ isOpen, onClose, tournamentId, categoryId, match, 
       { title: "Registrar resultado", confirmText: "Guardar" });
     if (!confirmed) return;
     try {
-      const result = await recordResult.mutateAsync({ matchId: match._id, scoreA: parsedA, scoreB: parsedB });
-      addToast({ title: "Resultado registrado", color: "success" });
-      if (result.champion) addToast({ title: `¡Campeón definido: ${teamName(teams, result.champion)}!`, color: "success" });
+      const mutation = isPlayed ? updateResult : recordResult;
+      const result = await mutation.mutateAsync({ matchId: match._id, scoreA: parsedA, scoreB: parsedB });
+      addToast({ title: isPlayed ? "Resultado actualizado" : "Resultado registrado", color: "success" });
+      const championId = resolveChampionId(result.champion);
+      if (championId) addToast({ title: `¡Campeón definido: ${teamName(teams, championId)}!`, color: "success" });
       onClose();
     } catch (saveError) {
-      setError(getErrorText(saveError, "No se pudo registrar el resultado."));
+      setError(getErrorMessage(saveError, "No se pudo registrar el resultado."));
     }
   };
 
@@ -66,7 +66,7 @@ export const ResultModal = ({ isOpen, onClose, tournamentId, categoryId, match, 
       addToast({ title: "Resultado borrado", color: "success" });
       onClose();
     } catch (clearError) {
-      setError(getErrorText(clearError, "No se pudo borrar el resultado."));
+      setError(getErrorMessage(clearError, "No se pudo borrar el resultado."));
     }
   };
 
@@ -90,13 +90,13 @@ export const ResultModal = ({ isOpen, onClose, tournamentId, categoryId, match, 
           {error && <p className="text-sm font-semibold text-danger">{error}</p>}
         </ModalBody>
         <ModalFooter className="flex-wrap gap-2">
-          <Button variant="light" onPress={onClose} isDisabled={recordResult.isPending || clearResult.isPending}>Cancelar</Button>
+          <Button variant="light" onPress={onClose} isDisabled={recordResult.isPending || updateResult.isPending || clearResult.isPending}>Cancelar</Button>
           {isPlayed && (
             <Button color="danger" variant="flat" onPress={handleClear} isLoading={clearResult.isPending} className="font-bold">
               Borrar resultado
             </Button>
           )}
-          <Button color="primary" onPress={handleSave} isLoading={recordResult.isPending} className="font-black">
+          <Button color="primary" onPress={handleSave} isLoading={recordResult.isPending || updateResult.isPending} className="font-black">
             Guardar resultado
           </Button>
         </ModalFooter>

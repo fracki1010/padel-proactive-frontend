@@ -1,6 +1,5 @@
 import {
-  addToast, Button, Chip, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader,
-  Select, SelectItem, Spinner, Tab, Tabs,
+  addToast, Button, Chip, Select, SelectItem, Spinner, Tab, Tabs,
 } from "@heroui/react";
 import { ArrowLeft, CalendarRange, CheckCircle2, MapPin, Trophy, XCircle } from "lucide-react";
 import { useState } from "react";
@@ -9,13 +8,20 @@ import { useNavigate } from "react-router-dom";
 import { fieldSelectClassNames } from "../../../components/ui/fieldStyles";
 import { useConfirm } from "../../../hooks/useConfirm";
 import { useCourts } from "../../../hooks/useData";
+import { getApiConflicts, getErrorMessage } from "../../../services/apiError";
 import type {
-  TournamentCategory, TournamentConflict, TournamentStatus,
+  TournamentCategory, TournamentConflict,
 } from "../../../services/tournamentService";
 import { BracketView } from "../components/BracketView";
 import { CategoryList } from "../components/CategoryList";
 import { MatchList } from "../components/MatchList";
 import { TeamList } from "../components/TeamList";
+import { TournamentConflictsModal } from "../components/TournamentConflictsModal";
+import {
+  TAB_USES_TEAMS, TOURNAMENT_STATUS_META, TOURNAMENT_TABS,
+  type TournamentTabKey,
+} from "../constants";
+import { courtName } from "../utils/bracket";
 import {
   useActivateTournament, useCancelTournament, useCategories, useCompleteTournament,
   useTeams, useTournament,
@@ -23,13 +29,6 @@ import {
 
 type TournamentDetailProps = { tournamentId: string };
 
-const STATUS_META: Record<TournamentStatus, { label: string; color: "default" | "primary" | "success" | "danger" }> = {
-  draft: { label: "Borrador", color: "default" }, in_progress: { label: "En curso", color: "primary" },
-  finished: { label: "Finalizado", color: "success" }, cancelled: { label: "Cancelado", color: "danger" },
-};
-const WEEKDAYS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-const TABS = ["resumen:Resumen", "categorias:Categorías", "parejas:Parejas", "llaves:Llaves", "programacion:Programación", "resultados:Resultados"]
-  .map((entry) => { const [key, label] = entry.split(":"); return { key, label }; });
 const CategoryPicker = ({ categories, categoryId, onChange }: {
   categories: TournamentCategory[];
   categoryId: string;
@@ -51,15 +50,6 @@ const CategoryPicker = ({ categories, categoryId, onChange }: {
   )
 );
 
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  const message = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
-  return typeof message === "string" && message ? message : fallback;
-};
-const getConflicts = (error: unknown): TournamentConflict[] | null => {
-  const conflicts = (error as { response?: { data?: { conflicts?: TournamentConflict[] } } })?.response?.data?.conflicts;
-  return Array.isArray(conflicts) && conflicts.length > 0 ? conflicts : null;
-};
-
 export const TournamentDetail = ({ tournamentId }: TournamentDetailProps) => {
   const navigate = useNavigate();
   const confirm = useConfirm();
@@ -69,7 +59,7 @@ export const TournamentDetail = ({ tournamentId }: TournamentDetailProps) => {
   const activateTournament = useActivateTournament();
   const completeTournament = useCompleteTournament();
   const cancelTournament = useCancelTournament();
-  const [selectedTab, setSelectedTab] = useState("resumen");
+  const [selectedTab, setSelectedTab] = useState<TournamentTabKey>("resumen");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [conflicts, setConflicts] = useState<TournamentConflict[] | null>(null);
 
@@ -77,10 +67,9 @@ export const TournamentDetail = ({ tournamentId }: TournamentDetailProps) => {
   const courts = courtsData?.data ?? [];
   const activeCategoryId = categories.some((category) => category._id === selectedCategoryId) ? selectedCategoryId : categories[0]?._id || "";
   const activeCategory = categories.find((category) => category._id === activeCategoryId);
-  const { data: teamsData } = useTeams(tournamentId, activeCategoryId);
+  const teamsEnabled = TAB_USES_TEAMS.includes(selectedTab);
+  const { data: teamsData } = useTeams(tournamentId, activeCategoryId, teamsEnabled);
   const teams = teamsData ?? [];
-  const courtName = (courtId: string) =>
-    courts.find((court) => court._id === courtId)?.name ?? "Cancha";
 
   const handleActivate = async () => {
     const confirmed = await confirm("Al activar el torneo sus canchas quedarán bloqueadas. Las reservas existentes no se cancelan.", { title: "Activar torneo", confirmText: "Activar" });
@@ -89,7 +78,7 @@ export const TournamentDetail = ({ tournamentId }: TournamentDetailProps) => {
       await activateTournament.mutateAsync({ id: tournamentId });
       addToast({ title: "Torneo activado", color: "success" });
     } catch (error) {
-      const conflictList = getConflicts(error);
+      const conflictList = getApiConflicts(error);
       if (conflictList) return setConflicts(conflictList);
       addToast({ title: getErrorMessage(error, "No se pudo activar el torneo"), color: "danger" });
     }
@@ -147,7 +136,7 @@ export const TournamentDetail = ({ tournamentId }: TournamentDetailProps) => {
     );
   }
 
-  const status = STATUS_META[tournament.status];
+  const status = TOURNAMENT_STATUS_META[tournament.status];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -165,7 +154,7 @@ export const TournamentDetail = ({ tournamentId }: TournamentDetailProps) => {
         </div>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-on-surface-variant">
           <span className="inline-flex items-center gap-1.5"><CalendarRange size={15} />{tournament.startDate} → {tournament.endDate}</span>
-          <span className="inline-flex items-center gap-1.5"><MapPin size={15} />{tournament.courts.map(courtName).join(", ") || "Sin canchas asignadas"}</span>
+          <span className="inline-flex items-center gap-1.5"><MapPin size={15} />{tournament.courts.map((courtId) => courtName(courts, courtId)).join(", ") || "Sin canchas asignadas"}</span>
         </div>
         {(tournament.status === "draft" || tournament.status === "in_progress") && (
           <div className="flex flex-wrap gap-2 pt-1">
@@ -190,7 +179,7 @@ export const TournamentDetail = ({ tournamentId }: TournamentDetailProps) => {
         aria-label="Secciones del torneo"
         variant="underlined"
         selectedKey={selectedTab}
-        onSelectionChange={(key) => setSelectedTab(String(key))}
+        onSelectionChange={(key) => setSelectedTab(String(key) as TournamentTabKey)}
         classNames={{
           base: "w-full overflow-x-auto",
           tabList: "gap-5 w-full relative rounded-none p-0 border-b border-black/5 dark:border-white/5",
@@ -199,7 +188,7 @@ export const TournamentDetail = ({ tournamentId }: TournamentDetailProps) => {
           tabContent: "group-data-[selected=true]:text-primary font-bold text-on-surface-variant uppercase text-xs tracking-wider",
         }}
       >
-        {TABS.map((tab) => (
+        {TOURNAMENT_TABS.map((tab) => (
           <Tab key={tab.key} title={tab.label}>
             {tab.key === "resumen" ? (
               <dl className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
@@ -269,39 +258,16 @@ export const TournamentDetail = ({ tournamentId }: TournamentDetailProps) => {
         ))}
       </Tabs>
 
-      <Modal isOpen={Boolean(conflicts)} onClose={() => setConflicts(null)} size="xl" backdrop="blur" className="bg-surface-container-high text-foreground dark">
-        <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">
-            <h2 className="text-xl font-black">Hay reservas en esas fechas</h2>
-            <p className="text-sm font-normal text-on-surface-variant">
-              Activar el torneo bloqueará las canchas, pero no cancelará estas reservas. Revisalas antes de continuar.
-            </p>
-          </ModalHeader>
-          <ModalBody>
-            <ul className="space-y-2">
-              {(conflicts ?? []).map((conflict, index) => (
-                <li key={`${conflict.type}-${conflict.courtId}-${conflict.date ?? conflict.weekday}-${index}`}
-                  className="rounded-md border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5 p-3 text-sm">
-                  <p className="font-bold text-foreground">
-                    {conflict.type === "booking" ? `Reserva de ${conflict.clientName || "un cliente"}` : "Turno fijo activo"}
-                  </p>
-                  <p className="text-on-surface-variant">
-                    {courtName(conflict.courtId)}
-                    {conflict.date ? ` · ${conflict.date}` : ""}
-                    {conflict.weekday !== undefined ? ` · ${WEEKDAYS[conflict.weekday] ?? "Día"}` : ""}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={() => setConflicts(null)}>Cancelar</Button>
-            <Button color="warning" onPress={handleConfirmConflicts} isLoading={activateTournament.isPending} className="font-black">
-              Activar de todos modos
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <TournamentConflictsModal
+        isOpen={Boolean(conflicts)}
+        conflicts={conflicts}
+        courts={courts}
+        onClose={() => setConflicts(null)}
+        onConfirm={handleConfirmConflicts}
+        isLoading={activateTournament.isPending}
+        description="Activar el torneo bloqueará las canchas, pero no cancelará estas reservas. Revisalas antes de continuar."
+        confirmText="Activar de todos modos"
+      />
     </div>
   );
 };

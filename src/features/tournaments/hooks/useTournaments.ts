@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { isBracketConflictError } from "../../../services/apiError";
 import {
   tournamentService,
   type CategoryPayload,
@@ -157,11 +158,11 @@ export const useUpdateCategory = (tournamentId: string) =>
 export const useDeleteCategory = (tournamentId: string) =>
   useCategoryMutation<string>(tournamentId, (categoryId) => tournamentService.deleteCategory(tournamentId, categoryId));
 
-export const useTeams = (tournamentId: string, categoryId: string) =>
+export const useTeams = (tournamentId: string, categoryId: string, enabled = true) =>
   useQuery({
     queryKey: tournamentKeys.teams(tournamentId, categoryId),
     queryFn: () => tournamentService.listTeams(tournamentId, categoryId),
-    enabled: Boolean(tournamentId && categoryId),
+    enabled: enabled && Boolean(tournamentId && categoryId),
     retry: 1,
   });
 
@@ -192,12 +193,9 @@ export const useWithdrawTeam = (tournamentId: string, categoryId: string) =>
 export const useDeleteTeam = (tournamentId: string, categoryId: string) =>
   useTeamMutation<string>(tournamentId, categoryId, (teamId) => tournamentService.deleteTeam(tournamentId, categoryId, teamId));
 
-const getErrorText = (error: unknown): string =>
-  (error as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "";
-
 // Bracket, result and scheduling writes share invalidation: the bracket and its
-// category (size/status/stale flag) always change together. A stale-bracket 409
-// also refreshes both so the admin sees the current state before regenerating.
+// category (size/status/stale flag) always change together. Any 409 also
+// refreshes both so the admin sees the current state before regenerating.
 const useBracketMutation = <T, R,>(
   tournamentId: string,
   categoryId: string,
@@ -213,7 +211,7 @@ const useBracketMutation = <T, R,>(
     mutationFn,
     onSuccess: refresh,
     onError: (error) => {
-      if (getErrorText(error).toLowerCase().includes("desactualizada")) refresh();
+      if (isBracketConflictError(error)) refresh();
     },
   });
 };
@@ -235,6 +233,13 @@ export const useRecordResult = (tournamentId: string, categoryId: string) =>
     tournamentId, categoryId,
     ({ matchId, scoreA, scoreB }) =>
       tournamentService.recordResult(tournamentId, categoryId, matchId, scoreA, scoreB),
+  );
+
+export const useUpdateResult = (tournamentId: string, categoryId: string) =>
+  useBracketMutation<{ matchId: string; scoreA: number; scoreB: number }, MatchResultResponse>(
+    tournamentId, categoryId,
+    ({ matchId, scoreA, scoreB }) =>
+      tournamentService.updateResult(tournamentId, categoryId, matchId, scoreA, scoreB),
   );
 
 export const useClearResult = (tournamentId: string, categoryId: string) =>

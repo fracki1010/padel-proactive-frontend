@@ -1,13 +1,16 @@
 import { addToast, Button, Chip, Spinner } from "@heroui/react";
-import { AlertTriangle, RefreshCw, Trophy } from "lucide-react";
+import { RefreshCw, Trophy } from "lucide-react";
 import { useState } from "react";
 
 import { useConfirm } from "../../../hooks/useConfirm";
 import { useCourts, useSlots } from "../../../hooks/useData";
+import { getErrorMessage } from "../../../services/apiError";
 import type {
   Tournament, TournamentBracket, TournamentCategory, TournamentTeam,
 } from "../../../services/tournamentService";
 import { useBracket, useGenerateBracket } from "../hooks/useTournaments";
+import { courtName, flattenMatches, slotLabel } from "../utils/bracket";
+import { MatchActionsNotice } from "./MatchActionsNotice";
 import { MatchCard } from "./MatchCard";
 
 type BracketViewProps = {
@@ -17,12 +20,6 @@ type BracketViewProps = {
   teams: TournamentTeam[];
 };
 
-const getErrorText = (error: unknown, fallback: string): string => {
-  const message = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
-  return typeof message === "string" && message ? message : fallback;
-};
-const flattenMatches = (bracket?: TournamentBracket | null) =>
-  bracket?.rounds.flatMap((round) => round.matches) ?? [];
 // The champion is derived: final winner, or the only registered team (size 1).
 const bracketChampion = (bracket?: TournamentBracket | null, teams: TournamentTeam[] = []) => {
   if (!bracket?.bracketSize) return null;
@@ -46,11 +43,10 @@ export const BracketView = ({ tournamentId, tournament, category, teams }: Brack
   const allMatches = flattenMatches(bracket);
   const championId = bracketChampion(bracket, teams);
   const registeredTeams = teams.filter((team) => team.status !== "withdrawn");
-  const courtName = (id: string) => (courtsData?.data ?? []).find((court) => court._id === id)?.name ?? "Cancha";
-  const slotLabel = (id: string) => {
-    const slot = (slotsData?.data ?? []).find((item) => item._id === id);
-    return slot ? `${slot.startTime} - ${slot.endTime}` : "Horario";
-  };
+  const courts = courtsData?.data ?? [];
+  const slots = slotsData?.data ?? [];
+  const resolveCourtName = (id: string) => courtName(courts, id);
+  const resolveSlotLabel = (id: string) => slotLabel(slots, id);
   const canGenerate = tournament.status === "in_progress" && registeredTeams.length > 0;
 
   const handleGenerate = async () => {
@@ -66,7 +62,7 @@ export const BracketView = ({ tournamentId, tournament, category, teams }: Brack
       setDrawSeed(result.drawSeed);
       addToast({ title: `Llave generada. Semilla de sorteo: ${result.drawSeed}`, color: "success" });
     } catch (error) {
-      addToast({ title: getErrorText(error, "No se pudo generar la llave"), color: "danger" });
+      addToast({ title: getErrorMessage(error, "No se pudo generar la llave"), color: "danger" });
     }
   };
 
@@ -84,19 +80,10 @@ export const BracketView = ({ tournamentId, tournament, category, teams }: Brack
         </Button>
       </div>
 
-      {category.bracketStale && (
-        <div className="flex items-start gap-3 rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
-          <AlertTriangle size={18} className="mt-0.5 shrink-0 text-warning" />
-          <p className="text-foreground">
-            La llave está desactualizada porque cambió la lista de parejas. Regenerala antes de programar partidos o cargar resultados.
-          </p>
-        </div>
-      )}
-      {tournament.status !== "in_progress" && (
-        <p className="text-xs font-semibold text-on-surface-variant">
-          Activá el torneo para generar la llave, programar partidos y cargar resultados.
-        </p>
-      )}
+      <MatchActionsNotice
+        bracketStale={category.bracketStale}
+        tournamentStatus={tournament.status}
+      />
 
       {championId && (
         <div className="flex items-center gap-3 rounded-lg border border-success/40 bg-success/10 p-4">
@@ -139,7 +126,7 @@ export const BracketView = ({ tournamentId, tournament, category, teams }: Brack
                 {round.matches.map((match) => (
                   <MatchCard key={match._id} tournamentId={tournamentId} categoryId={category._id}
                     tournament={tournament} match={match} teams={teams} allMatches={allMatches}
-                    bracketStale={category.bracketStale} courtName={courtName} slotLabel={slotLabel} />
+                    bracketStale={category.bracketStale} courtName={resolveCourtName} slotLabel={resolveSlotLabel} />
                 ))}
               </section>
             ))}
