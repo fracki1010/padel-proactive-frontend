@@ -9,12 +9,16 @@ import { useNavigate } from "react-router-dom";
 import { fieldSelectClassNames } from "../../../components/ui/fieldStyles";
 import { useConfirm } from "../../../hooks/useConfirm";
 import { useCourts } from "../../../hooks/useData";
-import type { TournamentConflict, TournamentStatus } from "../../../services/tournamentService";
+import type {
+  TournamentCategory, TournamentConflict, TournamentStatus,
+} from "../../../services/tournamentService";
+import { BracketView } from "../components/BracketView";
 import { CategoryList } from "../components/CategoryList";
+import { MatchList } from "../components/MatchList";
 import { TeamList } from "../components/TeamList";
 import {
   useActivateTournament, useCancelTournament, useCategories, useCompleteTournament,
-  useTournament,
+  useTeams, useTournament,
 } from "../hooks/useTournaments";
 
 type TournamentDetailProps = { tournamentId: string };
@@ -26,10 +30,26 @@ const STATUS_META: Record<TournamentStatus, { label: string; color: "default" | 
 const WEEKDAYS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 const TABS = ["resumen:Resumen", "categorias:Categorías", "parejas:Parejas", "llaves:Llaves", "programacion:Programación", "resultados:Resultados"]
   .map((entry) => { const [key, label] = entry.split(":"); return { key, label }; });
-const PLACEHOLDER_COPY: Record<string, string> = {
-  llaves: "La generación y visualización de llaves llega en la próxima entrega.",
-  programacion: "La programación de partidos llega en la próxima entrega.", resultados: "La carga de resultados llega en la próxima entrega.",
-};
+const CategoryPicker = ({ categories, categoryId, onChange }: {
+  categories: TournamentCategory[];
+  categoryId: string;
+  onChange: (id: string) => void;
+}) => (
+  categories.length === 0 ? (
+    <p className="text-sm text-on-surface-variant">
+      Creá una categoría para usar esta sección.
+    </p>
+  ) : (
+    <Select
+      aria-label="Categoría"
+      selectedKeys={categoryId ? [categoryId] : []}
+      onSelectionChange={(keys) => { const [key] = Array.from(keys); if (key) onChange(String(key)); }}
+      variant="bordered" size="lg" classNames={fieldSelectClassNames.lg}
+    >
+      {categories.map((category) => <SelectItem key={category._id}>{category.name}</SelectItem>)}
+    </Select>
+  )
+);
 
 const getErrorMessage = (error: unknown, fallback: string): string => {
   const message = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
@@ -57,6 +77,8 @@ export const TournamentDetail = ({ tournamentId }: TournamentDetailProps) => {
   const courts = courtsData?.data ?? [];
   const activeCategoryId = categories.some((category) => category._id === selectedCategoryId) ? selectedCategoryId : categories[0]?._id || "";
   const activeCategory = categories.find((category) => category._id === activeCategoryId);
+  const { data: teamsData } = useTeams(tournamentId, activeCategoryId);
+  const teams = teamsData ?? [];
   const courtName = (courtId: string) =>
     courts.find((court) => court._id === courtId)?.name ?? "Cancha";
 
@@ -212,14 +234,37 @@ export const TournamentDetail = ({ tournamentId }: TournamentDetailProps) => {
                   </>
                 )}
               </div>
-            ) : (
-              <div className="pt-2">
-                <div className="flex flex-col items-center justify-center min-h-[200px] text-center p-8 bg-dark-200 rounded-md border border-dashed border-black/10 dark:border-white/10">
-                  <Trophy size={36} className="text-on-surface-variant mb-3" />
-                  <p className="text-sm text-on-surface-variant">{PLACEHOLDER_COPY[tab.key]}</p>
-                </div>
+            ) : tab.key === "llaves" ? (
+              <div className="pt-2 space-y-4">
+                <CategoryPicker categories={categories} categoryId={activeCategoryId} onChange={setSelectedCategoryId} />
+                {activeCategory && (
+                  <BracketView
+                    tournamentId={tournamentId} tournament={tournament}
+                    category={activeCategory} teams={teams}
+                  />
+                )}
               </div>
-            )}
+            ) : tab.key === "programacion" ? (
+              <div className="pt-2 space-y-4">
+                <CategoryPicker categories={categories} categoryId={activeCategoryId} onChange={setSelectedCategoryId} />
+                {activeCategory && (
+                  <MatchList
+                    mode="schedule" tournamentId={tournamentId} tournament={tournament}
+                    category={activeCategory} teams={teams}
+                  />
+                )}
+              </div>
+            ) : tab.key === "resultados" ? (
+              <div className="pt-2 space-y-4">
+                <CategoryPicker categories={categories} categoryId={activeCategoryId} onChange={setSelectedCategoryId} />
+                {activeCategory && (
+                  <MatchList
+                    mode="results" tournamentId={tournamentId} tournament={tournament}
+                    category={activeCategory} teams={teams}
+                  />
+                )}
+              </div>
+            ) : null}
           </Tab>
         ))}
       </Tabs>
