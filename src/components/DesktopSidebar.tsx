@@ -5,12 +5,14 @@ import {
   LayoutGrid,
   LogOut,
   Settings,
+  Trophy,
   Users,
 } from "lucide-react";
 import { cn } from "@heroui/react";
 
 type DesktopSidebarProps = {
   activeTab: string;
+  canManageTournaments?: boolean;
   onTabChange: (tab: string) => void;
   onOpenSettings: () => void;
   onLogout: () => void;
@@ -21,10 +23,12 @@ const navItems = [
   { id: "reservas", label: "Turnos", icon: Calendar },
   { id: "turnos-fijos", label: "Turnos fijos", icon: CalendarClock },
   { id: "clientes", label: "Clientes", icon: Users },
+  { id: "torneos", label: "Torneos", icon: Trophy, requiresManager: true },
 ];
 
 export const DesktopSidebar = ({
   activeTab,
+  canManageTournaments = false,
   onTabChange,
   onOpenSettings,
   onLogout,
@@ -42,6 +46,7 @@ export const DesktopSidebar = ({
 
       <nav className="flex-1 px-4 py-6 space-y-1">
         {navItems.map((item) => {
+          if (item.requiresManager && !canManageTournaments) return null;
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (

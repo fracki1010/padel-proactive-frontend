@@ -32,7 +32,7 @@ import { useIsDesktop } from "./hooks/useIsDesktop";
 const APP_ACTIVE_TAB_KEY = "padexa:last-active-tab";
 const APP_FILTER_VALUE_KEY = "padexa:last-filter-value";
 const APP_SELECTED_COURT_KEY = "padexa:last-selected-court";
-const ALLOWED_APP_TABS = new Set(["panel", "reservas", "turnos-fijos", "clientes", "configuracion"]);
+const ALLOWED_APP_TABS = new Set(["panel", "reservas", "turnos-fijos", "clientes", "torneos", "configuracion"]);
 
 const readStoredString = (key: string, fallback = "") => {
   if (typeof window === "undefined") return fallback;
@@ -90,6 +90,8 @@ const getScreenTitle = (activeTab: string, isCreating: boolean) => {
       return "Turnos";
     case "turnos-fijos":
       return "Turnos fijos";
+    case "torneos":
+      return "Torneos";
     case "configuracion":
       return "Configuración";
     default:
@@ -131,6 +133,9 @@ export default function App() {
 
   const isAuthenticated = Boolean(token);
   const isSuperAdmin = user?.role === "super_admin";
+  const canManageTournaments =
+    Boolean(user?.companyId) &&
+    (user?.role === "admin" || user?.role === "manager");
   const adminName = (user?.name || user?.username || "Admin PADEXA").trim();
   const navAvatarSrc = `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(
     adminName || user?.id || "AdminPADEXA",
@@ -367,10 +372,13 @@ export default function App() {
               <Navigate to={`/${readStoredTab()}`} replace />
             ) : getTabFromPathname(location.pathname) === null ? (
               <Navigate to="/panel" replace />
+            ) : activeTab === "torneos" && !canManageTournaments ? (
+              <Navigate to="/panel" replace />
             ) : (
               <div className="min-h-[100dvh] bg-background text-foreground font-sans pb-safe lg:pb-0 app-shell-root lg:grid lg:grid-cols-[290px_minmax(0,1fr)]">
                 <DesktopSidebar
                   activeTab={activeTab}
+                  canManageTournaments={canManageTournaments}
                   onTabChange={(tab) => navigate(`/${tab}`)}
                   onOpenSettings={() => navigate("/configuracion")}
                   onLogout={logout}
@@ -401,6 +409,7 @@ export default function App() {
                   >
                     <AppMainContent
                       activeTab={activeTab}
+                      canManageTournaments={canManageTournaments}
                       clientIdFromPath={clientIdFromPath}
                       isCreating={isCreating}
                       selectedBooking={selectedBooking}
@@ -422,6 +431,7 @@ export default function App() {
 
                 <BottomNav
                   activeTab={activeTab}
+                  canManageTournaments={canManageTournaments}
                   isKeyboardOpen={isKeyboardOpen}
                   onTabChange={(tab: string) => {
                     if (tab === "fab") {

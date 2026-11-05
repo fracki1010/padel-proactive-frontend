@@ -1,25 +1,39 @@
 import { Button } from "@heroui/react";
-import { LayoutGrid, Calendar, Users, CalendarClock, Plus } from "lucide-react";
+import { LayoutGrid, Calendar, Users, CalendarClock, Plus, Trophy } from "lucide-react";
 import { cn } from "@heroui/react";
 
 interface BottomNavProps {
   activeTab?: string;
+  canManageTournaments?: boolean;
   isKeyboardOpen?: boolean;
   onTabChange?: (tab: string) => void;
 }
 
 export const BottomNav = ({
   activeTab = "panel",
+  canManageTournaments = false,
   isKeyboardOpen = false,
   onTabChange,
 }: BottomNavProps) => {
-  const tabs = [
+  const tabs: {
+    id: string;
+    label?: string;
+    icon?: typeof LayoutGrid;
+    isFab?: boolean;
+    requiresManager?: boolean;
+  }[] = [
     { id: "panel", label: "Panel", icon: LayoutGrid },
     { id: "reservas", label: "Reservas", icon: Calendar },
     { id: "fab", isFab: true },
     { id: "turnos-fijos", label: "Turnos fijos", icon: CalendarClock },
     { id: "clientes", label: "Clientes", icon: Users },
-  ];
+    {
+      id: "torneos",
+      label: "Torneos",
+      icon: Trophy,
+      requiresManager: true,
+    },
+  ].filter((tab) => !tab.requiresManager || canManageTournaments);
 
   return (
     <nav
@@ -58,7 +72,7 @@ export const BottomNav = ({
             aria-current={isActive ? "page" : undefined}
             onClick={() => onTabChange?.(tab.id!)}
             className={cn(
-              "flex min-w-[64px] flex-col items-center gap-1 py-1 transition-colors duration-300 ease-[var(--md-sys-motion-emphasized)] active:scale-95",
+              "flex min-w-[52px] flex-1 flex-col items-center gap-1 py-1 transition-colors duration-300 ease-[var(--md-sys-motion-emphasized)] active:scale-95",
               isActive
                 ? "text-[var(--md-sys-color-on-surface)]"
                 : "text-[var(--md-sys-color-on-surface-variant)]",
