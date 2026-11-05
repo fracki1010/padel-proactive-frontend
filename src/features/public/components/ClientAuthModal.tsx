@@ -15,6 +15,7 @@ import { PhoneInput, defaultPhone } from "./PhoneInput";
 import type { PhoneValue } from "./PhoneInput";
 import { normalizePhoneForApi } from "../../../utils/phone";
 import { fieldInputClassNames } from "../../../components/ui/fieldStyles";
+import { getErrorMessage } from "../../../services/apiError";
 import {
   MOBILE_DRAWER_CONTENT,
   MOBILE_DRAWER_MAX_HEIGHT,
@@ -49,11 +50,6 @@ type Step =
   | "name"         // número nuevo: completar nombre
   | "google_phone" // google sin teléfono verificado: pedir teléfono
   | "google_otp";  // google sin teléfono verificado: ingresar código
-
-const getErrorMessage = (err: unknown, fallback: string) => {
-  const apiError = err as { response?: { data?: { error?: string } } };
-  return apiError?.response?.data?.error || fallback;
-};
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" width="18" height="18">

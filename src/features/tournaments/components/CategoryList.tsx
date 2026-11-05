@@ -7,7 +7,9 @@ import { useState } from "react";
 
 import { fieldInputClassNames, fieldSelectClassNames } from "../../../components/ui/fieldStyles";
 import { useConfirm } from "../../../hooks/useConfirm";
+import { getErrorMessage } from "../../../services/apiError";
 import type { CategoryPayload, CategorySeeding, TournamentCategory } from "../../../services/tournamentService";
+import { MAX_CATEGORY_TEAMS, MIN_CATEGORY_TEAMS } from "../constants";
 import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from "../hooks/useTournaments";
 
 type CategoryListProps = { tournamentId: string; onManageTeams: (categoryId: string) => void };
@@ -15,11 +17,6 @@ type CategoryFormModalProps = { isOpen: boolean; onClose: () => void; tournament
 
 const labelClass = "text-sm font-semibold text-on-surface-variant uppercase tracking-wider";
 const seedingLabel = (seeding: CategorySeeding) => (seeding === "manual" ? "Siembra manual" : "Sorteo");
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  const message = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
-  return typeof message === "string" && message ? message : fallback;
-};
-
 const CategoryFormModal = ({ isOpen, onClose, tournamentId, editing }: CategoryFormModalProps) => {
   const createCategory = useCreateCategory(tournamentId);
   const updateCategory = useUpdateCategory(tournamentId);
@@ -34,8 +31,8 @@ const CategoryFormModal = ({ isOpen, onClose, tournamentId, editing }: CategoryF
     let parsedMaxTeams: number | null = null;
     if (maxTeams.trim()) {
       const value = Number(maxTeams);
-      if (!Number.isInteger(value) || value < 2 || value > 64) {
-        return addToast({ title: "El máximo de parejas debe ser un entero entre 2 y 64.", color: "warning" });
+      if (!Number.isInteger(value) || value < MIN_CATEGORY_TEAMS || value > MAX_CATEGORY_TEAMS) {
+        return addToast({ title: `El máximo de parejas debe ser un entero entre ${MIN_CATEGORY_TEAMS} y ${MAX_CATEGORY_TEAMS}.`, color: "warning" });
       }
       parsedMaxTeams = value;
     }
@@ -62,14 +59,14 @@ const CategoryFormModal = ({ isOpen, onClose, tournamentId, editing }: CategoryF
           <p className="text-sm font-normal text-on-surface-variant">Definí el cupo y cómo se ordenan las parejas en la llave.</p>
         </ModalHeader>
         <ModalBody className="space-y-5">
-          <div className="space-y-2"><label className={labelClass}>Nombre</label>
-            <Input value={name} onValueChange={setName} placeholder="Primera" variant="bordered" size="lg" classNames={fieldInputClassNames.lg} /></div>
+          <div className="space-y-2"><label htmlFor="category-name" className={labelClass}>Nombre</label>
+            <Input id="category-name" value={name} onValueChange={setName} placeholder="Primera" variant="bordered" size="lg" classNames={fieldInputClassNames.lg} /></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2"><label className={labelClass}>Máximo de parejas</label>
-              <Input type="number" min={2} max={64} value={maxTeams} onValueChange={setMaxTeams} placeholder="Sin límite" variant="bordered" size="lg" classNames={fieldInputClassNames.lg} /></div>
-            <div className="space-y-2"><label className={labelClass}>Siembra</label>
+            <div className="space-y-2"><label htmlFor="category-max-teams" className={labelClass}>Máximo de parejas</label>
+              <Input id="category-max-teams" type="number" min={MIN_CATEGORY_TEAMS} max={MAX_CATEGORY_TEAMS} value={maxTeams} onValueChange={setMaxTeams} placeholder="Sin límite" variant="bordered" size="lg" classNames={fieldInputClassNames.lg} /></div>
+            <div className="space-y-2"><label id="category-seeding-label" className={labelClass}>Siembra</label>
               <Select
-                aria-label="Siembra" selectedKeys={[seeding]}
+                aria-labelledby="category-seeding-label" selectedKeys={[seeding]}
                 onSelectionChange={(keys) => { const [key] = Array.from(keys); if (key) setSeeding(String(key) as CategorySeeding); }}
                 variant="bordered" size="lg" classNames={fieldSelectClassNames.lg}
               ><SelectItem key="shuffle">Sorteo</SelectItem><SelectItem key="manual">Siembra manual</SelectItem></Select>

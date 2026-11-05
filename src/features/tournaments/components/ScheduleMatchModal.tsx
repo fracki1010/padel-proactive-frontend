@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { fieldInputClassNames, fieldSelectClassNames } from "../../../components/ui/fieldStyles";
 import { useFixedBookings } from "../../../features/fixed-bookings/hooks/useFixedBookings";
 import { useBookings, useCourts, useSlots } from "../../../hooks/useData";
+import { getErrorMessage } from "../../../services/apiError";
 import type { Tournament, TournamentMatch } from "../../../services/tournamentService";
 import { slotsForCourt } from "../../../utils/slots";
 import { useScheduleMatch } from "../hooks/useTournaments";
@@ -28,11 +29,6 @@ const getUtcWeekday = (dateKey: string): number => {
   const parsed = new Date(`${dateKey}T00:00:00Z`);
   return Number.isNaN(parsed.getTime()) ? -1 : parsed.getUTCDay();
 };
-const getErrorText = (error: unknown, fallback: string): string => {
-  const message = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
-  return typeof message === "string" && message ? message : fallback;
-};
-
 export const ScheduleMatchModal = ({
   isOpen, onClose, tournamentId, categoryId, match, tournament, matches,
 }: ScheduleMatchModalProps) => {
@@ -87,7 +83,7 @@ export const ScheduleMatchModal = ({
       addToast({ title: "Partido programado", color: "success" });
       onClose();
     } catch (saveError) {
-      setError(getErrorText(saveError, "No se pudo programar el partido."));
+      setError(getErrorMessage(saveError, "No se pudo programar el partido."));
     }
   };
 
@@ -102,19 +98,19 @@ export const ScheduleMatchModal = ({
           </p>
         </ModalHeader>
         <ModalBody className="space-y-4">
-          <div className="space-y-2"><label className={labelClass}>Cancha</label>
-            <Select aria-label="Cancha del partido" placeholder="Elegí una cancha"
+          <div className="space-y-2"><label id="match-court-label" className={labelClass}>Cancha</label>
+            <Select aria-labelledby="match-court-label" placeholder="Elegí una cancha"
               selectedKeys={courtId ? [courtId] : []}
               onSelectionChange={(keys) => { setCourtId(String(Array.from(keys)[0] ?? "")); setSlotId(""); }}
               variant="bordered" size="lg" classNames={fieldSelectClassNames.lg}>
               {courts.map((court) => <SelectItem key={court._id}>{court.name}</SelectItem>)}
             </Select></div>
-          <div className="space-y-2"><label className={labelClass}>Fecha</label>
-            <Input type="date" value={date} min={tournament.startDate} max={tournament.endDate}
+          <div className="space-y-2"><label htmlFor="match-date" className={labelClass}>Fecha</label>
+            <Input id="match-date" type="date" value={date} min={tournament.startDate} max={tournament.endDate}
               onValueChange={(value) => { setDate(value); setSlotId(""); }}
               variant="bordered" size="lg" classNames={fieldInputClassNames.lg} /></div>
-          <div className="space-y-2"><label className={labelClass}>Horario disponible</label>
-            <Select aria-label="Horario disponible" placeholder="Elegí un horario"
+          <div className="space-y-2"><label id="match-slot-label" className={labelClass}>Horario disponible</label>
+            <Select aria-labelledby="match-slot-label" placeholder="Elegí un horario"
               selectedKeys={slotId ? [slotId] : []}
               onSelectionChange={(keys) => setSlotId(String(Array.from(keys)[0] ?? ""))}
               variant="bordered" size="lg" classNames={fieldSelectClassNames.lg}>

@@ -3,6 +3,7 @@ import { CalendarClock, Pause, Pencil, Play, Plus, Search, Trash2 } from "lucide
 import { useMemo, useState } from "react";
 
 import { useConfirm } from "../../../hooks/useConfirm";
+import { getErrorMessage } from "../../../services/apiError";
 import type { FixedBooking } from "../../../services/fixedBookingService";
 import { FixedBookingModal } from "../components/FixedBookingModal";
 import { WEEKDAYS } from "../constants";
@@ -22,12 +23,6 @@ const getSlotTime = (fixedBooking: FixedBooking): string =>
   fixedBooking.timeSlot && typeof fixedBooking.timeSlot !== "string"
     ? `${fixedBooking.timeSlot.startTime} – ${fixedBooking.timeSlot.endTime}`
     : "Horario no disponible";
-
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  const message = (error as { response?: { data?: { error?: string } } })
-    ?.response?.data?.error;
-  return typeof message === "string" && message ? message : fallback;
-};
 
 type DayFilter = number | "all";
 type StatusFilter = "all" | "active" | "paused";

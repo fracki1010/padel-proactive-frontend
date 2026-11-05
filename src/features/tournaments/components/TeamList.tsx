@@ -8,31 +8,28 @@ import { useState } from "react";
 import { fieldInputClassNames, fieldSelectClassNames } from "../../../components/ui/fieldStyles";
 import { useConfirm } from "../../../hooks/useConfirm";
 import { useUsers } from "../../../hooks/useData";
+import { getErrorMessage } from "../../../services/apiError";
 import type { TeamPayload, TournamentTeam } from "../../../services/tournamentService";
 import type { User } from "../../../types";
 import { useCreateTeam, useDeleteTeam, useTeams, useUpdateTeam, useWithdrawTeam } from "../hooks/useTournaments";
 
 type TeamListProps = { tournamentId: string; categoryId: string; categoryName: string; maxTeams?: number | null };
 type TeamFormModalProps = { isOpen: boolean; onClose: () => void; tournamentId: string; categoryId: string; editing: TournamentTeam | null };
-type PlayerFieldsProps = { label: string; name: string; phone: string; userId: string; users: User[]; onNameChange: (value: string) => void; onPhoneChange: (value: string) => void; onUserChange: (value: string) => void };
+type PlayerFieldsProps = { idPrefix: string; label: string; name: string; phone: string; userId: string; users: User[]; onNameChange: (value: string) => void; onPhoneChange: (value: string) => void; onUserChange: (value: string) => void };
 
 const labelClass = "text-sm font-semibold text-on-surface-variant uppercase tracking-wider";
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  const message = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
-  return typeof message === "string" && message ? message : fallback;
-};
 
-const PlayerFields = ({ label, name, phone, userId, users, onNameChange, onPhoneChange, onUserChange }: PlayerFieldsProps) => (
+const PlayerFields = ({ idPrefix, label, name, phone, userId, users, onNameChange, onPhoneChange, onUserChange }: PlayerFieldsProps) => (
   <div className="space-y-3 rounded-md border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5 p-3">
     <p className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{label}</p>
-    <div className="space-y-2"><label className={labelClass}>Nombre</label>
-      <Input value={name} onValueChange={onNameChange} placeholder="Nombre y apellido" variant="bordered" size="lg" classNames={fieldInputClassNames.lg} /></div>
+    <div className="space-y-2"><label htmlFor={`${idPrefix}-name`} className={labelClass}>Nombre</label>
+      <Input id={`${idPrefix}-name`} value={name} onValueChange={onNameChange} placeholder="Nombre y apellido" variant="bordered" size="lg" classNames={fieldInputClassNames.lg} /></div>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <div className="space-y-2"><label className={labelClass}>Teléfono</label>
-        <Input value={phone} onValueChange={onPhoneChange} placeholder="Opcional" variant="bordered" size="lg" classNames={fieldInputClassNames.lg} /></div>
-      <div className="space-y-2"><label className={labelClass}>Cliente</label>
+      <div className="space-y-2"><label htmlFor={`${idPrefix}-phone`} className={labelClass}>Teléfono</label>
+        <Input id={`${idPrefix}-phone`} value={phone} onValueChange={onPhoneChange} placeholder="Opcional" variant="bordered" size="lg" classNames={fieldInputClassNames.lg} /></div>
+      <div className="space-y-2"><label id={`${idPrefix}-client-label`} className={labelClass}>Cliente</label>
         <Select
-          aria-label={`Cliente ${label}`}
+          aria-labelledby={`${idPrefix}-client-label`}
           items={[{ _id: "none", name: "Sin vincular" }, ...users]}
           selectedKeys={userId ? [userId] : []}
           placeholder="Sin vincular"
@@ -101,15 +98,15 @@ const TeamFormModal = ({ isOpen, onClose, tournamentId, categoryId, editing }: T
         </ModalHeader>
         <ModalBody className="space-y-4">
           <PlayerFields
-            label="Jugador 1" name={player1Name} phone={player1Phone} userId={player1UserId} users={users}
+            idPrefix="player1" label="Jugador 1" name={player1Name} phone={player1Phone} userId={player1UserId} users={users}
             onNameChange={setPlayer1Name} onPhoneChange={setPlayer1Phone} onUserChange={setPlayer1UserId}
           />
           <PlayerFields
-            label="Jugador 2" name={player2Name} phone={player2Phone} userId={player2UserId} users={users}
+            idPrefix="player2" label="Jugador 2" name={player2Name} phone={player2Phone} userId={player2UserId} users={users}
             onNameChange={setPlayer2Name} onPhoneChange={setPlayer2Phone} onUserChange={setPlayer2UserId}
           />
-          <div className="space-y-2"><label className={labelClass}>Semilla</label>
-            <Input type="number" min={1} value={seed} onValueChange={setSeed} placeholder="Opcional" variant="bordered" size="lg" classNames={fieldInputClassNames.lg} /></div>
+          <div className="space-y-2"><label htmlFor="team-seed" className={labelClass}>Semilla</label>
+            <Input id="team-seed" type="number" min={1} value={seed} onValueChange={setSeed} placeholder="Opcional" variant="bordered" size="lg" classNames={fieldInputClassNames.lg} /></div>
         </ModalBody>
         <ModalFooter>
           <Button variant="light" onPress={onClose} isDisabled={isSaving}>Cancelar</Button>

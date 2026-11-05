@@ -18,6 +18,7 @@ import {
   MOBILE_DRAWER_CONTENT,
   MOBILE_DRAWER_MAX_HEIGHT,
 } from "../../../components/ui/drawerClasses";
+import { getErrorMessage } from "../../../services/apiError";
 import { useCourts, useSlots } from "../../../hooks/useData";
 import { useIsDesktop } from "../../../hooks/useIsDesktop";
 import { useRevealInputOnFocus } from "../../../hooks/useRevealInputOnFocus";
@@ -40,12 +41,6 @@ type FixedBookingModalProps = {
 const refId = (ref: { _id: string } | string | null | undefined): string => {
   if (!ref) return "";
   return typeof ref === "string" ? ref : ref._id;
-};
-
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  const message = (error as { response?: { data?: { error?: string } } })
-    ?.response?.data?.error;
-  return typeof message === "string" && message ? message : fallback;
 };
 
 const labelClass =
