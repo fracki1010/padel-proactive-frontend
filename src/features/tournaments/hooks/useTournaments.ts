@@ -3,7 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   tournamentService,
   type CategoryPayload,
+  type GenerateBracketResponse,
+  type MatchResultResponse,
+  type ScheduleMatchPayload,
   type TeamPayload,
+  type TournamentMatch,
   type TournamentPayload,
   type TournamentStatus,
 } from "../../../services/tournamentService";
@@ -17,6 +21,8 @@ export const tournamentKeys = {
     [...tournamentKeys.detail(id), "categories"] as const,
   teams: (id: string, categoryId: string) =>
     [...tournamentKeys.categories(id), categoryId, "teams"] as const,
+  bracket: (id: string, categoryId: string) =>
+    [...tournamentKeys.categories(id), categoryId, "bracket"] as const,
 };
 
 export const blockKeys = {
@@ -185,3 +191,59 @@ export const useWithdrawTeam = (tournamentId: string, categoryId: string) =>
 
 export const useDeleteTeam = (tournamentId: string, categoryId: string) =>
   useTeamMutation<string>(tournamentId, categoryId, (teamId) => tournamentService.deleteTeam(tournamentId, categoryId, teamId));
+
+const getErrorText = (error: unknown): string =>
+  (error as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "";
+
+// Bracket, result and scheduling writes share invalidation: the bracket and its
+// category (size/status/stale flag) always change together. A stale-bracket 409
+// also refreshes both so the admin sees the current state before regenerating.
+const useBracketMutation = <T, R,>(
+  tournamentId: string,
+  categoryId: string,
+  mutationFn: (input: T) => Promise<R>,
+) => {
+  const queryClient = useQueryClient();
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: tournamentKeys.bracket(tournamentId, categoryId) });
+    queryClient.invalidateQueries({ queryKey: tournamentKeys.categories(tournamentId) });
+    queryClient.invalidateQueries({ queryKey: tournamentKeys.detail(tournamentId) });
+  };
+  return useMutation<R, Error, T>({
+    mutationFn,
+    onSuccess: refresh,
+    onError: (error) => {
+      if (getErrorText(error).toLowerCase().includes("desactualizada")) refresh();
+    },
+  });
+};
+
+export const useBracket = (tournamentId: string, categoryId: string) =>
+  useQuery({
+    queryKey: tournamentKeys.bracket(tournamentId, categoryId),
+    queryFn: () => tournamentService.getBracket(tournamentId, categoryId),
+    enabled: Boolean(tournamentId && categoryId),
+    retry: 1,
+  });
+
+export const useGenerateBracket = (tournamentId: string, categoryId: string) =>
+  useBracketMutation<void, GenerateBracketResponse>(tournamentId, categoryId, () =>
+    tournamentService.generateBracket(tournamentId, categoryId));
+
+export const useRecordResult = (tournamentId: string, categoryId: string) =>
+  useBracketMutation<{ matchId: string; scoreA: number; scoreB: number }, MatchResultResponse>(
+    tournamentId, categoryId,
+    ({ matchId, scoreA, scoreB }) =>
+      tournamentService.recordResult(tournamentId, categoryId, matchId, scoreA, scoreB),
+  );
+
+export const useClearResult = (tournamentId: string, categoryId: string) =>
+  useBracketMutation<string, TournamentMatch>(tournamentId, categoryId, (matchId) =>
+    tournamentService.clearResult(tournamentId, categoryId, matchId));
+
+export const useScheduleMatch = (tournamentId: string, categoryId: string) =>
+  useBracketMutation<{ matchId: string } & ScheduleMatchPayload, TournamentMatch>(
+    tournamentId, categoryId,
+    ({ matchId, ...payload }) =>
+      tournamentService.scheduleMatch(tournamentId, categoryId, matchId, payload),
+  );

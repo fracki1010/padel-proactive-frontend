@@ -73,10 +73,13 @@ export interface TournamentMatch {
   timeSlot: string | null;
 }
 
-export interface TournamentBracket {
-  bracketSize: number;
-  rounds: { round: number; matches: TournamentMatch[] }[];
+export interface BracketRound { round: number; matches: TournamentMatch[] }
+export interface TournamentBracket { bracketSize: number | null; rounds: BracketRound[] }
+export interface GenerateBracketResponse extends TournamentBracket {
+  bracketSize: number; champion: string | null; drawSeed: number;
 }
+export interface MatchResultResponse { match: TournamentMatch; champion: string | null }
+export interface ScheduleMatchPayload { court: string; date: string; timeSlot: string }
 
 const unwrap = <T>(response: { data?: { data?: T } }): T =>
   response.data?.data as T;
@@ -167,4 +170,23 @@ export const tournamentService = {
     unwrap(await api.put(`/tournaments/${tournamentId}/categories/${categoryId}/teams/${teamId}`, { status: "withdrawn" })),
   deleteTeam: async (tournamentId: string, categoryId: string, teamId: string): Promise<{ _id: string }> =>
     unwrap(await api.delete(`/tournaments/${tournamentId}/categories/${categoryId}/teams/${teamId}`)),
+
+  getBracket: async (tournamentId: string, categoryId: string): Promise<TournamentBracket> =>
+    unwrap(await api.get(`/tournaments/${tournamentId}/categories/${categoryId}/bracket`)),
+
+  generateBracket: async (tournamentId: string, categoryId: string, seed?: number): Promise<GenerateBracketResponse> =>
+    unwrap(await api.post(`/tournaments/${tournamentId}/categories/${categoryId}/bracket`, seed != null ? { seed } : {})),
+
+  recordResult: async (
+    tournamentId: string, categoryId: string, matchId: string, scoreA: number, scoreB: number,
+  ): Promise<MatchResultResponse> =>
+    unwrap(await api.post(`/tournaments/${tournamentId}/categories/${categoryId}/matches/${matchId}/result`, { scoreA, scoreB })),
+
+  clearResult: async (tournamentId: string, categoryId: string, matchId: string): Promise<TournamentMatch> =>
+    unwrap(await api.delete(`/tournaments/${tournamentId}/categories/${categoryId}/matches/${matchId}/result`)),
+
+  scheduleMatch: async (
+    tournamentId: string, categoryId: string, matchId: string, payload: ScheduleMatchPayload,
+  ): Promise<TournamentMatch> =>
+    unwrap(await api.put(`/tournaments/${tournamentId}/categories/${categoryId}/matches/${matchId}/schedule`, payload)),
 };
