@@ -239,7 +239,7 @@ export const useUpdateResult = (tournamentId: string, categoryId: string) =>
   useBracketMutation<{ matchId: string; scoreA: number; scoreB: number }, MatchResultResponse>(
     tournamentId, categoryId,
     ({ matchId, scoreA, scoreB }) =>
-      tournamentService.updateResult(tournamentId, categoryId, matchId, scoreA, scoreB),
+      tournamentService.updateResult(tournamentId, matchId, scoreA, scoreB),
   );
 
 export const useClearResult = (tournamentId: string, categoryId: string) =>

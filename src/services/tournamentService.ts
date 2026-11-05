@@ -192,9 +192,9 @@ export const tournamentService = {
     unwrap(await api.post(`/tournaments/${tournamentId}/categories/${categoryId}/matches/${matchId}/result`, { scoreA, scoreB })),
 
   updateResult: async (
-    tournamentId: string, categoryId: string, matchId: string, scoreA: number, scoreB: number,
+    tournamentId: string, matchId: string, scoreA: number, scoreB: number,
   ): Promise<MatchResultResponse> =>
-    unwrap(await api.put(`/tournaments/${tournamentId}/categories/${categoryId}/matches/${matchId}/result`, { scoreA, scoreB })),
+    unwrap(await api.put(`/tournaments/${tournamentId}/matches/${matchId}/result`, { scoreA, scoreB })),
 
   clearResult: async (tournamentId: string, categoryId: string, matchId: string): Promise<TournamentMatch> =>
     unwrap(await api.delete(`/tournaments/${tournamentId}/categories/${categoryId}/matches/${matchId}/result`)),
