@@ -5,10 +5,14 @@ import { Clients } from "../../clients/page/Clients";
 import { Dashboard } from "../../dashboard/page/Dashboard";
 import { FixedBookings } from "../../fixed-bookings/page/FixedBookings";
 import { Profile } from "../../profile/page/Profile";
+import { TournamentDetail } from "../../tournaments/page/TournamentDetail";
+import { Tournaments } from "../../tournaments/page/Tournaments";
 
 type AppMainContentProps = {
   activeTab: string;
+  canManageTournaments: boolean;
   clientIdFromPath: string | null;
+  tournamentIdFromPath: string | null;
   isCreating: boolean;
   selectedBooking: any;
   bookings: any[];
@@ -24,7 +28,9 @@ type AppMainContentProps = {
 
 export const AppMainContent = ({
   activeTab,
+  canManageTournaments,
   clientIdFromPath,
+  tournamentIdFromPath,
   isCreating,
   selectedBooking,
   bookings,
@@ -70,6 +76,13 @@ export const AppMainContent = ({
       );
     case "turnos-fijos":
       return <FixedBookings />;
+    case "torneos":
+      if (!canManageTournaments) return null;
+      return tournamentIdFromPath ? (
+        <TournamentDetail tournamentId={tournamentIdFromPath} />
+      ) : (
+        <Tournaments />
+      );
     case "configuracion":
       return <Profile courts={courts} />;
     default:

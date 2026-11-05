@@ -19,6 +19,7 @@ import {
   useBookings,
 } from "../hooks/useData";
 import { useFixedBookings } from "../features/fixed-bookings/hooks/useFixedBookings";
+import { useTournamentBlocks } from "../features/tournaments/hooks/useTournamentBlocks";
 import {
   CheckCircle2,
   AlertCircle,
@@ -110,16 +111,37 @@ export const BookingForm = ({
 
   // Slots already taken for the selected court + date, by fixed turn or booking.
   const dateKey = toDateKey(date);
+  // Courts blocked by an in-progress tournament cover the whole day, so the
+  // booking form must not offer them. Existing fixed-turn/booking occupancy
+  // below stays untouched.
+  const { data: blocksData } = useTournamentBlocks(dateKey);
+  const blockedCourtIds = useMemo(
+    () => new Set(blocksData?.courtIds ?? []),
+    [blocksData],
+  );
+  const initialCourtId = extractId(initialData?.court);
+  const visibleCourts = useMemo(
+    () => (courtsData?.data ?? []).filter(
+      (court) => !blockedCourtIds.has(court._id) || court._id === initialCourtId,
+    ),
+    [courtsData, blockedCourtIds, initialCourtId],
+  );
+  // A blocked court that is not the booking's own court is treated as unset,
+  // without a state-resetting effect (the option is not rendered either).
+  const activeCourtId =
+    courtId && (!blockedCourtIds.has(courtId) || courtId === initialCourtId)
+      ? courtId
+      : "";
   const occupiedSlotIds = useMemo(() => {
     const occupied = new Set<string>();
-    if (!courtId || !dateKey) return occupied;
+    if (!activeCourtId || !dateKey) return occupied;
 
     const weekday = getUtcWeekday(dateKey);
 
     for (const fixed of fixedBookingsData?.data ?? []) {
       if (fixed.status !== "active") continue;
       if (weekday === null || fixed.weekday !== weekday) continue;
-      if (extractId(fixed.court) !== courtId) continue;
+      if (extractId(fixed.court) !== activeCourtId) continue;
       const slotId = extractId(fixed.timeSlot);
       if (slotId) occupied.add(slotId);
     }
@@ -128,23 +150,23 @@ export const BookingForm = ({
       // The booking being edited must stay selectable so the prefilled slot is visible.
       if (booking._id === initialData?._id) continue;
       if (booking.status === "cancelado") continue;
-      if (extractId(booking.court) !== courtId) continue;
+      if (extractId(booking.court) !== activeCourtId) continue;
       if (toDateKey(booking.date) !== dateKey) continue;
       const slotId = extractId(booking.timeSlot);
       if (slotId) occupied.add(slotId);
     }
 
     return occupied;
-  }, [courtId, dateKey, fixedBookingsData, bookingsData, initialData]);
+  }, [activeCourtId, dateKey, fixedBookingsData, bookingsData, initialData]);
 
   // Per-court override: the options are the selected court's own slots when it
   // has any, otherwise the general slots. Without a court, general slots.
   const availableSlots = useMemo(
     () =>
-      slotsForCourt(courtId, slotsData?.data ?? []).filter(
+      slotsForCourt(activeCourtId, slotsData?.data ?? []).filter(
         (slot) => !occupiedSlotIds.has(slot._id),
       ),
-    [slotsData, courtId, occupiedSlotIds],
+    [slotsData, activeCourtId, occupiedSlotIds],
   );
 
   // The turn actually selectable: a previously chosen time that is no longer
@@ -199,7 +221,7 @@ export const BookingForm = ({
     );
     const existingUser = existingUserByName || existingUserByPhone;
 
-    if (!courtId || !date || !activeTime || !trimmedClientPhone) {
+    if (!activeCourtId || !date || !activeTime || !trimmedClientPhone) {
       const msg = "Completá cancha, fecha, turno y teléfono para continuar.";
       setError(msg);
       addToast({ title: msg, color: "warning" });
@@ -216,7 +238,7 @@ export const BookingForm = ({
 
     createMutation.mutate(
       {
-        courtId,
+        courtId: activeCourtId,
         date,
         time: activeTime,
         clientName: existingUser?.name || trimmedClientName,
@@ -421,7 +443,7 @@ export const BookingForm = ({
                 label="Cancha de Padel"
                 placeholder="Seleccionar cancha"
                 labelPlacement="outside"
-                selectedKeys={courtId ? [courtId] : []}
+                selectedKeys={activeCourtId ? [activeCourtId] : []}
                 onSelectionChange={(keys) =>
                   setCourtId(Array.from(keys)[0] as string)
                 }
@@ -435,7 +457,7 @@ export const BookingForm = ({
                 }}
                 startContent={<MapPin size={18} className="text-on-surface-variant" />}
               >
-                {courts.map((c) => (
+                {visibleCourts.map((c) => (
                   <SelectItem key={c._id} className="text-foreground">
                     {c.name}
                   </SelectItem>
@@ -455,6 +477,22 @@ export const BookingForm = ({
                 }}
               />
             </div>
+
+            {blockedCourtIds.size > 0 && (
+              <p className="text-xs text-orange-400 font-semibold px-1">
+                Canchas ocupadas por un torneo en curso ese día:{" "}
+                {courts
+                  .filter((court) => blockedCourtIds.has(court._id))
+                  .map((court) => court.name)
+                  .join(", ")}
+                . No están disponibles para reservar.
+              </p>
+            )}
+            {!!activeCourtId && blockedCourtIds.has(activeCourtId) && (
+              <p className="text-xs text-orange-400 font-semibold px-1">
+                La cancha seleccionada está bloqueada por un torneo en curso.
+              </p>
+            )}
 
             <Select
               label="Turno (Horario)"
@@ -483,7 +521,7 @@ export const BookingForm = ({
                 </SelectItem>
               ))}
             </Select>
-            {!!courtId && !!date && availableSlots.length === 0 && (
+            {!!activeCourtId && !!date && availableSlots.length === 0 && (
               <p className="text-xs text-on-surface-variant font-semibold px-1">
                 No hay horarios disponibles para esta cancha ese día.
               </p>
