@@ -4,4 +4,5 @@ export * from "../features/config/hooks/useConfigData";
 export * from "../features/notifications/hooks/useNotificationsData";
 export * from "../features/profile/hooks/useAnnouncementsData";
 export * from "../features/super-admin/hooks/useSuperAdminData";
+export * from "../features/tournaments/hooks/useTournaments";
 export * from "../features/users/hooks/useUsersData";
