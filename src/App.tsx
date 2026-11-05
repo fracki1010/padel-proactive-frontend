@@ -68,6 +68,13 @@ const getClientIdFromPathname = (pathname: string): string | null => {
   return secondSegment;
 };
 
+const getTournamentIdFromPathname = (pathname: string): string | null => {
+  const [firstSegment = "", secondSegment = ""] = pathname.split("/").filter(Boolean);
+  if (firstSegment !== "torneos") return null;
+  if (!secondSegment) return null;
+  return secondSegment;
+};
+
 const getSafeReturnPath = (candidate?: string): string => {
   if (!candidate) return "/reservas";
 
@@ -124,6 +131,10 @@ export default function App() {
   );
   const clientIdFromPath = useMemo(
     () => getClientIdFromPathname(location.pathname),
+    [location.pathname],
+  );
+  const tournamentIdFromPath = useMemo(
+    () => getTournamentIdFromPathname(location.pathname),
     [location.pathname],
   );
   const returnPathFromLocationState = useMemo(() => {
@@ -395,7 +406,9 @@ export default function App() {
                     title={
                       activeTab === "clientes" && clientIdFromPath
                         ? "Detalle Cliente"
-                        : getScreenTitle(activeTab, isCreating)
+                        : activeTab === "torneos" && tournamentIdFromPath
+                          ? "Detalle del torneo"
+                          : getScreenTitle(activeTab, isCreating)
                     }
                     onAvatarClick={() => navigate("/configuracion")}
                     onBellClick={onNotifOpen}
@@ -411,6 +424,7 @@ export default function App() {
                       activeTab={activeTab}
                       canManageTournaments={canManageTournaments}
                       clientIdFromPath={clientIdFromPath}
+                      tournamentIdFromPath={tournamentIdFromPath}
                       isCreating={isCreating}
                       selectedBooking={selectedBooking}
                       bookings={bookings}

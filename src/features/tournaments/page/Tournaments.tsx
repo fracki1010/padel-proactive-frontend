@@ -1,6 +1,7 @@
 import { addToast, Button, Chip, Spinner } from "@heroui/react";
-import { CalendarRange, Pencil, Plus, Trash2, Trophy } from "lucide-react";
+import { ArrowRight, CalendarRange, Pencil, Plus, Trash2, Trophy } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { useConfirm } from "../../../hooks/useConfirm";
 import type {
@@ -30,6 +31,7 @@ const courtCountLabel = (count: number): string =>
   `${count} ${count === 1 ? "cancha" : "canchas"}`;
 
 export const Tournaments = () => {
+  const navigate = useNavigate();
   const { data, isLoading, isError } = useTournaments();
   const deleteTournament = useDeleteTournament();
   const confirm = useConfirm();
@@ -163,6 +165,16 @@ export const Tournaments = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-2 pt-1">
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    color="primary"
+                    startContent={<ArrowRight size={14} />}
+                    onPress={() => navigate(`/torneos/${tournament._id}`)}
+                    className="font-bold"
+                  >
+                    Abrir
+                  </Button>
                   <Button
                     size="sm"
                     variant="flat"
