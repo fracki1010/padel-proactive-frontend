@@ -38,6 +38,25 @@ export interface BlockedCourts {
   tournaments: { _id: string; name: string }[];
 }
 
+export type CategorySeeding = "manual" | "shuffle";
+export type CategoryStatus = "draft" | "active" | "completed";
+export interface TournamentCategory {
+  _id: string; name: string; maxTeams: number | null; seeding: CategorySeeding;
+  bracketSize: number | null; bracketStale?: boolean; status: CategoryStatus; createdAt?: string;
+}
+export interface CategoryPayload { name: string; maxTeams?: number | null; seeding?: CategorySeeding }
+export type TeamStatus = "registered" | "withdrawn";
+export interface TournamentTeam {
+  _id: string; name: string; player1Name: string; player2Name: string;
+  player1UserId?: string | null; player2UserId?: string | null;
+  player1Phone?: string; player2Phone?: string; seed: number | null; status: TeamStatus;
+}
+export interface TeamPayload {
+  name?: string; player1Name: string; player2Name: string;
+  player1UserId?: string | null; player2UserId?: string | null;
+  player1Phone?: string; player2Phone?: string; seed?: number | null; status?: TeamStatus;
+}
+
 // Read-only shapes for the P5 bracket UI.
 export interface TournamentMatch {
   _id: string;
@@ -123,4 +142,29 @@ export const tournamentService = {
     });
     return unwrap<BlockedCourts>(response);
   },
+
+  listCategories: async (tournamentId: string): Promise<TournamentCategory[]> =>
+    unwrap(await api.get(`/tournaments/${tournamentId}/categories`)),
+  createCategory: async (tournamentId: string, payload: CategoryPayload): Promise<TournamentCategory> =>
+    unwrap(await api.post(`/tournaments/${tournamentId}/categories`, payload)),
+  updateCategory: async (
+    tournamentId: string, categoryId: string, payload: Partial<CategoryPayload>,
+  ): Promise<TournamentCategory> =>
+    unwrap(await api.put(`/tournaments/${tournamentId}/categories/${categoryId}`, payload)),
+  deleteCategory: async (tournamentId: string, categoryId: string): Promise<{ _id: string }> =>
+    unwrap(await api.delete(`/tournaments/${tournamentId}/categories/${categoryId}`)),
+  listTeams: async (tournamentId: string, categoryId: string): Promise<TournamentTeam[]> =>
+    unwrap(await api.get(`/tournaments/${tournamentId}/categories/${categoryId}/teams`)),
+  createTeam: async (
+    tournamentId: string, categoryId: string, payload: TeamPayload,
+  ): Promise<TournamentTeam> =>
+    unwrap(await api.post(`/tournaments/${tournamentId}/categories/${categoryId}/teams`, payload)),
+  updateTeam: async (
+    tournamentId: string, categoryId: string, teamId: string, payload: Partial<TeamPayload>,
+  ): Promise<TournamentTeam> =>
+    unwrap(await api.put(`/tournaments/${tournamentId}/categories/${categoryId}/teams/${teamId}`, payload)),
+  withdrawTeam: async (tournamentId: string, categoryId: string, teamId: string): Promise<TournamentTeam> =>
+    unwrap(await api.put(`/tournaments/${tournamentId}/categories/${categoryId}/teams/${teamId}`, { status: "withdrawn" })),
+  deleteTeam: async (tournamentId: string, categoryId: string, teamId: string): Promise<{ _id: string }> =>
+    unwrap(await api.delete(`/tournaments/${tournamentId}/categories/${categoryId}/teams/${teamId}`)),
 };

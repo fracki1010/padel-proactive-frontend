@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   tournamentService,
+  type CategoryPayload,
+  type TeamPayload,
   type TournamentPayload,
   type TournamentStatus,
 } from "../../../services/tournamentService";
@@ -11,6 +13,10 @@ export const tournamentKeys = {
   list: (status?: TournamentStatus) =>
     [...tournamentKeys.all, "list", status ?? "all"] as const,
   detail: (id: string) => [...tournamentKeys.all, "detail", id] as const,
+  categories: (id: string) =>
+    [...tournamentKeys.detail(id), "categories"] as const,
+  teams: (id: string, categoryId: string) =>
+    [...tournamentKeys.categories(id), categoryId, "teams"] as const,
 };
 
 export const blockKeys = {
@@ -113,3 +119,69 @@ export const useBlockedCourts = (date: string, enabled = true) =>
     enabled: Boolean(date) && enabled,
     retry: 1,
   });
+
+export const useCategories = (tournamentId: string) =>
+  useQuery({
+    queryKey: tournamentKeys.categories(tournamentId),
+    queryFn: () => tournamentService.listCategories(tournamentId),
+    enabled: Boolean(tournamentId),
+    retry: 1,
+  });
+
+const useInvalidateCategories = (tournamentId: string) => {
+  const queryClient = useQueryClient();
+  return () => {
+    queryClient.invalidateQueries({ queryKey: tournamentKeys.categories(tournamentId) });
+    queryClient.invalidateQueries({ queryKey: tournamentKeys.detail(tournamentId) });
+  };
+};
+
+const useCategoryMutation = <T,>(tournamentId: string, mutationFn: (input: T) => Promise<unknown>) => {
+  const invalidate = useInvalidateCategories(tournamentId);
+  return useMutation({ mutationFn, onSuccess: () => invalidate() });
+};
+
+export const useCreateCategory = (tournamentId: string) =>
+  useCategoryMutation<CategoryPayload>(tournamentId, (payload) => tournamentService.createCategory(tournamentId, payload));
+
+export const useUpdateCategory = (tournamentId: string) =>
+  useCategoryMutation<{ categoryId: string; data: Partial<CategoryPayload> }>(tournamentId,
+    ({ categoryId, data }) => tournamentService.updateCategory(tournamentId, categoryId, data));
+
+export const useDeleteCategory = (tournamentId: string) =>
+  useCategoryMutation<string>(tournamentId, (categoryId) => tournamentService.deleteCategory(tournamentId, categoryId));
+
+export const useTeams = (tournamentId: string, categoryId: string) =>
+  useQuery({
+    queryKey: tournamentKeys.teams(tournamentId, categoryId),
+    queryFn: () => tournamentService.listTeams(tournamentId, categoryId),
+    enabled: Boolean(tournamentId && categoryId),
+    retry: 1,
+  });
+
+const useInvalidateTeams = (tournamentId: string, categoryId: string) => {
+  const invalidateCategories = useInvalidateCategories(tournamentId);
+  const queryClient = useQueryClient();
+  return () => {
+    queryClient.invalidateQueries({ queryKey: tournamentKeys.teams(tournamentId, categoryId) });
+    invalidateCategories();
+  };
+};
+
+const useTeamMutation = <T,>(tournamentId: string, categoryId: string, mutationFn: (input: T) => Promise<unknown>) => {
+  const invalidate = useInvalidateTeams(tournamentId, categoryId);
+  return useMutation({ mutationFn, onSuccess: () => invalidate() });
+};
+
+export const useCreateTeam = (tournamentId: string, categoryId: string) =>
+  useTeamMutation<TeamPayload>(tournamentId, categoryId, (payload) => tournamentService.createTeam(tournamentId, categoryId, payload));
+
+export const useUpdateTeam = (tournamentId: string, categoryId: string) =>
+  useTeamMutation<{ teamId: string; data: Partial<TeamPayload> }>(tournamentId, categoryId,
+    ({ teamId, data }) => tournamentService.updateTeam(tournamentId, categoryId, teamId, data));
+
+export const useWithdrawTeam = (tournamentId: string, categoryId: string) =>
+  useTeamMutation<string>(tournamentId, categoryId, (teamId) => tournamentService.withdrawTeam(tournamentId, categoryId, teamId));
+
+export const useDeleteTeam = (tournamentId: string, categoryId: string) =>
+  useTeamMutation<string>(tournamentId, categoryId, (teamId) => tournamentService.deleteTeam(tournamentId, categoryId, teamId));
